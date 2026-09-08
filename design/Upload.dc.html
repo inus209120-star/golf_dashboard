@@ -1,0 +1,403 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f7f4; --surface: #ffffff; --surface-2: #eef1ec;
+    --ink: #0b0b0b; --ink-2: #52514e; --ink-muted: #898781;
+    --border: rgba(11,11,11,0.10); --gridline: #e1e0d9;
+    --navy: #16233d; --navy-2: #223759; --green: #1f6e46; --green-tint: #e7f2ec;
+    --status-good: #0ca30c; --status-warning: #fab219; --status-serious: #ec835a; --status-critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --bg: #0d0d0d; --surface: #1a1a19; --surface-2: #202020;
+      --ink: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+      --border: rgba(255,255,255,0.10); --gridline: #2c2c2a;
+      --navy: #0f1a2e; --navy-2: #1c2f4d; --green: #3fa06c; --green-tint: #16281f;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d0d0d; --surface: #1a1a19; --surface-2: #202020;
+    --ink: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+    --border: rgba(255,255,255,0.10); --gridline: #2c2c2a;
+    --navy: #0f1a2e; --navy-2: #1c2f4d; --green: #3fa06c; --green-tint: #16281f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--green); } a:hover { color: var(--navy); }
+
+  .gate-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .gate-card { width: 360px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 32px 28px; text-align: center; }
+  .gate-mark { width: 48px; height: 48px; border-radius: 12px; background: var(--navy); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .gate-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .gate-sub { font-size: 12.5px; color: var(--ink-2); margin-bottom: 22px; }
+  .pin-input { width: 100%; text-align: center; letter-spacing: 6px; font-size: 20px; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink); margin-bottom: 12px; }
+  .pin-input:focus { outline: 2px solid var(--green); }
+  .gate-btn { width: 100%; background: var(--navy); color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .gate-btn:hover { background: var(--navy-2); }
+  .gate-error { font-size: 12px; color: var(--status-critical); margin-top: 10px; min-height: 16px; }
+  .gate-hint { font-size: 11px; color: var(--ink-muted); margin-top: 18px; }
+
+  .page { max-width: 1080px; margin: 0 auto; padding: 26px 28px 64px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark { width: 38px; height: 38px; border-radius: 10px; background: var(--navy); display: flex; align-items: center; justify-content: center; }
+  .brand-name { font-size: 16px; font-weight: 700; }
+  .brand-sub { font-size: 12px; color: var(--ink-2); }
+  .lock-btn { display: flex; align-items: center; gap: 6px; background: var(--surface-2); border: none; color: var(--ink-2); font-size: 12.5px; font-weight: 600; padding: 8px 13px; border-radius: 9px; cursor: pointer; }
+  .lock-btn:hover { background: var(--border); }
+
+  .section-title { font-size: 15px; font-weight: 700; margin: 30px 0 4px; }
+  .section-sub { font-size: 12px; color: var(--ink-muted); margin-bottom: 14px; }
+
+  .upload-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .upload-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; }
+  .upload-title { font-size: 13.5px; font-weight: 700; margin-bottom: 3px; }
+  .upload-hint { font-size: 11px; color: var(--ink-muted); margin-bottom: 12px; }
+  .dropzone { border: 1.5px dashed var(--border); border-radius: 12px; padding: 20px 12px; text-align: center; cursor: pointer; background: var(--surface-2); transition: border-color .12s ease; }
+  .dropzone:hover { border-color: var(--green); }
+  .dropzone-icon { margin-bottom: 8px; }
+  .dropzone-text { font-size: 12px; color: var(--ink-2); }
+  .dropzone-sub { font-size: 10.5px; color: var(--ink-muted); margin-top: 3px; }
+  .result-panel { margin-top: 12px; border-radius: 10px; padding: 10px 12px; font-size: 11.5px; }
+  .result-ok { background: color-mix(in oklab, var(--status-good) 12%, var(--surface)); color: var(--ink); }
+  .result-warn { background: color-mix(in oklab, var(--status-warning) 16%, var(--surface)); color: var(--ink); }
+  .result-head { display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 3px; }
+  .result-head svg { flex-shrink: 0; }
+  .result-ok .result-head { color: var(--status-good); }
+  .result-warn .result-head { color: color-mix(in oklab, var(--status-warning) 65%, var(--ink)); }
+
+  .gf-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+  .gf-banner { display: flex; align-items: center; gap: 8px; background: var(--green-tint); color: var(--green); font-size: 12.5px; font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px; }
+  .gf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .gf-block-label { font-size: 12px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
+  .gf-input-row { display: grid; grid-template-columns: 1.3fr 0.9fr 0.9fr 0.9fr; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .gf-input-row label { font-size: 11px; color: var(--ink-2); }
+  .gf-th { font-size: 10px; color: var(--ink-muted); text-align: center; }
+  .gf-input { width: 100%; padding: 6px 7px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink); font-size: 11.5px; text-align: right; font-variant-numeric: tabular-nums; }
+  .gf-input.is-disabled { opacity: 0.55; pointer-events: none; }
+  .flat-row { display: flex; gap: 10px; margin-top: 14px; }
+  .flat-field { flex: 1; }
+  .flat-field label { display: block; font-size: 11px; color: var(--ink-2); margin-bottom: 5px; }
+  .exception-block { margin-top: 18px; border-top: 1px solid var(--gridline); padding-top: 14px; }
+  .exception-row { display: grid; grid-template-columns: 130px 1fr; gap: 8px; margin-bottom: 7px; }
+  .add-exception-btn { font-size: 11.5px; color: var(--green); background: none; border: none; cursor: pointer; font-weight: 600; padding: 4px 0; }
+  .submit-row { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-top: 20px; }
+  .submit-note { font-size: 11px; color: var(--ink-muted); }
+  .submit-btn { background: var(--navy); color: #fff; border: none; padding: 11px 22px; border-radius: 10px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .submit-btn:hover { background: var(--navy-2); }
+  .submit-btn.is-disabled { background: var(--surface-2); color: var(--ink-muted); cursor: default; pointer-events: none; }
+
+  .history-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; }
+  .history-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gridline); }
+  .history-row:last-child { border-bottom: none; }
+  .history-left { display: flex; flex-direction: column; }
+  .history-label { font-size: 13px; font-weight: 600; }
+  .history-date { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+  .badge-good { background: color-mix(in oklab, var(--status-good) 16%, var(--surface)); color: var(--status-good); }
+  .badge-warning { background: color-mix(in oklab, var(--status-warning) 20%, var(--surface)); color: color-mix(in oklab, var(--status-warning) 70%, var(--ink)); }
+</style>
+</helmet>
+
+<sc-if value="{{ isLocked }}" hint-placeholder-val="{{ true }}">
+  <div class="gate-wrap">
+    <div class="gate-card">
+      <div class="gate-mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#fff" stroke-width="1.8"/></svg></div>
+      <div class="gate-title">현장 업로드</div>
+      <div class="gate-sub">스톤게이트CC · 업로드 PIN을 입력하세요</div>
+      <input class="pin-input" type="password" inputmode="numeric" maxlength="6" value="{{ pinValue }}" onChange="{{ onPinChange }}" placeholder="••••" />
+      <button class="gate-btn" onClick="{{ onPinSubmit }}">확인</button>
+      <div class="gate-error">{{ pinErrorText }}</div>
+      <div class="gate-hint">[예시 화면] 테스트 PIN: 1234</div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isUnlocked }}" hint-placeholder-val="{{ false }}">
+<div class="page">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 3v18" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M6 4h11l-3 3.2L17 10.4H6" fill="#fff"/></svg></div>
+      <div><div class="brand-name">스톤게이트CC</div><div class="brand-sub">현장 업로드 · 2026년 9월 8일</div></div>
+    </div>
+    <button class="lock-btn" onClick="{{ onLock }}">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.8"/></svg>
+      잠금
+    </button>
+  </div>
+
+  <div class="section-title">엑셀 업로드</div>
+  <div class="section-sub">무노스 · 더존에서 다운로드한 파일을 업로드하세요. 파싱 결과는 즉시 확인할 수 있습니다.</div>
+  <div class="upload-row">
+
+    <div class="upload-card">
+      <div class="upload-title">자금일보</div>
+      <div class="upload-hint">더존 · 자금일보_202609.xlsx</div>
+      <div class="dropzone" onClick="{{ onUploadCash }}">
+        <div class="dropzone-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 15V4M12 4l-4 4M12 4l4 4" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="var(--ink-muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div class="dropzone-text">끌어놓거나 클릭하여 업로드</div>
+        <div class="dropzone-sub">.xlsx</div>
+      </div>
+      <sc-if value="{{ cashResult.show }}" hint-placeholder-val="{{ false }}">
+        <div class="result-panel {{ cashResult.panelClass }}">
+          <div class="result-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 16.5v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.3 3.9 2.6 17.5A1.7 1.7 0 0 0 4.1 20h15.8a1.7 1.7 0 0 0 1.5-2.5L13.7 3.9a1.7 1.7 0 0 0-3 0Z" stroke="currentColor" stroke-width="1.6"/></svg>
+            {{ cashResult.title }}
+          </div>
+          {{ cashResult.detail }}
+        </div>
+      </sc-if>
+    </div>
+
+    <div class="upload-card">
+      <div class="upload-title">일일영업집계</div>
+      <div class="upload-hint">무노스 · 조회기간 1일 재추출본</div>
+      <div class="dropzone" onClick="{{ onUploadSales }}">
+        <div class="dropzone-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 15V4M12 4l-4 4M12 4l4 4" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="var(--ink-muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div class="dropzone-text">끌어놓거나 클릭하여 업로드</div>
+        <div class="dropzone-sub">.xls</div>
+      </div>
+      <sc-if value="{{ salesResult.show }}" hint-placeholder-val="{{ false }}">
+        <div class="result-panel result-ok">
+          <div class="result-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            매출집계 6개 항목 인식 완료
+          </div>
+          그린피 · 카트료 · 대여료 · 식음 · 상품 · 기타매출
+        </div>
+      </sc-if>
+    </div>
+
+    <div class="upload-card">
+      <div class="upload-title">예약현황(일별집계)</div>
+      <div class="upload-hint">무노스 · 9월 1일~30일</div>
+      <div class="dropzone" onClick="{{ onUploadReservation }}">
+        <div class="dropzone-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 15V4M12 4l-4 4M12 4l4 4" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="var(--ink-muted)" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div class="dropzone-text">끌어놓거나 클릭하여 업로드</div>
+        <div class="dropzone-sub">.xls</div>
+      </div>
+      <sc-if value="{{ reservationResult.show }}" hint-placeholder-val="{{ false }}">
+        <div class="result-panel result-ok">
+          <div class="result-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            31/31일 인식 완료
+          </div>
+          9월 1일~30일 전체 반영
+        </div>
+      </sc-if>
+    </div>
+
+  </div>
+
+  <div class="section-title">그린피 단가 입력 · 10월 (익월)</div>
+  <div class="section-sub">9월 값을 초안으로 불러왔습니다. 변경 후 제출하면 대표님 승인 대기 상태로 전환됩니다.</div>
+  <div class="gf-card">
+    <sc-if value="{{ gfSubmitted }}" hint-placeholder-val="{{ false }}">
+      <div class="gf-banner">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        제출 완료 · 대표님 승인 대기중입니다
+      </div>
+    </sc-if>
+    <div class="gf-grid">
+      <div>
+        <div class="gf-block-label">1부 · 2부</div>
+        <div class="gf-input-row"><label></label><div class="gf-th">주중</div><div class="gf-th">토</div><div class="gf-th">일·공휴일</div></div>
+        <sc-for list="{{ gf.rows12 }}" as="r" hint-placeholder-count="4">
+          <div class="gf-input-row">
+            <label>{{ r.label }}</label>
+            <input class="gf-input {{ gfFieldClass }}" value="{{ r.weekday }}" onChange="{{ r.onWeekday }}" />
+            <input class="gf-input {{ gfFieldClass }}" value="{{ r.sat }}" onChange="{{ r.onSat }}" />
+            <input class="gf-input {{ gfFieldClass }}" value="{{ r.sun }}" onChange="{{ r.onSun }}" />
+          </div>
+        </sc-for>
+      </div>
+      <div>
+        <div class="gf-block-label">3부 (요일군 다름: 월~목 / 금·토 / 일·공휴일)</div>
+        <div class="gf-input-row"><label></label><div class="gf-th">월~목</div><div class="gf-th">금·토</div><div class="gf-th">일·공휴일</div></div>
+        <sc-for list="{{ gf.rows3 }}" as="r" hint-placeholder-count="2">
+          <div class="gf-input-row">
+            <label>{{ r.label }}</label>
+            <input class="gf-input {{ gfFieldClass }}" value="{{ r.weekday }}" onChange="{{ r.onWeekday }}" />
+            <input class="gf-input {{ gfFieldClass }}" value="{{ r.sat }}" onChange="{{ r.onSat }}" />
+            <input class="gf-input {{ gfFieldClass }}" value="{{ r.sun }}" onChange="{{ r.onSun }}" />
+          </div>
+        </sc-for>
+        <div class="flat-row">
+          <div class="flat-field"><label>카트료 (팀당)</label><input class="gf-input {{ gfFieldClass }}" style="text-align:left" value="{{ gf.cart }}" onChange="{{ gf.onCart }}" /></div>
+          <div class="flat-field"><label>캐디피 (전 부)</label><input class="gf-input {{ gfFieldClass }}" style="text-align:left" value="{{ gf.caddie }}" onChange="{{ gf.onCaddie }}" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exception-block">
+      <div class="gf-block-label">날짜별 예외 (휴장 / 요금 오버라이드)</div>
+      <sc-for list="{{ gf.exceptions }}" as="e" hint-placeholder-count="2">
+        <div class="exception-row">
+          <input class="gf-input {{ gfFieldClass }}" style="text-align:left" value="{{ e.date }}" onChange="{{ e.onDate }}" />
+          <input class="gf-input {{ gfFieldClass }}" style="text-align:left" value="{{ e.note }}" onChange="{{ e.onNote }}" />
+        </div>
+      </sc-for>
+      <sc-if value="{{ gfNotSubmitted }}" hint-placeholder-val="{{ true }}">
+        <button class="add-exception-btn" onClick="{{ addException }}">+ 예외 추가</button>
+      </sc-if>
+    </div>
+
+    <div class="submit-row">
+      <div class="submit-note">{{ submitNote }}</div>
+      <button class="submit-btn {{ gfFieldClass }}" onClick="{{ onSubmitGf }}">{{ submitBtnLabel }}</button>
+    </div>
+  </div>
+
+  <div class="section-title">그린피 전자결재 상태</div>
+  <div class="section-sub">종이 서명(담당·팀장·대표이사)을 대체하는 승인 이력입니다.</div>
+  <div class="history-card">
+    <sc-for list="{{ history }}" as="h" hint-placeholder-count="3">
+      <div class="history-row">
+        <div class="history-left">
+          <div class="history-label">{{ h.label }}</div>
+          <div class="history-date">{{ h.date }}</div>
+        </div>
+        <span class="badge {{ h.badgeClass }}">{{ h.badgeText }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</sc-if>
+
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      unlocked: false,
+      pin: '',
+      pinError: '',
+      cash: 'idle',
+      sales: 'idle',
+      reservation: 'idle',
+      gfSubmitted: false,
+      gfRows12: [
+        { label: '1부 · 첫팀~06:22', weekday: '130,000', sat: '160,000', sun: '160,000' },
+        { label: '1부 · 06:30~06:52', weekday: '140,000', sat: '170,000', sun: '170,000' },
+        { label: '1부 · 07:00~막팀', weekday: '150,000', sat: '180,000', sun: '180,000' },
+        { label: '2부 · 전타임', weekday: '180,000', sat: '200,000', sun: '190,000' }
+      ],
+      gfRows3: [
+        { label: '3부 · 16:15~17:39', weekday: '130,000', sat: '150,000', sun: '140,000' },
+        { label: '3부 · 17:46~18:35', weekday: '120,000', sat: '140,000', sun: '130,000' }
+      ],
+      gfCart: '100,000',
+      gfCaddie: '150,000',
+      gfExceptions: [
+        { date: '10/3(토)', note: '개천절 - 주말요금 적용' },
+        { date: '10/9(금)', note: '한글날 - 주말요금 적용' }
+      ],
+      history: [
+        { label: '9월 요금표', date: '2026-09-02 10:20 제출', badgeClass: 'badge-good', badgeText: '승인됨' },
+        { label: '8월 요금표', date: '2026-08-01 09:40 제출', badgeClass: 'badge-good', badgeText: '승인됨' }
+      ]
+    };
+  }
+
+  renderVals() {
+    const setRow = (listKey, idx, field) => (e) => {
+      const list = this.state[listKey].slice();
+      list[idx] = { ...list[idx], [field]: e.target.value };
+      this.setState({ [listKey]: list });
+    };
+    const setExc = (idx, field) => (e) => {
+      const list = this.state.gfExceptions.slice();
+      list[idx] = { ...list[idx], [field]: e.target.value };
+      this.setState({ gfExceptions: list });
+    };
+
+    const uploadResult = (key) => {
+      const s = this.state[key];
+      if (s === 'idle') return { show: false };
+      if (s === 'warning') return {
+        show: true, panelClass: 'result-warn',
+        title: '21개 시트 중 20개 인식됨',
+        detail: '인식 안 된 시트: "8월 28일" (정규 패턴 아님, 수동 확인 필요)'
+      };
+      return { show: true, panelClass: 'result-ok' };
+    };
+
+    return {
+      isLocked: !this.state.unlocked,
+      isUnlocked: this.state.unlocked,
+      pinValue: this.state.pin,
+      pinErrorText: this.state.pinError,
+      onPinChange: (e) => this.setState({ pin: e.target.value, pinError: '' }),
+      onPinSubmit: () => {
+        if (this.state.pin === '1234') this.setState({ unlocked: true, pinError: '' });
+        else this.setState({ pinError: 'PIN이 올바르지 않습니다' });
+      },
+      onLock: () => this.setState({ unlocked: false, pin: '' }),
+
+      onUploadCash: () => this.setState({ cash: 'warning' }),
+      onUploadSales: () => this.setState({ sales: 'success' }),
+      onUploadReservation: () => this.setState({ reservation: 'success' }),
+      cashResult: uploadResult('cash'),
+      salesResult: uploadResult('sales'),
+      reservationResult: uploadResult('reservation'),
+
+      gfFieldClass: this.state.gfSubmitted ? 'is-disabled' : '',
+      gf: {
+        rows12: this.state.gfRows12.map((r, i) => ({
+          ...r,
+          onWeekday: setRow('gfRows12', i, 'weekday'),
+          onSat: setRow('gfRows12', i, 'sat'),
+          onSun: setRow('gfRows12', i, 'sun')
+        })),
+        rows3: this.state.gfRows3.map((r, i) => ({
+          ...r,
+          onWeekday: setRow('gfRows3', i, 'weekday'),
+          onSat: setRow('gfRows3', i, 'sat'),
+          onSun: setRow('gfRows3', i, 'sun')
+        })),
+        cart: this.state.gfCart,
+        caddie: this.state.gfCaddie,
+        onCart: (e) => this.setState({ gfCart: e.target.value }),
+        onCaddie: (e) => this.setState({ gfCaddie: e.target.value }),
+        exceptions: this.state.gfExceptions.map((ex, i) => ({
+          ...ex,
+          onDate: setExc(i, 'date'),
+          onNote: setExc(i, 'note')
+        }))
+      },
+      addException: () => this.setState({ gfExceptions: [...this.state.gfExceptions, { date: '', note: '' }] }),
+      gfSubmitted: this.state.gfSubmitted,
+      gfNotSubmitted: !this.state.gfSubmitted,
+      submitNote: this.state.gfSubmitted ? '대표님 승인 후 확정됩니다' : '제출 시 대표님에게 승인 요청이 전송됩니다',
+      submitBtnLabel: this.state.gfSubmitted ? '제출됨' : '제출',
+      onSubmitGf: () => {
+        if (this.state.gfSubmitted) return;
+        this.setState({
+          gfSubmitted: true,
+          history: [
+            { label: '10월 요금표', date: '2026-09-08 (오늘) 제출', badgeClass: 'badge-warning', badgeText: '승인 대기' },
+            ...this.state.history
+          ]
+        });
+      },
+      history: this.state.history
+    };
+  }
+}
+</script>
+</body>
+</html>

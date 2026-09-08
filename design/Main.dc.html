@@ -1,0 +1,664 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f6f7f4;
+    --surface: #ffffff;
+    --surface-2: #eef1ec;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-muted: #898781;
+    --border: rgba(11,11,11,0.10);
+    --gridline: #e1e0d9;
+    --navy: #16233d;
+    --navy-2: #223759;
+    --green: #1f6e46;
+    --green-tint: #e7f2ec;
+    --dow-sun: #ac4a49;
+    --dow-sat: #33628f;
+
+    --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
+    --series-4: #eda100; --series-5: #e87ba4; --series-6: #008300;
+
+    --seq-0: #eef1ec; --seq-1: #cde2fb; --seq-2: #9ec5f4; --seq-3: #5598e7;
+    --seq-4: #2a78d6; --seq-5: #1c5cab; --seq-6: #104281;
+
+    --div-pos: #2a78d6; --div-neg: #e34948; --div-mid: #f0efec;
+
+    --status-good: #0ca30c; --status-warning: #fab219;
+    --status-serious: #ec835a; --status-critical: #d03b3b;
+
+    --delta-good: #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --bg: #0d0d0d; --surface: #1a1a19; --surface-2: #202020;
+      --ink: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+      --border: rgba(255,255,255,0.10); --gridline: #2c2c2a;
+      --navy: #0f1a2e; --navy-2: #1c2f4d; --green: #3fa06c; --green-tint: #16281f;
+      --dow-sun: #d38988; --dow-sat: #86aed4;
+      --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+      --series-4: #c98500; --series-5: #d55181; --series-6: #008300;
+      --seq-0: #202020; --seq-1: #1c2733; --seq-2: #1f4d78; --seq-3: #1c5cab;
+      --seq-4: #2a78d6; --seq-5: #3987e5; --seq-6: #5598e7;
+      --div-pos: #3987e5; --div-neg: #e66767; --div-mid: #383835;
+      --delta-good: #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d0d0d; --surface: #1a1a19; --surface-2: #202020;
+    --ink: #ffffff; --ink-2: #c3c2b7; --ink-muted: #898781;
+    --border: rgba(255,255,255,0.10); --gridline: #2c2c2a;
+    --navy: #0f1a2e; --navy-2: #1c2f4d; --green: #3fa06c; --green-tint: #16281f;
+    --dow-sun: #d38988; --dow-sat: #86aed4;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+    --series-4: #c98500; --series-5: #d55181; --series-6: #008300;
+    --seq-0: #202020; --seq-1: #1c2733; --seq-2: #1f4d78; --seq-3: #1c5cab;
+    --seq-4: #2a78d6; --seq-5: #3987e5; --seq-6: #5598e7;
+    --div-pos: #3987e5; --div-neg: #e66767; --div-mid: #383835;
+    --delta-good: #0ca30c;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--green); } a:hover { color: var(--navy); }
+
+  .page { max-width: 1400px; margin: 0 auto; padding: 28px 32px 64px; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark { width: 40px; height: 40px; border-radius: 10px; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .brand-name { font-size: 18px; font-weight: 700; line-height: 1.2; }
+  .brand-sub { font-size: 12.5px; color: var(--ink-2); }
+  .topbar-right { text-align: right; }
+  .today-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .updated-label { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-bottom: 20px; }
+  .stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .stat-label { font-size: 12.5px; color: var(--ink-2); margin-bottom: 8px; }
+  .stat-value { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+  .stat-delta { font-size: 12.5px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .delta-up { color: var(--delta-good); }
+  .delta-down { color: var(--status-critical); }
+
+  .grid-2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 20px; align-items: start; }
+  .stack { display: flex; flex-direction: column; gap: 20px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px 24px; }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .card-title { font-size: 15px; font-weight: 700; }
+  .card-sub { font-size: 12px; color: var(--ink-muted); margin-bottom: 16px; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 999px; }
+  .badge-good { background: color-mix(in oklab, var(--status-good) 16%, var(--surface)); color: var(--status-good); }
+  .badge-warning { background: color-mix(in oklab, var(--status-warning) 20%, var(--surface)); color: color-mix(in oklab, var(--status-warning) 70%, var(--ink)); }
+  .badge-critical { background: color-mix(in oklab, var(--status-critical) 16%, var(--surface)); color: var(--status-critical); }
+  .badge svg { width: 12px; height: 12px; }
+
+  /* cash */
+  .flow-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 18px; }
+  .flow-item { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
+  .flow-k { font-size: 11px; color: var(--ink-muted); margin-bottom: 4px; }
+  .flow-v { font-size: 14px; font-weight: 700; }
+  .bank-row { display: grid; grid-template-columns: 108px 1fr 96px; align-items: center; gap: 10px; padding: 7px 0; }
+  .bank-name { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bank-track { height: 8px; border-radius: 4px; background: var(--surface-2); position: relative; }
+  .bank-fill { height: 8px; border-radius: 4px; background: var(--navy); }
+  .bank-amt { font-size: 12.5px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* sales */
+  .hero { font-size: 32px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 2px; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+  .legend-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+  .bar-row { display: grid; grid-template-columns: 78px 1fr 92px; align-items: center; gap: 10px; padding: 5px 0; }
+  .bar-label { font-size: 12px; color: var(--ink-2); }
+  .bar-track { height: 16px; border-radius: 4px; background: var(--surface-2); }
+  .bar-fill { height: 16px; border-radius: 4px; }
+  .bar-value { font-size: 12.5px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .spark-wrap { margin-top: 16px; }
+  .spark-label { font-size: 11.5px; color: var(--ink-muted); margin-bottom: 6px; }
+
+  /* calendar */
+  .dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 6px; }
+  .dow-cell { text-align: center; font-size: 11px; font-weight: 700; color: var(--ink-muted); padding-bottom: 2px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-cell { position: relative; border-radius: 8px; aspect-ratio: 1 / 0.82; padding: 6px 7px; display: flex; flex-direction: column; justify-content: space-between; cursor: default; }
+  .cal-cell.other-month { opacity: 0.35; }
+  .cal-cell.is-today { outline: 2px dashed var(--green); outline-offset: 2px; }
+  .cal-day { font-size: 11px; font-weight: 600; }
+  .cal-frac { font-size: 11px; font-weight: 700; line-height: 1.1; }
+  .cal-pct { font-size: 13px; font-weight: 800; line-height: 1.1; }
+  .cal-tip { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); background: var(--navy); color: #fff; font-size: 11px; padding: 6px 9px; border-radius: 7px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s ease; z-index: 5; }
+  .cal-cell:hover .cal-tip { opacity: 1; }
+  .ink-text { color: var(--ink); }
+  .white-text { color: #ffffff; }
+
+  /* weather */
+  .weather-main { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .weather-temp { font-size: 34px; font-weight: 700; }
+  .weather-desc { font-size: 13px; color: var(--ink-2); }
+  .forecast-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .forecast-item { background: var(--surface-2); border-radius: 10px; padding: 10px 8px; text-align: center; }
+  .forecast-day { font-size: 11px; color: var(--ink-muted); margin-bottom: 6px; }
+  .forecast-t { font-size: 13px; font-weight: 700; }
+  .forecast-pop { font-size: 11px; color: var(--series-1); margin-top: 3px; }
+
+  /* greenfee table */
+  .month-toggle { display: flex; gap: 6px; background: var(--surface-2); padding: 3px; border-radius: 9px; }
+  .toggle-btn { border: none; background: transparent; padding: 5px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+  .toggle-btn.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px var(--border); }
+  .gf-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+  .gf-table th { text-align: right; font-weight: 600; color: var(--ink-muted); font-size: 11px; padding: 4px 6px; border-bottom: 1px solid var(--gridline); }
+  .gf-table th:first-child, .gf-table td:first-child { text-align: left; }
+  .gf-table td { padding: 5px 6px; border-bottom: 1px solid var(--gridline); font-variant-numeric: tabular-nums; text-align: right; }
+  .gf-section-label { font-size: 11.5px; font-weight: 700; color: var(--ink-2); margin: 14px 0 2px; }
+  .flat-fees { display: flex; gap: 8px; margin-top: 12px; }
+  .flat-chip { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; font-size: 11.5px; flex: 1; }
+  .flat-chip b { display: block; font-size: 13px; margin-top: 2px; }
+  .exceptions { margin-top: 12px; border-top: 1px solid var(--gridline); padding-top: 10px; }
+  .exception-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; color: var(--ink-2); }
+  .exception-date { font-weight: 700; color: var(--ink); margin-right: 8px; }
+
+  /* simulation */
+  .sim-card { background: var(--navy); border-radius: 18px; padding: 26px 28px; color: #fff; margin-top: 20px; }
+  .sim-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+  .sim-title { font-size: 16px; font-weight: 700; }
+  .sim-sub { font-size: 12.5px; color: #c7d1e0; margin-top: 4px; max-width: 520px; }
+  .sim-reset { background: rgba(255,255,255,0.12); border: none; color: #fff; font-size: 12px; padding: 7px 13px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  .sim-reset:hover { background: rgba(255,255,255,0.2); }
+  .sim-grid { display: grid; grid-template-columns: repeat(3, 1fr) 1.1fr; gap: 16px; }
+  .sim-session { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 16px; }
+  .sim-session-name { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  .sim-field { margin-bottom: 10px; }
+  .sim-field-label { font-size: 11px; color: #b9c3d4; margin-bottom: 5px; }
+  .sim-stepper { display: flex; align-items: center; gap: 6px; }
+  .step-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: rgba(255,255,255,0.14); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .step-btn:hover { background: rgba(255,255,255,0.26); }
+  .sim-input { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16); border-radius: 7px; color: #fff; font-size: 13px; padding: 5px 8px; text-align: center; font-variant-numeric: tabular-nums; }
+  .sim-rounds-input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16); border-radius: 7px; color: #fff; font-size: 13px; padding: 6px 8px; font-variant-numeric: tabular-nums; }
+  .sim-impact { font-size: 15px; font-weight: 700; margin-top: 10px; }
+  .imp-pos { color: #9dc4f7; } .imp-neg { color: #f3a6a5; }
+  .sim-total { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; }
+  .sim-total-label { font-size: 11.5px; color: #b9c3d4; margin-bottom: 6px; }
+  .sim-total-value { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; }
+  .sim-total-sub { font-size: 11.5px; color: #b9c3d4; margin-top: 4px; }
+  .divbars { margin-top: 14px; display: flex; flex-direction: column; gap: 7px; }
+  .divbar-row { display: flex; align-items: center; gap: 8px; }
+  .divbar-name { width: 30px; font-size: 11px; color: #b9c3d4; }
+  .divbar-axis { flex: 1; height: 14px; position: relative; background: rgba(255,255,255,0.08); border-radius: 4px; }
+  .divbar-zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: rgba(255,255,255,0.35); }
+  .divbar-fill { position: absolute; top: 1px; bottom: 1px; border-radius: 3px; }
+</style>
+</helmet>
+
+<div class="page">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 3v18" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/><path d="M6 4h11l-3 3.2L17 10.4H6" fill="#ffffff"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">스톤게이트CC</div>
+        <div class="brand-sub">대표 현황 대시보드</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="today-label">{{ today.label }}</div>
+      <div class="updated-label">{{ today.updated }}</div>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-tile">
+      <div class="stat-label">오늘 매출 합계</div>
+      <div class="stat-value">{{ stat.salesValue }}</div>
+      <div class="stat-delta {{ stat.salesDeltaClass }}">{{ stat.salesDeltaText }}</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">오늘 예약 가동률</div>
+      <div class="stat-value">{{ stat.occValue }}</div>
+      <div class="stat-delta {{ stat.occDeltaClass }}">{{ stat.occDeltaText }}</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">금일 자금 잔액</div>
+      <div class="stat-value">{{ stat.cashValue }}</div>
+      <div class="stat-delta {{ stat.cashDeltaClass }}">{{ stat.cashDeltaText }}</div>
+    </div>
+    <div class="stat-tile">
+      <div class="stat-label">오늘 날씨 · 부산 기장군</div>
+      <div class="stat-value">{{ stat.weatherValue }}</div>
+      <div class="stat-delta">{{ stat.weatherDeltaText }}</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="stack">
+
+      <!-- 예약 현황 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">예약 현황</div>
+          <div class="badge badge-good">무노스 · 09/08 업로드 반영</div>
+        </div>
+        <div class="card-sub">2026년 9월 · 예시 데이터 (실제 연동 전 목업)</div>
+        <div class="dow-row">
+          <div class="dow-cell" style="color:var(--dow-sun)">SUN</div>
+          <div class="dow-cell">MON</div>
+          <div class="dow-cell">TUE</div>
+          <div class="dow-cell">WED</div>
+          <div class="dow-cell">THU</div>
+          <div class="dow-cell">FRI</div>
+          <div class="dow-cell" style="color:var(--dow-sat)">SAT</div>
+        </div>
+        <div class="cal-grid">
+          <sc-for list="{{ reservation.days }}" as="d" hint-placeholder-count="35">
+            <div class="cal-cell {{ d.otherClass }} {{ d.todayClass }}" style="background:{{ d.bg }}">
+              <div class="cal-day {{ d.textClass }}">{{ d.dayLabel }}</div>
+              <div>
+                <div class="cal-frac {{ d.textClass }}">{{ d.fracLabel }}</div>
+                <div class="cal-pct {{ d.textClass }}">{{ d.pctLabel }}</div>
+              </div>
+              <div class="cal-tip">{{ d.tipLabel }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 일일 매출 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">일일 매출</div>
+        </div>
+        <div class="card-sub">오늘 · 무노스 일일영업집계 기준</div>
+        <div class="hero">{{ sales.totalLabel }}</div>
+        <div class="stat-delta {{ sales.deltaClass }}">{{ sales.deltaText }}</div>
+        <div class="legend-row">
+          <sc-for list="{{ sales.legend }}" as="l" hint-placeholder-count="6">
+            <div class="legend-item"><span class="legend-dot" style="background:{{ l.color }}"></span>{{ l.name }}</div>
+          </sc-for>
+        </div>
+        <sc-for list="{{ sales.categories }}" as="c" hint-placeholder-count="6">
+          <div class="bar-row">
+            <div class="bar-label">{{ c.name }}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:{{ c.widthPct }}; background:{{ c.color }}"></div></div>
+            <div class="bar-value">{{ c.valueLabel }}</div>
+          </div>
+        </sc-for>
+        <div class="spark-wrap">
+          <div class="spark-label">최근 7일 매출 추이</div>
+          <svg width="100%" height="46" viewBox="0 0 320 46" preserveAspectRatio="none">
+            <polyline points="{{ sales.sparkPoints }}" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="320" cy="{{ sales.sparkLastY }}" r="4" fill="var(--series-1)" stroke="var(--surface)" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="stack">
+
+      <!-- 자금 현황 -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">자금 현황</div></div>
+        <div class="card-sub">더존 자금일보 · {{ cash.dateLabel }}</div>
+        <div class="flow-row">
+          <div class="flow-item"><div class="flow-k">전일</div><div class="flow-v">{{ cash.yesterday }}</div></div>
+          <div class="flow-item"><div class="flow-k">입금</div><div class="flow-v">{{ cash.deposit }}</div></div>
+          <div class="flow-item"><div class="flow-k">출금</div><div class="flow-v">{{ cash.withdrawal }}</div></div>
+          <div class="flow-item"><div class="flow-k">금일</div><div class="flow-v">{{ cash.today }}</div></div>
+        </div>
+        <div class="gf-section-label">은행별 잔액</div>
+        <sc-for list="{{ cash.banks }}" as="b" hint-placeholder-count="5">
+          <div class="bank-row">
+            <div class="bank-name">{{ b.name }}</div>
+            <div class="bank-track"><div class="bank-fill" style="width:{{ b.widthPct }}"></div></div>
+            <div class="bank-amt">{{ b.amountLabel }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <!-- 날씨 -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">날씨 현황</div></div>
+        <div class="card-sub">기상청 단기예보 · 부산 기장군 · 3시간 주기 자동 갱신</div>
+        <div class="weather-main">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/><g stroke="var(--series-4)" stroke-width="1.6" stroke-linecap="round"><path d="M12 1v3"/><path d="M12 20v3"/><path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/><path d="M1 12h3"/><path d="M20 12h3"/><path d="M4.2 19.8l2.1-2.1"/><path d="M17.7 6.3l2.1-2.1"/></g></svg>
+          <div>
+            <div class="weather-temp">{{ weather.temp }}</div>
+            <div class="weather-desc">{{ weather.desc }} · 강수확률 {{ weather.pop }}</div>
+          </div>
+        </div>
+        <div class="forecast-row">
+          <sc-for list="{{ weather.forecast }}" as="f" hint-placeholder-count="3">
+            <div class="forecast-item">
+              <div class="forecast-day">{{ f.day }}</div>
+              <div class="forecast-t">{{ f.temp }}</div>
+              <div class="forecast-pop">☔ {{ f.pop }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- 그린피 단가 현황 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">그린피 단가 현황</div>
+          <span class="badge {{ greenfee.badgeClass }}">{{ greenfee.badgeText }}</span>
+        </div>
+        <div class="card-sub">회원 기준 · 1단계 관리 범위</div>
+        <div class="month-toggle">
+          <button class="toggle-btn {{ gfIsSep }}" onClick="{{ selectSep }}">9월 (이번달)</button>
+          <button class="toggle-btn {{ gfIsOct }}" onClick="{{ selectOct }}">10월 (익월 확인)</button>
+        </div>
+
+        <sc-if value="{{ greenfee.hasData }}" hint-placeholder-val="{{ true }}">
+          <div class="gf-section-label">1부 · 2부 (주중 월~금 / 주말 토 / 주말 일·공휴일)</div>
+          <table class="gf-table">
+            <tr><th>구분</th><th>주중</th><th>토</th><th>일·공휴일</th></tr>
+            <sc-for list="{{ greenfee.rows12 }}" as="r" hint-placeholder-count="4">
+              <tr><td>{{ r.label }}</td><td>{{ r.weekday }}</td><td>{{ r.sat }}</td><td>{{ r.sun }}</td></tr>
+            </sc-for>
+          </table>
+          <div class="gf-section-label">3부 (월~목 / 금·토 / 일·공휴일)</div>
+          <table class="gf-table">
+            <tr><th>구분</th><th>월~목</th><th>금·토</th><th>일·공휴일</th></tr>
+            <sc-for list="{{ greenfee.rows3 }}" as="r" hint-placeholder-count="2">
+              <tr><td>{{ r.label }}</td><td>{{ r.weekday }}</td><td>{{ r.sat }}</td><td>{{ r.sun }}</td></tr>
+            </sc-for>
+          </table>
+          <div class="flat-fees">
+            <div class="flat-chip">카트료 (팀당)<b>{{ greenfee.cart }}</b></div>
+            <div class="flat-chip">캐디피 (전 부)<b>{{ greenfee.caddie }}</b></div>
+          </div>
+          <div class="exceptions">
+            <div class="gf-section-label" style="margin-top:0">날짜별 예외</div>
+            <sc-for list="{{ greenfee.exceptions }}" as="e" hint-placeholder-count="2">
+              <div class="exception-row"><span><span class="exception-date">{{ e.date }}</span>{{ e.note }}</span></div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ greenfee.showEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center; padding:26px 8px; color:var(--ink-muted); font-size:12.5px;">
+            10월 요금표가 아직 제출되지 않았습니다.<br/>현장 업로드 페이지에서 제출 시 이 화면에 표시됩니다.
+          </div>
+        </sc-if>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 그린피 조정 시뮬레이션 -->
+  <div class="sim-card">
+    <div class="sim-head">
+      <div>
+        <div class="sim-title">그린피 조정 시뮬레이션</div>
+        <div class="sim-sub">부별 그린피를 조정하면 최근 30일 평균 라운드 수를 기준으로 예상 매출 영향을 즉시 계산합니다. 예상 라운드 수는 직접 수정할 수 있습니다.</div>
+      </div>
+      <button class="sim-reset" onClick="{{ resetAll }}">전체 초기화</button>
+    </div>
+    <div class="sim-grid">
+      <sc-for list="{{ sim.sessions }}" as="s" hint-placeholder-count="3">
+        <div class="sim-session">
+          <div class="sim-session-name">{{ s.name }}</div>
+          <div class="sim-field">
+            <div class="sim-field-label">그린피 조정 (원)</div>
+            <div class="sim-stepper">
+              <button class="step-btn" onClick="{{ s.dec }}">−</button>
+              <div class="sim-input">{{ s.adjLabel }}</div>
+              <button class="step-btn" onClick="{{ s.inc }}">+</button>
+            </div>
+          </div>
+          <div class="sim-field">
+            <div class="sim-field-label">예상 라운드 수 (최근 30일 평균, 수정 가능)</div>
+            <input class="sim-rounds-input" type="text" value="{{ s.roundsLabel }}" onChange="{{ s.onRoundsChange }}" />
+          </div>
+          <div class="sim-impact {{ s.impactClass }}">{{ s.impactLabel }}</div>
+        </div>
+      </sc-for>
+      <div class="sim-total">
+        <div class="sim-total-label">전체 예상 매출 영향</div>
+        <div class="sim-total-value {{ sim.totalClass }}">{{ sim.totalLabel }}</div>
+        <div class="sim-total-sub">{{ sim.totalSub }}</div>
+        <div class="divbars">
+          <sc-for list="{{ sim.sessions }}" as="s" hint-placeholder-count="3">
+            <div class="divbar-row">
+              <div class="divbar-name">{{ s.shortName }}</div>
+              <div class="divbar-axis">
+                <div class="divbar-zero"></div>
+                <div class="divbar-fill" style="left:{{ s.barLeft }}; width:{{ s.barWidth }}; background:{{ s.barColor }}"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      gfMonth: 'sep',
+      adj: { p1: 0, p2: 0, p3: 0 },
+      rounds: { p1: 620, p2: 210, p3: 340 }
+    };
+  }
+
+  fmtWon(n) {
+    const neg = n < 0;
+    const v = Math.round(Math.abs(n)).toLocaleString('ko-KR');
+    return (neg ? '-' : '') + '₩' + v;
+  }
+  fmtSigned(n) {
+    const neg = n < 0;
+    const v = Math.round(Math.abs(n)).toLocaleString('ko-KR');
+    return (neg ? '-' : '+') + '₩' + v;
+  }
+
+  buildReservationDays() {
+    const data = [
+      [30,'other'],[31,'other'],
+      [1,126,61],[2,126,58],[3,126,55],[4,126,82],[5,126,101],
+      [6,126,79],[7,126,52],[8,126,60],[9,126,57],[10,84,47],[11,126,84],[12,126,110],
+      [13,126,92],[14,126,50],[15,126,59],[16,126,61],[17,126,63],[18,126,88],[19,126,106],
+      [20,126,85],[21,126,48],[22,126,54],[23,126,56],[24,88,51],[25,'closed'],[26,126,98],
+      [27,126,74],[28,126,41],[29,126,12],[30,126,9],
+      [1,'other'],[2,'other'],[3,'other']
+    ];
+    const out = [];
+    for (const row of data) {
+      if (row[1] === 'other') {
+        out.push({ dayLabel: String(row[0]), otherClass: 'other-month', todayClass: '', bg: 'var(--surface-2)', textClass: 'ink-text', fracLabel: '', pctLabel: '', tipLabel: '' });
+        continue;
+      }
+      if (row[1] === 'closed') {
+        out.push({ dayLabel: String(row[0]), otherClass: '', todayClass: '', bg: 'var(--surface-2)', textClass: 'ink-text', fracLabel: '', pctLabel: '휴장', tipLabel: '9월 ' + row[0] + '일 · 추석 당일 휴장' });
+        continue;
+      }
+      const [day, cap, booked] = row;
+      const pct = Math.round((booked / cap) * 100);
+      let bg, dark;
+      if (pct < 15) { bg = 'var(--seq-0)'; dark = false; }
+      else if (pct < 30) { bg = 'var(--seq-1)'; dark = false; }
+      else if (pct < 45) { bg = 'var(--seq-2)'; dark = false; }
+      else if (pct < 60) { bg = 'var(--seq-3)'; dark = false; }
+      else if (pct < 75) { bg = 'var(--seq-4)'; dark = true; }
+      else if (pct < 90) { bg = 'var(--seq-5)'; dark = true; }
+      else { bg = 'var(--seq-6)'; dark = true; }
+      const isToday = day === 8;
+      out.push({
+        dayLabel: String(day),
+        otherClass: '',
+        todayClass: isToday ? 'is-today' : '',
+        bg,
+        textClass: dark ? 'white-text' : 'ink-text',
+        fracLabel: booked + '/' + cap,
+        pctLabel: pct + '%',
+        tipLabel: '9월 ' + day + '일 · 예약 ' + booked + '팀 / 전체 ' + cap + '팀 (' + pct + '%)'
+      });
+    }
+    return out;
+  }
+
+  renderVals() {
+    const days = this.buildReservationDays();
+
+    const salesCats = [
+      { name: '그린피', value: 9850000, color: 'var(--series-1)' },
+      { name: '카트료', value: 3200000, color: 'var(--series-2)' },
+      { name: '대여료', value: 60000, color: 'var(--series-3)' },
+      { name: '식음매출', value: 3940000, color: 'var(--series-4)' },
+      { name: '상품매출', value: 980000, color: 'var(--series-5)' },
+      { name: '기타매출', value: 400000, color: 'var(--series-6)' }
+    ];
+    const maxCat = Math.max(...salesCats.map(c => c.value));
+    const total = salesCats.reduce((a, c) => a + c.value, 0);
+
+    const banks = [
+      { name: '부산카드', amount: 186320000 },
+      { name: '부산보통', amount: 142870000 },
+      { name: '우리보통', amount: 98410000 },
+      { name: '국민보통', amount: 76500000 },
+      { name: '부산기장', amount: 50995954 }
+    ];
+    const maxBank = Math.max(...banks.map(b => b.amount));
+
+    const spark = [42, 39, 45, 44, 51, 47, 53].map((v, i) => {
+      const x = (i / 6) * 320;
+      const y = 40 - (v - 35) * 2.1;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+
+    const sessionsBase = [
+      { key: 'p1', name: '1부', shortName: '1부', rate: 145000 },
+      { key: 'p2', name: '2부', shortName: '2부', rate: 188000 },
+      { key: 'p3', name: '3부', shortName: '3부', rate: 128000 }
+    ];
+    const impacts = sessionsBase.map(s => {
+      const adj = this.state.adj[s.key];
+      const rounds = this.state.rounds[s.key];
+      return adj * rounds;
+    });
+    const maxAbs = Math.max(1, ...impacts.map(v => Math.abs(v)));
+    const totalImpact = impacts.reduce((a, b) => a + b, 0);
+
+    const sessions = sessionsBase.map((s, i) => {
+      const impact = impacts[i];
+      const barPct = (Math.abs(impact) / maxAbs) * 50;
+      return {
+        name: s.name,
+        shortName: s.shortName,
+        adjLabel: this.fmtSigned(this.state.adj[s.key]).replace('₩', ''),
+        roundsLabel: String(this.state.rounds[s.key]),
+        impactLabel: '예상 매출 영향 ' + this.fmtSigned(impact),
+        impactClass: impact >= 0 ? 'imp-pos' : 'imp-neg',
+        barColor: impact >= 0 ? 'var(--div-pos)' : 'var(--div-neg)',
+        barLeft: impact >= 0 ? '50%' : (50 - barPct) + '%',
+        barWidth: barPct + '%',
+        inc: () => this.setState({ adj: { ...this.state.adj, [s.key]: this.state.adj[s.key] + 5000 } }),
+        dec: () => this.setState({ adj: { ...this.state.adj, [s.key]: this.state.adj[s.key] - 5000 } }),
+        onRoundsChange: (e) => {
+          const n = parseInt(String(e.target.value).replace(/[^0-9]/g, ''), 10);
+          this.setState({ rounds: { ...this.state.rounds, [s.key]: isNaN(n) ? 0 : n } });
+        }
+      };
+    });
+
+    const gfRows12 = [
+      { label: '1부 · 첫팀~06:22', weekday: '130,000', sat: '160,000', sun: '160,000' },
+      { label: '1부 · 06:30~06:52', weekday: '140,000', sat: '170,000', sun: '170,000' },
+      { label: '1부 · 07:00~막팀', weekday: '150,000', sat: '180,000', sun: '180,000' },
+      { label: '2부 · 전타임', weekday: '180,000', sat: '200,000', sun: '190,000' }
+    ];
+    const gfRows3 = [
+      { label: '3부 · 16:15~17:39', weekday: '130,000', sat: '150,000', sun: '140,000' },
+      { label: '3부 · 17:46~18:35', weekday: '120,000', sat: '140,000', sun: '130,000' }
+    ];
+
+    return {
+      today: { label: '2026년 9월 8일 (화)', updated: '오늘 06:12 자동 갱신' },
+      stat: {
+        salesValue: '₩' + total.toLocaleString('ko-KR'),
+        salesDeltaText: '어제 대비 +8.2%', salesDeltaClass: 'delta-up',
+        occValue: '48%', occDeltaText: '전주 화요일 대비 -3%p', occDeltaClass: 'delta-down',
+        cashValue: '₩555,095,954', cashDeltaText: '전일 대비 -₩324,911,288', cashDeltaClass: 'delta-down',
+        weatherValue: '27°C', weatherDeltaText: '맑음 · 강수확률 10%'
+      },
+      reservation: { days },
+      sales: {
+        totalLabel: '₩' + total.toLocaleString('ko-KR'),
+        deltaText: '어제 대비 +8.2%', deltaClass: 'delta-up',
+        legend: salesCats.map(c => ({ name: c.name, color: c.color })),
+        categories: salesCats.map(c => ({
+          name: c.name, color: c.color,
+          widthPct: Math.round((c.value / maxCat) * 100) + '%',
+          valueLabel: (c.value / 10000).toLocaleString('ko-KR') + '만'
+        })),
+        sparkPoints: spark,
+        sparkLastY: (40 - (53 - 35) * 2.1).toFixed(1)
+      },
+      cash: {
+        dateLabel: '9월 8일(화) 기준',
+        yesterday: '880,007,242', deposit: '49,788,153', withdrawal: '374,699,441', today: '555,095,954',
+        banks: banks.map(b => ({
+          name: b.name,
+          widthPct: Math.round((b.amount / maxBank) * 100) + '%',
+          amountLabel: (b.amount / 10000).toLocaleString('ko-KR') + '만'
+        }))
+      },
+      weather: {
+        temp: '27°C', desc: '맑음', pop: '10%',
+        forecast: [
+          { day: '내일', temp: '26° / 19°', pop: '20%' },
+          { day: '모레', temp: '24° / 18°', pop: '60%' },
+          { day: '글피', temp: '25° / 19°', pop: '30%' }
+        ]
+      },
+      gfIsSep: this.state.gfMonth === 'sep' ? 'active' : '',
+      gfIsOct: this.state.gfMonth === 'oct' ? 'active' : '',
+      selectSep: () => this.setState({ gfMonth: 'sep' }),
+      selectOct: () => this.setState({ gfMonth: 'oct' }),
+      greenfee: this.state.gfMonth === 'sep' ? {
+        badgeClass: 'badge-good', badgeText: '승인됨',
+        hasData: true, showEmpty: false,
+        rows12: gfRows12, rows3: gfRows3,
+        cart: '100,000원', caddie: '150,000원',
+        exceptions: [
+          { date: '9/24(목)', note: '주중요금 적용' },
+          { date: '9/25(금)', note: '추석당일 휴장' }
+        ]
+      } : {
+        badgeClass: 'badge-warning', badgeText: '제출 대기',
+        hasData: false, showEmpty: true,
+        rows12: [], rows3: [], cart: '', caddie: '', exceptions: []
+      },
+      sim: {
+        sessions,
+        totalLabel: this.fmtSigned(totalImpact),
+        totalClass: totalImpact >= 0 ? 'imp-pos' : 'imp-neg',
+        totalSub: '최근 30일 평균 라운드 수 기준 추정치'
+      },
+      resetAll: () => this.setState({ adj: { p1: 0, p2: 0, p3: 0 }, rounds: { p1: 620, p2: 210, p3: 340 } })
+    };
+  }
+}
+</script>
+</body>
+</html>

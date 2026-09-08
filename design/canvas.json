@@ -1,0 +1,12 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 2700, "title": "대표 대시보드 (데스크톱)" },
+    { "file": "MainMobile.dc.html", "x": 1560, "y": 0, "w": 390, "h": 3300, "title": "대표 대시보드 (모바일)" },
+    { "file": "Upload.dc.html", "x": 0, "y": 2850, "w": 1080, "h": 2500, "title": "현장 업로드 (PIN 보호)" }
+  ],
+  "annotations": [
+    { "id": "note-main", "x": 0, "y": -90, "w": 480, "text": "대표님 조회 대시보드 - 로그인 없이 링크로 오픈. 그린피 시뮬레이션은 실제 계산 동작." },
+    { "id": "note-upload", "x": 0, "y": 2760, "w": 480, "text": "현장 직원용 - PIN: 1234 로 잠금 해제 후 업로드/입력 체험 가능" }
+  ],
+  "launch": { "view": "canvas" }
+}

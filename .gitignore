@@ -1,0 +1,10 @@
+# 실제 회사 재무/거래 데이터 (은행계좌번호, 거래처, 지급액 등 민감정보) - 절대 커밋하지 않음
+/EXCEL/
+
+# 디자인 캔버스 생성 산출물 (2MB+ 빌드 결과물, seed-canvas.mjs로 재생성 가능)
+design/golf-dashboard-design.html
+
+# 기타
+node_modules/
+.env
+.env.local
