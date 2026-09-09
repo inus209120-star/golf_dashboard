@@ -4,6 +4,11 @@
 # 디자인 캔버스 생성 산출물 (2MB+ 빌드 결과물, seed-canvas.mjs로 재생성 가능)
 design/golf-dashboard-design.html
 
+# Firebase 서비스 계정 키 (진짜 비밀키 - 절대 커밋하지 않음)
+*firebase-adminsdk*.json
+serviceAccountKey.json
+service-account*.json
+
 # 기타
 node_modules/
 .env
