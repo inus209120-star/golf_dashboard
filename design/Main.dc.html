@@ -68,33 +68,76 @@
   body { margin: 0; background: var(--page-bg); color: var(--text-primary); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
   a { color: var(--green); }
 
-  .page { max-width: 1120px; margin: 0 auto; padding: 20px 32px 64px; }
+  .app-shell { display: flex; align-items: flex-start; min-height: 100%; }
+
+  /* sidebar */
+  .sidebar { width: 216px; flex-shrink: 0; min-height: 100%; background: var(--card-bg); border-right: 1px solid var(--divider); padding: 22px 14px; display: flex; flex-direction: column; gap: 3px; position: sticky; top: 0; }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 4px 10px 20px; }
+  .sidebar-brand-mark { width: 32px; height: 32px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sidebar-brand-name { font-size: 13.5px; font-weight: 700; line-height: 1.25; }
+  .sidebar-brand-sub { font-size: 10.5px; color: var(--text-muted); }
+  .side-item { display: flex; align-items: center; gap: 11px; padding: 10px 11px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+  .side-item:hover { background: var(--pill-bg); }
+  .side-item.active { background: color-mix(in oklab, var(--green) 13%, var(--card-bg)); color: var(--green); }
+  .side-item svg { flex-shrink: 0; }
+
+  .main-area { flex: 1; min-width: 0; padding: 20px 32px 64px; max-width: 940px; }
 
   .utility-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-  .search-pill { display: flex; align-items: center; gap: 8px; background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 999px; padding: 10px 16px; width: 300px; color: var(--text-muted); font-size: 13px; }
+  .search-pill { display: flex; align-items: center; gap: 8px; background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 999px; padding: 10px 16px; width: 280px; color: var(--text-muted); font-size: 13px; }
+  .util-right { display: flex; align-items: center; gap: 16px; }
+  .today-label { font-size: 12px; color: var(--text-secondary); text-align: right; line-height: 1.35; }
   .util-icons { display: flex; align-items: center; gap: 10px; }
   .icon-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--card-bg); box-shadow: var(--card-shadow); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
   .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
 
-  .title-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; }
+  .title-row { margin-bottom: 20px; }
   .page-title { font-size: 19px; font-weight: 700; }
   .page-title-sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
-  .today-label { font-size: 12.5px; color: var(--text-secondary); text-align: right; }
 
-  /* home nav tiles */
-  .nav-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
-  .nav-tile { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 20px; padding: 22px 22px; cursor: pointer; transition: box-shadow .15s ease, transform .1s ease; display: flex; flex-direction: column; gap: 14px; }
-  .nav-tile:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-1px); }
-  .nav-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
-  .nav-title-row { display: flex; align-items: center; justify-content: space-between; }
-  .nav-title { font-size: 15px; font-weight: 700; }
-  .nav-chevron { color: var(--text-muted); }
-  .nav-value { font-size: 13px; color: var(--text-secondary); }
+  /* dashboard overview */
+  .dash-stat-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 16px; }
+  .stat-tile { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 16px; padding: 16px 18px; }
+  .stat-label { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; }
+  .stat-value { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
+  .stat-delta { font-size: 11.5px; margin-top: 5px; font-weight: 600; }
+
+  .dash-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+  .mini-card { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 18px; padding: 20px 22px; cursor: pointer; transition: box-shadow .15s ease, transform .1s ease; }
+  .mini-card:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-1px); }
+  .mini-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .mini-card-title { font-size: 13.5px; font-weight: 700; }
+  .mini-chevron { color: var(--text-muted); font-size: 16px; }
+
+  .mini-donut-row { display: flex; align-items: center; gap: 18px; }
+  .mini-donut-wrap { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+  .mini-donut { width: 84px; height: 84px; border-radius: 50%; }
+  .mini-donut-hole { position: absolute; inset: 13px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .mini-donut-total { font-size: 11.5px; font-weight: 800; }
+  .mini-legend { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .mini-legend-item { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-secondary); }
+  .mini-legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+  .mini-legend-name { flex: 1; }
+  .mini-legend-value { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+  .mini-bar-row { display: flex; align-items: flex-end; gap: 7px; height: 74px; }
+  .mini-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; }
+  .mini-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--series-3); }
+  .mini-bar-label { font-size: 9px; color: var(--text-muted); }
+
+  .mini-flow-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+  .mini-line { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; color: var(--text-secondary); }
+  .mini-line b { color: var(--text-primary); font-weight: 700; }
+
+  .mini-weather-row { display: flex; align-items: center; gap: 14px; }
+  .mini-weather-temp { font-size: 24px; font-weight: 800; }
+  .mini-forecast-row { display: flex; gap: 8px; margin-top: 14px; }
+  .mini-forecast-item { flex: 1; background: var(--pill-bg); border-radius: 10px; padding: 8px; text-align: center; }
+  .mini-forecast-day { font-size: 9.5px; color: var(--text-muted); }
+  .mini-forecast-t { font-size: 11px; font-weight: 700; margin-top: 3px; }
 
   /* subpage chrome */
-  .subheader { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
-  .back-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--card-bg); box-shadow: var(--card-shadow); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-primary); flex-shrink: 0; }
-  .back-btn:hover { box-shadow: var(--card-shadow-hover); }
+  .subheader { margin-bottom: 22px; }
   .subheader-title { font-size: 18px; font-weight: 700; }
   .subheader-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
@@ -232,77 +275,141 @@
 </style>
 </helmet>
 
-<div class="page">
+<div class="app-shell">
+
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 3v18" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/><path d="M6 4h11l-3 3.2L17 10.4H6" fill="#ffffff"/></svg></div>
+      <div><div class="sidebar-brand-name">스톤게이트CC</div><div class="sidebar-brand-sub">대표 대시보드</div></div>
+    </div>
+
+    <div class="side-item {{ sideActive.dashboard }}" onClick="{{ goDashboard }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+      Dashboard
+    </div>
+    <div class="side-item {{ sideActive.sales }}" onClick="{{ goSales }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 20V10M12 20V4M19 20v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      매출현황
+    </div>
+    <div class="side-item {{ sideActive.reservation }}" onClick="{{ goReservation }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4 9.5h16M8 3v3.4M16 3v3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      예약현황
+    </div>
+    <div class="side-item {{ sideActive.cash }}" onClick="{{ goCash }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.8"/><circle cx="16.5" cy="14.5" r="1.3" fill="currentColor"/></svg>
+      자금현황
+    </div>
+    <div class="side-item {{ sideActive.greenfee }}" onClick="{{ goGreenfee }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 21V4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 5h12l-3 3.4L18 11.8H6" fill="currentColor"/></svg>
+      그린피 현황
+    </div>
+    <div class="side-item {{ sideActive.weather }}" onClick="{{ goWeather }}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v2.5"/><path d="M12 19.5V22"/><path d="M4.9 4.9l1.8 1.8"/><path d="M17.3 17.3l1.8 1.8"/><path d="M2 12h2.5"/><path d="M19.5 12H22"/><path d="M4.9 19.1l1.8-1.8"/><path d="M17.3 6.7l1.8-1.8"/></g></svg>
+      날씨 현황
+    </div>
+  </div>
+
+  <div class="main-area">
 
   <div class="utility-bar">
     <div class="search-pill">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       예약자 · 거래처 검색
     </div>
-    <div class="util-icons">
-      <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
-      <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 0 1 12 0v5l1.5 3h-15L6 14V9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7"/></svg></div>
-      <div class="avatar">대표</div>
+    <div class="util-right">
+      <div class="today-label">{{ today.label }}<br/>{{ today.updated }}</div>
+      <div class="util-icons">
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 0 1 12 0v5l1.5 3h-15L6 14V9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7"/></svg></div>
+        <div class="avatar">대표</div>
+      </div>
     </div>
   </div>
 
-  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
     <div class="title-row">
-      <div>
-        <div class="page-title">스톤게이트CC · 대표 대시보드</div>
-        <div class="page-title-sub">확인하실 항목을 눌러주세요</div>
-      </div>
-      <div class="today-label">{{ today.label }}<br/>{{ today.updated }}</div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-title-sub">오늘 현황을 한눈에 확인하세요 · 카드를 누르면 상세로 이동합니다</div>
     </div>
 
-    <div class="nav-grid">
-      <div class="nav-tile" onClick="{{ goSales }}">
-        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-1) 15%, var(--card-bg))">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 20V10M12 20V4M19 20v-7" stroke="var(--series-1)" stroke-width="2.2" stroke-linecap="round"/></svg>
+    <div class="dash-stat-row">
+      <div class="stat-tile"><div class="stat-label">오늘 매출</div><div class="stat-value">{{ overview.salesValue }}</div><div class="stat-delta delta-up">{{ overview.salesDelta }}</div></div>
+      <div class="stat-tile"><div class="stat-label">예약 가동률</div><div class="stat-value">{{ overview.occValue }}</div><div class="stat-delta delta-down">{{ overview.occDelta }}</div></div>
+      <div class="stat-tile"><div class="stat-label">자금 잔액</div><div class="stat-value">{{ overview.cashValue }}</div><div class="stat-delta delta-down">{{ overview.cashDelta }}</div></div>
+      <div class="stat-tile"><div class="stat-label">날씨 · 기장군</div><div class="stat-value">{{ overview.weatherValue }}</div><div class="stat-delta">{{ overview.weatherDesc }}</div></div>
+    </div>
+
+    <div class="dash-grid">
+
+      <div class="mini-card" onClick="{{ goSales }}">
+        <div class="mini-card-head"><div class="mini-card-title">매출현황</div><div class="mini-chevron">›</div></div>
+        <div class="mini-donut-row">
+          <div class="mini-donut-wrap">
+            <div class="mini-donut" style="background:{{ overview.salesDonut }}"></div>
+            <div class="mini-donut-hole"><div class="mini-donut-total">{{ overview.salesValue }}</div></div>
+          </div>
+          <div class="mini-legend">
+            <sc-for list="{{ overview.salesTop }}" as="c" hint-placeholder-count="3">
+              <div class="mini-legend-item"><span class="mini-legend-dot" style="background:{{ c.color }}"></span><span class="mini-legend-name">{{ c.name }}</span><span class="mini-legend-value">{{ c.shareLabel }}</span></div>
+            </sc-for>
+          </div>
         </div>
-        <div class="nav-title-row"><div class="nav-title">매출현황</div><div class="nav-chevron">›</div></div>
-        <div class="nav-value">{{ nav.salesValue }}</div>
       </div>
 
-      <div class="nav-tile" onClick="{{ goReservation }}">
-        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-3) 15%, var(--card-bg))">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2.5" stroke="var(--series-3)" stroke-width="2"/><path d="M4 9.5h16M8 3v3.4M16 3v3.4" stroke="var(--series-3)" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="mini-card" onClick="{{ goReservation }}">
+        <div class="mini-card-head"><div class="mini-card-title">예약현황</div><div class="mini-chevron">›</div></div>
+        <div class="mini-bar-row">
+          <sc-for list="{{ overview.reservationMini }}" as="d" hint-placeholder-count="7">
+            <div class="mini-bar-col">
+              <div class="mini-bar" style="height:{{ d.barHeight }}; background:{{ d.color }}"></div>
+              <div class="mini-bar-label">{{ d.label }}</div>
+            </div>
+          </sc-for>
         </div>
-        <div class="nav-title-row"><div class="nav-title">예약현황</div><div class="nav-chevron">›</div></div>
-        <div class="nav-value">{{ nav.reservationValue }}</div>
       </div>
 
-      <div class="nav-tile" onClick="{{ goCash }}">
-        <div class="nav-icon" style="background:color-mix(in oklab, var(--navy) 12%, var(--card-bg))">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2.5" stroke="var(--navy)" stroke-width="2"/><path d="M3 10h18" stroke="var(--navy)" stroke-width="2"/><circle cx="16.5" cy="14.5" r="1.4" fill="var(--navy)"/></svg>
+      <div class="mini-card" onClick="{{ goCash }}">
+        <div class="mini-card-head"><div class="mini-card-title">자금현황</div><div class="mini-chevron">›</div></div>
+        <div class="mini-flow-row">
+          <div class="mini-line"><span>전일</span><b>{{ overview.cashYesterday }}</b></div>
+          <div class="mini-line"><span>금일</span><b>{{ overview.cashValue }}</b></div>
         </div>
-        <div class="nav-title-row"><div class="nav-title">자금현황</div><div class="nav-chevron">›</div></div>
-        <div class="nav-value">{{ nav.cashValue }}</div>
+        <sc-for list="{{ overview.cashTopBanks }}" as="b" hint-placeholder-count="2">
+          <div class="bank-row">
+            <div class="bank-name">{{ b.name }}</div>
+            <div class="bank-track"><div class="bank-fill" style="width:{{ b.widthPct }}"></div></div>
+            <div class="bank-amt">{{ b.amountLabel }}</div>
+          </div>
+        </sc-for>
       </div>
 
-      <div class="nav-tile" onClick="{{ goGreenfee }}">
-        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-2) 15%, var(--card-bg))">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 21V4" stroke="var(--series-2)" stroke-width="2.2" stroke-linecap="round"/><path d="M6 5h12l-3 3.4L18 11.8H6" fill="var(--series-2)"/></svg>
-        </div>
-        <div class="nav-title-row"><div class="nav-title">그린피 현황</div><div class="nav-chevron">›</div></div>
-        <div class="nav-value">{{ nav.greenfeeValue }}</div>
+      <div class="mini-card" onClick="{{ goGreenfee }}">
+        <div class="mini-card-head"><div class="mini-card-title">그린피 현황</div><span class="badge {{ overview.greenfeeBadgeClass }}">{{ overview.greenfeeBadgeText }}</span></div>
+        <div class="mini-line"><span>1부 · 07:00~막팀 (주중)</span><b>150,000원</b></div>
+        <div class="mini-line"><span>카트료 (팀당)</span><b>100,000원</b></div>
+        <div class="mini-line"><span>캐디피 (전 부)</span><b>150,000원</b></div>
       </div>
 
-      <div class="nav-tile" onClick="{{ goWeather }}">
-        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-4) 18%, var(--card-bg))">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/><g stroke="var(--series-4)" stroke-width="1.8" stroke-linecap="round"><path d="M12 1v3"/><path d="M12 20v3"/><path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/><path d="M1 12h3"/><path d="M20 12h3"/><path d="M4.2 19.8l2.1-2.1"/><path d="M17.7 6.3l2.1-2.1"/></g></svg>
+      <div class="mini-card" onClick="{{ goWeather }}" style="grid-column: span 2;">
+        <div class="mini-card-head"><div class="mini-card-title">날씨 현황</div><div class="mini-chevron">›</div></div>
+        <div class="mini-weather-row">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/><g stroke="var(--series-4)" stroke-width="1.6" stroke-linecap="round"><path d="M12 1v3"/><path d="M12 20v3"/><path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/><path d="M1 12h3"/><path d="M20 12h3"/><path d="M4.2 19.8l2.1-2.1"/><path d="M17.7 6.3l2.1-2.1"/></g></svg>
+          <div><div class="mini-weather-temp">{{ overview.weatherValue }}</div><div class="weather-desc">{{ overview.weatherDesc }}</div></div>
         </div>
-        <div class="nav-title-row"><div class="nav-title">날씨 현황</div><div class="nav-chevron">›</div></div>
-        <div class="nav-value">{{ nav.weatherValue }}</div>
+        <div class="mini-forecast-row">
+          <sc-for list="{{ overview.weatherMini }}" as="f" hint-placeholder-count="4">
+            <div class="mini-forecast-item"><div class="mini-forecast-day">{{ f.day }}</div><div class="mini-forecast-t">{{ f.temp }}</div></div>
+          </sc-for>
+        </div>
       </div>
+
     </div>
   </sc-if>
 
   <!-- 매출현황 -->
   <sc-if value="{{ isSales }}" hint-placeholder-val="{{ false }}">
     <div class="subheader">
-      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div><div class="subheader-title">매출현황</div><div class="subheader-sub">무노스 일일영업집계 · 매출집계 기준</div></div>
+      <div class="subheader-title">매출현황</div><div class="subheader-sub">무노스 일일영업집계 · 매출집계 기준</div>
     </div>
 
     <div class="card">
@@ -340,8 +447,7 @@
   <!-- 예약현황 -->
   <sc-if value="{{ isReservation }}" hint-placeholder-val="{{ false }}">
     <div class="subheader">
-      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div><div class="subheader-title">예약현황</div><div class="subheader-sub">2026년 9월 · 예시 데이터 · 날짜를 눌러 상세 확인</div></div>
+      <div class="subheader-title">예약현황</div><div class="subheader-sub">2026년 9월 · 예시 데이터 · 날짜를 눌러 상세 확인</div>
     </div>
 
     <div class="card">
@@ -392,8 +498,7 @@
   <!-- 자금현황 -->
   <sc-if value="{{ isCash }}" hint-placeholder-val="{{ false }}">
     <div class="subheader">
-      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div><div class="subheader-title">자금현황</div><div class="subheader-sub">더존 자금일보 · {{ cash.dateLabel }}</div></div>
+      <div class="subheader-title">자금현황</div><div class="subheader-sub">더존 자금일보 · {{ cash.dateLabel }}</div>
     </div>
 
     <div class="card">
@@ -427,8 +532,7 @@
   <!-- 그린피 현황 -->
   <sc-if value="{{ isGreenfee }}" hint-placeholder-val="{{ false }}">
     <div class="subheader">
-      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div><div class="subheader-title">그린피 현황</div><div class="subheader-sub">회원 기준 · 1단계 관리 범위</div></div>
+      <div class="subheader-title">그린피 현황</div><div class="subheader-sub">회원 기준 · 1단계 관리 범위</div>
     </div>
 
     <div class="card">
@@ -519,8 +623,7 @@
   <!-- 날씨 현황 -->
   <sc-if value="{{ isWeather }}" hint-placeholder-val="{{ false }}">
     <div class="subheader">
-      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <div><div class="subheader-title">날씨 현황</div><div class="subheader-sub">기상청 단기예보 · 부산 기장군 · 3시간 주기 자동 갱신</div></div>
+      <div class="subheader-title">날씨 현황</div><div class="subheader-sub">기상청 단기예보 · 부산 기장군 · 3시간 주기 자동 갱신</div>
     </div>
     <div class="card">
       <div class="weather-main">
@@ -535,6 +638,8 @@
     </div>
   </sc-if>
 
+  </div>
+
 </div>
 
 </x-dc>
@@ -543,7 +648,7 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
-      view: 'home',
+      view: 'dashboard',
       salesPeriod: 'day',
       gfMonth: 'sep',
       adj: { p1: 0, p2: 0, p3: 0 },
@@ -745,10 +850,31 @@ class Component extends DCLogic {
       { label: '3부 · 17:46~18:35', weekday: '120,000', sat: '140,000', sun: '130,000' }
     ];
 
+    const weatherData = {
+      temp: '27°C', desc: '맑음', pop: '10%',
+      forecast: [
+        { day: '내일', temp: '26° / 19°', pop: '20%' },
+        { day: '모레', temp: '24° / 18°', pop: '60%' },
+        { day: '글피', temp: '25° / 19°', pop: '30%' },
+        { day: '9/12(토)', temp: '27° / 20°', pop: '10%' },
+        { day: '9/13(일)', temp: '26° / 20°', pop: '40%' }
+      ]
+    };
+
+    const daySales = this.buildSales('day');
+    const reservationDaysRaw = [
+      [2, 126, 58], [3, 126, 55], [4, 126, 82], [5, 126, 101], [6, 126, 79], [7, 126, 52], [8, 126, 60]
+    ];
+
     return {
-      isHome: view === 'home', isSales: view === 'sales', isReservation: view === 'reservation',
+      isDashboard: view === 'dashboard', isSales: view === 'sales', isReservation: view === 'reservation',
       isCash: view === 'cash', isGreenfee: view === 'greenfee', isWeather: view === 'weather',
-      goHome: () => this.setState({ view: 'home', selectedDay: null }),
+      sideActive: {
+        dashboard: view === 'dashboard' ? 'active' : '', sales: view === 'sales' ? 'active' : '',
+        reservation: view === 'reservation' ? 'active' : '', cash: view === 'cash' ? 'active' : '',
+        greenfee: view === 'greenfee' ? 'active' : '', weather: view === 'weather' ? 'active' : ''
+      },
+      goDashboard: () => this.setState({ view: 'dashboard', selectedDay: null }),
       goSales: () => this.setState({ view: 'sales', selectedDay: null }),
       goReservation: () => this.setState({ view: 'reservation', selectedDay: null }),
       goCash: () => this.setState({ view: 'cash', selectedDay: null }),
@@ -757,12 +883,26 @@ class Component extends DCLogic {
 
       today: { label: '2026년 9월 8일 (화)', updated: '06:12 자동 갱신' },
 
-      nav: {
-        salesValue: '오늘 ' + this.fmtCompact(this.buildSales('day').total),
-        reservationValue: '오늘 가동률 48%',
-        cashValue: '잔액 ' + this.fmtCompact(555095954),
-        greenfeeValue: this.state.gfMonth === 'sep' ? '9월 승인됨' : '10월 제출 대기',
-        weatherValue: '27°C · 맑음'
+      overview: {
+        salesValue: this.fmtCompact(daySales.total), salesDelta: '어제 대비 +8.2%',
+        occValue: '48%', occDelta: '전주 화요일 대비 -3%p',
+        cashValue: this.fmtCompact(555095954), cashDelta: '전일 대비 -3.2억',
+        cashYesterday: this.fmtCompact(880007242),
+        weatherValue: weatherData.temp, weatherDesc: weatherData.desc + ' · 강수확률 ' + weatherData.pop,
+        salesDonut: daySales.donutGradient,
+        salesTop: daySales.cats.slice().sort((a, b) => b.value - a.value).slice(0, 3)
+          .map(c => ({ name: c.name, color: c.color, shareLabel: this.fmtShare(c.value, daySales.total) })),
+        reservationMini: reservationDaysRaw.map(([day, cap, booked]) => {
+          const pct = Math.round((booked / cap) * 100);
+          return { label: String(day), barHeight: Math.max(6, pct) + '%', color: day === 8 ? 'var(--green)' : 'var(--series-3)' };
+        }),
+        cashTopBanks: [
+          { name: '부산카드', widthPct: '100%', amountLabel: this.fmtCompact(186320000) },
+          { name: '부산보통', widthPct: '77%', amountLabel: this.fmtCompact(142870000) }
+        ],
+        greenfeeBadgeClass: this.state.gfMonth === 'sep' ? 'badge-good' : 'badge-warning',
+        greenfeeBadgeText: this.state.gfMonth === 'sep' ? '9월 승인됨' : '10월 제출 대기',
+        weatherMini: weatherData.forecast.slice(0, 4).map(f => ({ day: f.day, temp: f.temp }))
       },
 
       sales: {
@@ -793,16 +933,7 @@ class Component extends DCLogic {
         })
       },
 
-      weather: {
-        temp: '27°C', desc: '맑음', pop: '10%',
-        forecast: [
-          { day: '내일', temp: '26° / 19°', pop: '20%' },
-          { day: '모레', temp: '24° / 18°', pop: '60%' },
-          { day: '글피', temp: '25° / 19°', pop: '30%' },
-          { day: '9/12(토)', temp: '27° / 20°', pop: '10%' },
-          { day: '9/13(일)', temp: '26° / 20°', pop: '40%' }
-        ]
-      },
+      weather: weatherData,
 
       gfIsSep: this.state.gfMonth === 'sep' ? 'active' : '',
       gfIsOct: this.state.gfMonth === 'oct' ? 'active' : '',
