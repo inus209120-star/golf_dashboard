@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  :root {
+    color-scheme: light;
+    --page-bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text-primary: #10141c;
+    --text-secondary: #667085;
+    --text-muted: #98a2b3;
+    --navy: #16233d;
+    --navy-2: #223759;
+    --green: #1f6e46;
+    --green-tint-bg: #e9f4ee;
+    --green-tint-text: #185c3b;
+    --blue-tint-bg: #eaf1fb;
+    --blue-tint-text: #1d4c85;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page-bg: #101114; --card-bg: #1b1c1f;
+      --text-primary: #f2f3f5; --text-secondary: #9a9ea8; --text-muted: #757982;
+      --navy: #24406b; --navy-2: #2f4f80; --green: #3fa06c;
+      --green-tint-bg: #16281f; --green-tint-text: #7fd9a6;
+      --blue-tint-bg: #16233a; --blue-tint-text: #8fb8ea;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page-bg: #101114; --card-bg: #1b1c1f;
+    --text-primary: #f2f3f5; --text-secondary: #9a9ea8; --text-muted: #757982;
+    --navy: #24406b; --navy-2: #2f4f80; --green: #3fa06c;
+    --green-tint-bg: #16281f; --green-tint-text: #7fd9a6;
+    --blue-tint-bg: #16233a; --blue-tint-text: #8fb8ea;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page-bg); color: var(--text-primary); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+  .screen { min-height: 100%; display: flex; flex-direction: column; padding: 28px 26px 30px; }
+
+  .brand-row { display: flex; align-items: center; gap: 9px; }
+  .brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .brand-name { font-size: 13.5px; font-weight: 700; color: var(--text-secondary); }
+
+  .meta-label { font-size: 12.5px; color: var(--text-muted); margin: 18px 0 12px; }
+
+  .stat-top-row { display: flex; gap: 10px; margin-bottom: 20px; }
+  .stat-chip { flex: 1; background: var(--card-bg); border-radius: 16px; padding: 14px 16px; box-shadow: 0 1px 2px rgba(16,24,40,0.04), 0 6px 18px rgba(16,24,40,0.05); }
+  .stat-chip-label { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 6px; }
+  .stat-chip-value { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
+  .stat-chip-value.accent { color: var(--green); }
+
+  .hero-photo { width: 100%; aspect-ratio: 4 / 3; border-radius: 22px; overflow: hidden; margin: 0 0 22px; box-shadow: 0 8px 28px rgba(16,24,40,0.14); }
+  .hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .spacer-mid { flex: 1 1 auto; min-height: 16px; }
+
+  .info-stack { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+  .info-box { border-radius: 14px; padding: 14px 16px; font-size: 12.5px; line-height: 1.55; display: flex; gap: 10px; align-items: flex-start; }
+  .info-box.green { background: var(--green-tint-bg); color: var(--green-tint-text); }
+  .info-box.blue { background: var(--blue-tint-bg); color: var(--blue-tint-text); }
+  .info-box svg { flex-shrink: 0; margin-top: 1px; }
+
+  .cta-btn { width: 100%; background: var(--navy); color: #ffffff; border: none; border-radius: 999px; padding: 17px; font-size: 15.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+  .cta-btn:hover { background: var(--navy-2); }
+  .cta-sub { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 12px; }
+</style>
+</helmet>
+
+<div class="screen">
+
+  <div class="brand-row">
+    <div class="brand-mark">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 3v18" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/><path d="M6 4h11l-3 3.2L17 10.4H6" fill="#ffffff"/></svg>
+    </div>
+    <div class="brand-name">스톤게이트CC · 대표 대시보드</div>
+  </div>
+
+  <div class="meta-label">2026년 9월 8일(화) · 06:12 기준 자동 갱신</div>
+
+  <div class="stat-top-row">
+    <div class="stat-chip">
+      <div class="stat-chip-label">오늘 매출</div>
+      <div class="stat-chip-value accent">1,843만원</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-label">예약 가동률</div>
+      <div class="stat-chip-value accent">48%</div>
+    </div>
+  </div>
+
+  <div class="hero-photo">
+    <img src="hero.jpg" alt="스톤게이트CC 코스 전경" />
+  </div>
+
+  <div class="spacer-mid"></div>
+
+  <div class="info-stack">
+    <div class="info-box green">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      무노스·더존에서 업로드된 파일을 기준으로 자동 집계돼요. 현장 재입력은 필요 없어요.
+    </div>
+    <div class="info-box blue">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.7"/></svg>
+      그린피 단가 변경은 대표님 승인 후에만 확정돼요.
+    </div>
+  </div>
+
+  <button class="cta-btn">
+    대시보드 보기
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="cta-sub">로그인 없이 바로 볼 수 있어요</div>
+
+</div>
+
+</x-dc>
+</body>
+</html>
