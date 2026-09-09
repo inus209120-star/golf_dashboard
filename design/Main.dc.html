@@ -32,7 +32,6 @@
     --div-pos: #2a78d6; --div-neg: #e34948;
     --status-good: #0ca30c; --status-warning: #fab219; --status-critical: #d03b3b;
     --delta-good: #10803d;
-    --scrim: rgba(16,20,28,0.48);
   }
   @media (prefers-color-scheme: dark) {
     :root:where(:not([data-theme="light"])) {
@@ -48,7 +47,6 @@
       --seq-0: #202020; --seq-1: #1c2733; --seq-2: #1f4d78; --seq-3: #1c5cab;
       --seq-4: #2a78d6; --seq-5: #3987e5; --seq-6: #5598e7;
       --div-pos: #3987e5; --div-neg: #e66767; --delta-good: #0ca30c;
-      --scrim: rgba(0,0,0,0.6);
     }
   }
   :root[data-theme="dark"] {
@@ -64,124 +62,145 @@
     --seq-0: #202020; --seq-1: #1c2733; --seq-2: #1f4d78; --seq-3: #1c5cab;
     --seq-4: #2a78d6; --seq-5: #3987e5; --seq-6: #5598e7;
     --div-pos: #3987e5; --div-neg: #e66767; --delta-good: #0ca30c;
-    --scrim: rgba(0,0,0,0.6);
   }
 
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--page-bg); color: var(--text-primary); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
-  a { color: var(--green); } a:hover { color: var(--navy-2); }
+  a { color: var(--green); }
 
-  .page { max-width: 1360px; margin: 0 auto; padding: 20px 32px 64px; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 20px 32px 64px; }
 
-  /* top utility bar */
   .utility-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-  .search-pill { display: flex; align-items: center; gap: 8px; background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 999px; padding: 10px 16px; width: 320px; color: var(--text-muted); font-size: 13px; }
+  .search-pill { display: flex; align-items: center; gap: 8px; background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 999px; padding: 10px 16px; width: 300px; color: var(--text-muted); font-size: 13px; }
   .util-icons { display: flex; align-items: center; gap: 10px; }
-  .icon-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--card-bg); box-shadow: var(--card-shadow); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); }
+  .icon-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--card-bg); box-shadow: var(--card-shadow); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
   .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
 
-  .title-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
+  .title-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px; }
   .page-title { font-size: 19px; font-weight: 700; }
   .page-title-sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
   .today-label { font-size: 12.5px; color: var(--text-secondary); text-align: right; }
 
-  .stat-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-bottom: 16px; }
-  .stat-tile { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 20px; padding: 18px 20px; transition: box-shadow .15s ease; }
-  .stat-tile.clickable { cursor: pointer; }
-  .stat-tile.clickable:hover { box-shadow: var(--card-shadow-hover); }
-  .stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .stat-label { font-size: 12px; color: var(--text-secondary); }
-  .stat-period { font-size: 10.5px; color: var(--text-muted); background: var(--pill-bg); padding: 3px 8px; border-radius: 999px; }
-  .stat-value { font-size: 25px; font-weight: 700; letter-spacing: -0.01em; }
-  .stat-delta { font-size: 12px; margin-top: 6px; font-weight: 600; }
-  .delta-up { color: var(--delta-good); } .delta-down { color: var(--status-critical); }
+  /* home nav tiles */
+  .nav-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+  .nav-tile { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 20px; padding: 22px 22px; cursor: pointer; transition: box-shadow .15s ease, transform .1s ease; display: flex; flex-direction: column; gap: 14px; }
+  .nav-tile:hover { box-shadow: var(--card-shadow-hover); transform: translateY(-1px); }
+  .nav-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+  .nav-title-row { display: flex; align-items: center; justify-content: space-between; }
+  .nav-title { font-size: 15px; font-weight: 700; }
+  .nav-chevron { color: var(--text-muted); }
+  .nav-value { font-size: 13px; color: var(--text-secondary); }
 
-  .grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; align-items: start; }
-  .stack { display: flex; flex-direction: column; gap: 16px; }
+  /* subpage chrome */
+  .subheader { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .back-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--card-bg); box-shadow: var(--card-shadow); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-primary); flex-shrink: 0; }
+  .back-btn:hover { box-shadow: var(--card-shadow-hover); }
+  .subheader-title { font-size: 18px; font-weight: 700; }
+  .subheader-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
-  .card { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 20px; padding: 22px 24px; transition: box-shadow .15s ease; }
-  .card.clickable { cursor: pointer; }
-  .card.clickable:hover { box-shadow: var(--card-shadow-hover); }
-  .card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
-  .card-title { font-size: 14px; font-weight: 700; }
+  .card { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 20px; padding: 24px 26px; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
   .card-sub { font-size: 11.5px; color: var(--text-muted); margin-bottom: 16px; }
-  .more-link { font-size: 11.5px; color: var(--text-secondary); margin-top: 14px; display: flex; align-items: center; gap: 3px; }
   .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; }
   .badge-good { background: color-mix(in oklab, var(--status-good) 14%, var(--card-bg)); color: var(--status-good); }
   .badge-warning { background: color-mix(in oklab, var(--status-warning) 18%, var(--card-bg)); color: color-mix(in oklab, var(--status-warning) 70%, var(--text-primary)); }
 
+  /* period tabs */
+  .period-tabs { display: flex; gap: 6px; background: var(--pill-bg); padding: 3px; border-radius: 10px; margin-bottom: 18px; width: fit-content; }
+  .tab-btn { border: none; background: transparent; padding: 7px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+  .tab-btn.active { background: var(--card-bg); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  .hero { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; }
+  .hero-delta { font-size: 12.5px; margin-top: 5px; font-weight: 600; }
+  .delta-up { color: var(--delta-good); } .delta-down { color: var(--status-critical); }
+
   /* donut */
-  .donut-row { display: flex; align-items: center; gap: 22px; }
-  .donut-wrap { position: relative; width: 128px; height: 128px; flex-shrink: 0; }
-  .donut { width: 128px; height: 128px; border-radius: 50%; }
-  .donut-hole { position: absolute; inset: 20px; background: var(--card-bg); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .donut-total { font-size: 15px; font-weight: 800; }
-  .donut-sub { font-size: 9.5px; color: var(--text-muted); margin-top: 2px; }
-  .legend-list { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-  .legend-dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .donut-row { display: flex; align-items: center; gap: 30px; }
+  .donut-wrap { position: relative; width: 168px; height: 168px; flex-shrink: 0; }
+  .donut { width: 168px; height: 168px; border-radius: 50%; }
+  .donut-hole { position: absolute; inset: 26px; background: var(--card-bg); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .donut-total { font-size: 17px; font-weight: 800; }
+  .donut-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .legend-list { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
   .legend-name { color: var(--text-secondary); flex: 1; }
   .legend-value { font-weight: 600; font-variant-numeric: tabular-nums; }
-  .legend-share { color: var(--text-muted); width: 34px; text-align: right; }
+  .legend-share { color: var(--text-muted); width: 40px; text-align: right; }
 
-  /* line chart */
-  .chart-legend { display: flex; gap: 16px; margin-bottom: 6px; }
-  .chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-secondary); }
-  .chart-legend-line { width: 12px; height: 2px; border-radius: 1px; }
-
-  /* cash bars */
-  .bank-row { display: grid; grid-template-columns: 100px 1fr 84px; align-items: center; gap: 10px; padding: 6px 0; }
-  .bank-name { font-size: 12px; color: var(--text-secondary); }
+  /* cash */
+  .flow-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+  .flow-item { background: var(--pill-bg); border-radius: 10px; padding: 11px 13px; }
+  .flow-k { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+  .flow-v { font-size: 14px; font-weight: 700; }
+  .bank-row { display: grid; grid-template-columns: 110px 1fr 90px; align-items: center; gap: 10px; padding: 7px 0; }
+  .bank-name { font-size: 12.5px; color: var(--text-secondary); }
   .bank-track { height: 8px; border-radius: 4px; background: var(--pill-bg); }
   .bank-fill { height: 8px; border-radius: 4px; background: var(--navy); }
-  .bank-amt { font-size: 12px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
-  .flow-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 14px; }
-  .flow-item { background: var(--pill-bg); border-radius: 10px; padding: 9px 11px; }
-  .flow-k { font-size: 10.5px; color: var(--text-muted); margin-bottom: 3px; }
-  .flow-v { font-size: 13px; font-weight: 700; }
+  .bank-amt { font-size: 12.5px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .cash-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+  .cash-table th { text-align: right; font-size: 10.5px; color: var(--text-muted); padding: 6px 6px; border-bottom: 1px solid var(--divider); }
+  .cash-table th:first-child, .cash-table td:first-child { text-align: left; }
+  .cash-table td { padding: 7px 6px; border-bottom: 1px solid var(--divider); text-align: right; font-variant-numeric: tabular-nums; }
 
   /* calendar */
   .dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 6px; }
   .dow-cell { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--text-muted); }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .cal-cell { position: relative; border-radius: 10px; aspect-ratio: 1 / 0.8; padding: 6px 7px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform .1s ease; }
+  .cal-cell { position: relative; border-radius: 10px; aspect-ratio: 1 / 0.72; padding: 6px 7px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform .1s ease; }
   .cal-cell:hover { transform: scale(1.04); }
   .cal-cell.other-month { opacity: 0.35; cursor: default; }
   .cal-cell.other-month:hover { transform: none; }
   .cal-cell.is-today { outline: 2px dashed var(--green); outline-offset: 2px; }
+  .cal-cell.is-selected { outline: 2px solid var(--navy); outline-offset: 2px; }
   .cal-day { font-size: 10.5px; font-weight: 600; }
   .cal-frac { font-size: 10.5px; font-weight: 700; line-height: 1.1; }
   .cal-pct { font-size: 12.5px; font-weight: 800; line-height: 1.1; }
   .ink-text { color: var(--text-primary); } .white-text { color: #ffffff; }
 
+  .day-detail-empty { text-align: center; padding: 22px 8px; color: var(--text-muted); font-size: 12.5px; }
+  .day-detail-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .day-detail-title { font-size: 14.5px; font-weight: 700; }
+  .modal-stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
+  .modal-stat { background: var(--pill-bg); border-radius: 12px; padding: 12px; text-align: center; }
+  .modal-stat-k { font-size: 10.5px; color: var(--text-muted); margin-bottom: 4px; }
+  .modal-stat-v { font-size: 16px; font-weight: 700; }
+  .detail-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--divider); }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .detail-name { flex: 1; font-size: 12.5px; color: var(--text-secondary); }
+  .detail-value { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .detail-section-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin: 14px 0 2px; }
+
   /* weather */
-  .weather-main { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
-  .weather-temp { font-size: 30px; font-weight: 700; }
-  .weather-desc { font-size: 12.5px; color: var(--text-secondary); }
-  .forecast-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .forecast-item { background: var(--pill-bg); border-radius: 10px; padding: 10px 8px; text-align: center; }
-  .forecast-day { font-size: 10.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .weather-main { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+  .weather-temp { font-size: 36px; font-weight: 800; }
+  .weather-desc { font-size: 13px; color: var(--text-secondary); }
+  .forecast-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .forecast-item { background: var(--pill-bg); border-radius: 12px; padding: 12px 8px; text-align: center; }
+  .forecast-day { font-size: 10.5px; color: var(--text-muted); margin-bottom: 8px; }
   .forecast-t { font-size: 12.5px; font-weight: 700; }
-  .forecast-pop { font-size: 10.5px; color: var(--series-1); margin-top: 3px; }
+  .forecast-pop { font-size: 10.5px; color: var(--series-1); margin-top: 4px; }
 
   /* greenfee */
-  .month-toggle { display: flex; gap: 6px; background: var(--pill-bg); padding: 3px; border-radius: 9px; }
-  .toggle-btn { border: none; background: transparent; padding: 5px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+  .month-toggle { display: flex; gap: 6px; background: var(--pill-bg); padding: 3px; border-radius: 9px; width: fit-content; margin-bottom: 4px; }
+  .toggle-btn { border: none; background: transparent; padding: 6px 14px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
   .toggle-btn.active { background: var(--card-bg); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-  .gf-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 10px; }
-  .gf-table th { text-align: right; font-weight: 600; color: var(--text-muted); font-size: 10.5px; padding: 4px 6px; border-bottom: 1px solid var(--divider); }
+  .gf-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+  .gf-table th { text-align: right; font-weight: 600; color: var(--text-muted); font-size: 10.5px; padding: 5px 6px; border-bottom: 1px solid var(--divider); }
   .gf-table th:first-child, .gf-table td:first-child { text-align: left; }
-  .gf-table td { padding: 5px 6px; border-bottom: 1px solid var(--divider); font-variant-numeric: tabular-nums; text-align: right; }
-  .gf-section-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin: 14px 0 2px; }
-  .flat-fees { display: flex; gap: 8px; margin-top: 12px; }
-  .flat-chip { background: var(--pill-bg); border-radius: 10px; padding: 8px 10px; font-size: 11px; flex: 1; }
-  .flat-chip b { display: block; font-size: 13px; margin-top: 2px; }
-  .exceptions { margin-top: 12px; border-top: 1px solid var(--divider); padding-top: 10px; }
-  .exception-row { display: flex; justify-content: space-between; font-size: 11.5px; padding: 4px 0; color: var(--text-secondary); }
+  .gf-table td { padding: 6px 6px; border-bottom: 1px solid var(--divider); font-variant-numeric: tabular-nums; text-align: right; }
+  .gf-section-label { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); margin: 16px 0 2px; }
+  .flat-fees { display: flex; gap: 10px; margin-top: 14px; }
+  .flat-chip { background: var(--pill-bg); border-radius: 10px; padding: 10px 12px; font-size: 11.5px; flex: 1; }
+  .flat-chip b { display: block; font-size: 14px; margin-top: 2px; }
+  .exceptions { margin-top: 14px; border-top: 1px solid var(--divider); padding-top: 12px; }
+  .exception-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; color: var(--text-secondary); }
   .exception-date { font-weight: 700; color: var(--text-primary); margin-right: 8px; }
+  .empty-note { text-align: center; padding: 26px 8px; color: var(--text-muted); font-size: 12.5px; }
 
   /* simulation */
-  .sim-card { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 20px; padding: 4px; margin-top: 16px; overflow: hidden; }
+  .sim-card { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 20px; padding: 4px; margin-top: 4px; overflow: hidden; }
   .sim-header-strip { background: var(--navy); border-radius: 16px 16px 0 0; padding: 16px 22px; display: flex; justify-content: space-between; align-items: flex-start; }
   .sim-title { font-size: 14.5px; font-weight: 700; color: #fff; }
   .sim-sub { font-size: 11.5px; color: #c7d1e0; margin-top: 4px; max-width: 560px; }
@@ -210,30 +229,6 @@
   .divbar-axis { flex: 1; height: 12px; position: relative; background: var(--divider); border-radius: 4px; }
   .divbar-zero { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--text-muted); opacity: .5; }
   .divbar-fill { position: absolute; top: 1px; bottom: 1px; border-radius: 3px; }
-
-  /* modal */
-  .scrim { position: fixed; inset: 0; background: var(--scrim); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 50; }
-  .modal { background: var(--card-bg); border-radius: 22px; width: 560px; max-width: 100%; max-height: 82vh; overflow-y: auto; padding: 26px 28px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
-  .modal-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-  .modal-title { font-size: 17px; font-weight: 700; }
-  .modal-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; }
-  .modal-close { width: 30px; height: 30px; border-radius: 50%; background: var(--pill-bg); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); flex-shrink: 0; }
-  .modal-close:hover { background: var(--divider); }
-  .detail-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--divider); }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  .detail-name { flex: 1; font-size: 13px; color: var(--text-secondary); }
-  .detail-value { font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .detail-share { font-size: 11.5px; color: var(--text-muted); width: 42px; text-align: right; }
-  .modal-footnote { font-size: 11px; color: var(--text-muted); margin-top: 16px; border-top: 1px solid var(--divider); padding-top: 12px; }
-  .modal-stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
-  .modal-stat { background: var(--page-bg); border-radius: 12px; padding: 12px; text-align: center; }
-  .modal-stat-k { font-size: 10.5px; color: var(--text-muted); margin-bottom: 4px; }
-  .modal-stat-v { font-size: 16px; font-weight: 700; }
-  .modal-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  .modal-table th { text-align: right; font-size: 10.5px; color: var(--text-muted); padding: 5px 6px; border-bottom: 1px solid var(--divider); }
-  .modal-table th:first-child, .modal-table td:first-child { text-align: left; }
-  .modal-table td { padding: 6px 6px; border-bottom: 1px solid var(--divider); text-align: right; font-variant-numeric: tabular-nums; }
 </style>
 </helmet>
 
@@ -251,304 +246,296 @@
     </div>
   </div>
 
-  <div class="title-row">
-    <div>
-      <div class="page-title">스톤게이트CC · 대표 대시보드</div>
-      <div class="page-title-sub">숫자를 누르면 세부 내역을 볼 수 있습니다</div>
-    </div>
-    <div class="today-label">{{ today.label }}<br/>{{ today.updated }}</div>
-  </div>
-
-  <div class="stat-row">
-    <div class="stat-tile clickable" onClick="{{ openSalesDetail }}">
-      <div class="stat-top"><div class="stat-label">오늘 매출 합계</div><div class="stat-period">Today</div></div>
-      <div class="stat-value">{{ stat.salesValue }}</div>
-      <div class="stat-delta {{ stat.salesDeltaClass }}">{{ stat.salesDeltaText }}</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-top"><div class="stat-label">오늘 예약 가동률</div><div class="stat-period">Today</div></div>
-      <div class="stat-value">{{ stat.occValue }}</div>
-      <div class="stat-delta {{ stat.occDeltaClass }}">{{ stat.occDeltaText }}</div>
-    </div>
-    <div class="stat-tile clickable" onClick="{{ openCashDetail }}">
-      <div class="stat-top"><div class="stat-label">금일 자금 잔액</div><div class="stat-period">Today</div></div>
-      <div class="stat-value">{{ stat.cashValue }}</div>
-      <div class="stat-delta {{ stat.cashDeltaClass }}">{{ stat.cashDeltaText }}</div>
-    </div>
-    <div class="stat-tile">
-      <div class="stat-top"><div class="stat-label">오늘 날씨 · 기장군</div><div class="stat-period">Now</div></div>
-      <div class="stat-value">{{ stat.weatherValue }}</div>
-      <div class="stat-delta">{{ stat.weatherDeltaText }}</div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    <div class="stack">
-
-      <!-- 예약 현황 -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">예약 현황</div>
-          <div class="badge badge-good">무노스 · 09/08 반영</div>
-        </div>
-        <div class="card-sub">2026년 9월 · 예시 데이터 · 날짜를 누르면 상세가 열립니다</div>
-        <div class="dow-row">
-          <div class="dow-cell" style="color:var(--status-critical)">SUN</div>
-          <div class="dow-cell">MON</div><div class="dow-cell">TUE</div><div class="dow-cell">WED</div><div class="dow-cell">THU</div><div class="dow-cell">FRI</div>
-          <div class="dow-cell" style="color:var(--series-1)">SAT</div>
-        </div>
-        <div class="cal-grid">
-          <sc-for list="{{ reservation.days }}" as="d" hint-placeholder-count="35">
-            <div class="cal-cell {{ d.otherClass }} {{ d.todayClass }}" style="background:{{ d.bg }}" onClick="{{ d.onClick }}">
-              <div class="cal-day {{ d.textClass }}">{{ d.dayLabel }}</div>
-              <div>
-                <div class="cal-frac {{ d.textClass }}">{{ d.fracLabel }}</div>
-                <div class="cal-pct {{ d.textClass }}">{{ d.pctLabel }}</div>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-      </div>
-
-      <!-- 매출 추이 -->
-      <div class="card">
-        <div class="card-head"><div class="card-title">매출 추이</div></div>
-        <div class="card-sub">최근 14일 · 이번달 vs 전월 동기간</div>
-        <div class="chart-legend">
-          <div class="chart-legend-item"><span class="chart-legend-line" style="background:var(--series-1)"></span>이번달</div>
-          <div class="chart-legend-item"><span class="chart-legend-line" style="background:var(--divider)"></span>전월</div>
-        </div>
-        <svg width="100%" height="150" viewBox="0 0 560 150" preserveAspectRatio="none">
-          <sc-for list="{{ trend.gridLines }}" as="g" hint-placeholder-count="4">
-            <line x1="0" x2="560" y1="{{ g.y }}" y2="{{ g.y }}" stroke="var(--divider)" stroke-width="1"/>
-          </sc-for>
-          <polyline points="{{ trend.prevPoints }}" fill="none" stroke="var(--divider)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <polyline points="{{ trend.currPoints }}" fill="none" stroke="var(--series-1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="{{ trend.lastX }}" cy="{{ trend.lastY }}" r="4.5" fill="var(--series-1)" stroke="var(--card-bg)" stroke-width="2"/>
-        </svg>
-      </div>
-
-    </div>
-
-    <div class="stack">
-
-      <!-- 매출 구성 (도넛) -->
-      <div class="card clickable" onClick="{{ openSalesDetail }}">
-        <div class="card-head"><div class="card-title">매출 구성</div></div>
-        <div class="card-sub">오늘 · 카테고리별 비중</div>
-        <div class="donut-row">
-          <div class="donut-wrap">
-            <div class="donut" style="background:{{ sales.donutGradient }}"></div>
-            <div class="donut-hole">
-              <div class="donut-total">{{ sales.totalCompact }}</div>
-              <div class="donut-sub">오늘 매출</div>
-            </div>
-          </div>
-          <div class="legend-list">
-            <sc-for list="{{ sales.categories }}" as="c" hint-placeholder-count="6">
-              <div class="legend-item">
-                <span class="legend-dot" style="background:{{ c.color }}"></span>
-                <span class="legend-name">{{ c.name }}</span>
-                <span class="legend-value">{{ c.valueLabel }}</span>
-                <span class="legend-share">{{ c.shareLabel }}</span>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-        <div class="more-link">자세히 보기 →</div>
-      </div>
-
-      <!-- 자금 현황 -->
-      <div class="card clickable" onClick="{{ openCashDetail }}">
-        <div class="card-head"><div class="card-title">자금 현황</div></div>
-        <div class="card-sub">더존 자금일보 · {{ cash.dateLabel }}</div>
-        <div class="flow-row">
-          <div class="flow-item"><div class="flow-k">전일</div><div class="flow-v">{{ cash.yesterday }}</div></div>
-          <div class="flow-item"><div class="flow-k">입금</div><div class="flow-v">{{ cash.deposit }}</div></div>
-          <div class="flow-item"><div class="flow-k">출금</div><div class="flow-v">{{ cash.withdrawal }}</div></div>
-          <div class="flow-item"><div class="flow-k">금일</div><div class="flow-v">{{ cash.today }}</div></div>
-        </div>
-        <sc-for list="{{ cash.banks }}" as="b" hint-placeholder-count="5">
-          <div class="bank-row">
-            <div class="bank-name">{{ b.name }}</div>
-            <div class="bank-track"><div class="bank-fill" style="width:{{ b.widthPct }}"></div></div>
-            <div class="bank-amt">{{ b.amountLabel }}</div>
-          </div>
-        </sc-for>
-        <div class="more-link">자세히 보기 →</div>
-      </div>
-
-      <!-- 날씨 -->
-      <div class="card">
-        <div class="card-head"><div class="card-title">날씨 현황</div></div>
-        <div class="card-sub">기상청 단기예보 · 부산 기장군</div>
-        <div class="weather-main">
-          <svg width="42" height="42" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/><g stroke="var(--series-4)" stroke-width="1.6" stroke-linecap="round"><path d="M12 1v3"/><path d="M12 20v3"/><path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/><path d="M1 12h3"/><path d="M20 12h3"/><path d="M4.2 19.8l2.1-2.1"/><path d="M17.7 6.3l2.1-2.1"/></g></svg>
-          <div><div class="weather-temp">{{ weather.temp }}</div><div class="weather-desc">{{ weather.desc }} · 강수확률 {{ weather.pop }}</div></div>
-        </div>
-        <div class="forecast-row">
-          <sc-for list="{{ weather.forecast }}" as="f" hint-placeholder-count="3">
-            <div class="forecast-item"><div class="forecast-day">{{ f.day }}</div><div class="forecast-t">{{ f.temp }}</div><div class="forecast-pop">☔ {{ f.pop }}</div></div>
-          </sc-for>
-        </div>
-      </div>
-
-      <!-- 그린피 단가 현황 -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">그린피 단가 현황</div>
-          <span class="badge {{ greenfee.badgeClass }}">{{ greenfee.badgeText }}</span>
-        </div>
-        <div class="card-sub">회원 기준 · 1단계 관리 범위</div>
-        <div class="month-toggle">
-          <button class="toggle-btn {{ gfIsSep }}" onClick="{{ selectSep }}">9월 (이번달)</button>
-          <button class="toggle-btn {{ gfIsOct }}" onClick="{{ selectOct }}">10월 (익월 확인)</button>
-        </div>
-        <sc-if value="{{ greenfee.hasData }}" hint-placeholder-val="{{ true }}">
-          <div class="gf-section-label">1부 · 2부 (주중 월~금 / 주말 토 / 주말 일·공휴일)</div>
-          <table class="gf-table">
-            <tr><th>구분</th><th>주중</th><th>토</th><th>일·공휴일</th></tr>
-            <sc-for list="{{ greenfee.rows12 }}" as="r" hint-placeholder-count="4">
-              <tr><td>{{ r.label }}</td><td>{{ r.weekday }}</td><td>{{ r.sat }}</td><td>{{ r.sun }}</td></tr>
-            </sc-for>
-          </table>
-          <div class="gf-section-label">3부 (월~목 / 금·토 / 일·공휴일)</div>
-          <table class="gf-table">
-            <tr><th>구분</th><th>월~목</th><th>금·토</th><th>일·공휴일</th></tr>
-            <sc-for list="{{ greenfee.rows3 }}" as="r" hint-placeholder-count="2">
-              <tr><td>{{ r.label }}</td><td>{{ r.weekday }}</td><td>{{ r.sat }}</td><td>{{ r.sun }}</td></tr>
-            </sc-for>
-          </table>
-          <div class="flat-fees">
-            <div class="flat-chip">카트료 (팀당)<b>{{ greenfee.cart }}</b></div>
-            <div class="flat-chip">캐디피 (전 부)<b>{{ greenfee.caddie }}</b></div>
-          </div>
-          <div class="exceptions">
-            <div class="gf-section-label" style="margin-top:0">날짜별 예외</div>
-            <sc-for list="{{ greenfee.exceptions }}" as="e" hint-placeholder-count="2">
-              <div class="exception-row"><span><span class="exception-date">{{ e.date }}</span>{{ e.note }}</span></div>
-            </sc-for>
-          </div>
-        </sc-if>
-        <sc-if value="{{ greenfee.showEmpty }}" hint-placeholder-val="{{ false }}">
-          <div style="text-align:center; padding:26px 8px; color:var(--text-muted); font-size:12.5px;">
-            10월 요금표가 아직 제출되지 않았습니다.<br/>현장 업로드 페이지(/upload)에서 제출 시 이 화면에 표시됩니다.
-          </div>
-        </sc-if>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 그린피 조정 시뮬레이션 -->
-  <div class="sim-card">
-    <div class="sim-header-strip">
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div class="title-row">
       <div>
-        <div class="sim-title">그린피 조정 시뮬레이션</div>
-        <div class="sim-sub">부별 그린피를 조정하면 최근 30일 평균 라운드 수를 기준으로 예상 매출 영향을 즉시 계산합니다. 예상 라운드 수는 직접 수정할 수 있습니다.</div>
+        <div class="page-title">스톤게이트CC · 대표 대시보드</div>
+        <div class="page-title-sub">확인하실 항목을 눌러주세요</div>
       </div>
-      <button class="sim-reset" onClick="{{ resetAll }}">전체 초기화</button>
+      <div class="today-label">{{ today.label }}<br/>{{ today.updated }}</div>
     </div>
-    <div class="sim-body">
-      <div class="sim-grid">
-        <sc-for list="{{ sim.sessions }}" as="s" hint-placeholder-count="3">
-          <div class="sim-session">
-            <div class="sim-session-name">{{ s.name }}</div>
-            <div class="sim-field">
-              <div class="sim-field-label">그린피 조정 (원)</div>
-              <div class="sim-stepper">
-                <button class="step-btn" onClick="{{ s.dec }}">−</button>
-                <div class="sim-input">{{ s.adjLabel }}</div>
-                <button class="step-btn" onClick="{{ s.inc }}">+</button>
-              </div>
-            </div>
-            <div class="sim-field">
-              <div class="sim-field-label">예상 라운드 수 (최근 30일 평균, 수정 가능)</div>
-              <input class="sim-rounds-input" type="text" value="{{ s.roundsLabel }}" onChange="{{ s.onRoundsChange }}" />
-            </div>
-            <div class="sim-impact {{ s.impactClass }}">{{ s.impactLabel }}</div>
-          </div>
-        </sc-for>
-        <div class="sim-total">
-          <div class="sim-total-label">전체 예상 매출 영향</div>
-          <div class="sim-total-value {{ sim.totalClass }}">{{ sim.totalLabel }}</div>
-          <div class="sim-total-sub">{{ sim.totalSub }}</div>
-          <div class="divbars">
-            <sc-for list="{{ sim.sessions }}" as="s" hint-placeholder-count="3">
-              <div class="divbar-row">
-                <div class="divbar-name">{{ s.shortName }}</div>
-                <div class="divbar-axis">
-                  <div class="divbar-zero"></div>
-                  <div class="divbar-fill" style="left:{{ s.barLeft }}; width:{{ s.barWidth }}; background:{{ s.barColor }}"></div>
-                </div>
-              </div>
-            </sc-for>
-          </div>
+
+    <div class="nav-grid">
+      <div class="nav-tile" onClick="{{ goSales }}">
+        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-1) 15%, var(--card-bg))">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 20V10M12 20V4M19 20v-7" stroke="var(--series-1)" stroke-width="2.2" stroke-linecap="round"/></svg>
         </div>
+        <div class="nav-title-row"><div class="nav-title">매출현황</div><div class="nav-chevron">›</div></div>
+        <div class="nav-value">{{ nav.salesValue }}</div>
+      </div>
+
+      <div class="nav-tile" onClick="{{ goReservation }}">
+        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-3) 15%, var(--card-bg))">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2.5" stroke="var(--series-3)" stroke-width="2"/><path d="M4 9.5h16M8 3v3.4M16 3v3.4" stroke="var(--series-3)" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="nav-title-row"><div class="nav-title">예약현황</div><div class="nav-chevron">›</div></div>
+        <div class="nav-value">{{ nav.reservationValue }}</div>
+      </div>
+
+      <div class="nav-tile" onClick="{{ goCash }}">
+        <div class="nav-icon" style="background:color-mix(in oklab, var(--navy) 12%, var(--card-bg))">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2.5" stroke="var(--navy)" stroke-width="2"/><path d="M3 10h18" stroke="var(--navy)" stroke-width="2"/><circle cx="16.5" cy="14.5" r="1.4" fill="var(--navy)"/></svg>
+        </div>
+        <div class="nav-title-row"><div class="nav-title">자금현황</div><div class="nav-chevron">›</div></div>
+        <div class="nav-value">{{ nav.cashValue }}</div>
+      </div>
+
+      <div class="nav-tile" onClick="{{ goGreenfee }}">
+        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-2) 15%, var(--card-bg))">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 21V4" stroke="var(--series-2)" stroke-width="2.2" stroke-linecap="round"/><path d="M6 5h12l-3 3.4L18 11.8H6" fill="var(--series-2)"/></svg>
+        </div>
+        <div class="nav-title-row"><div class="nav-title">그린피 현황</div><div class="nav-chevron">›</div></div>
+        <div class="nav-value">{{ nav.greenfeeValue }}</div>
+      </div>
+
+      <div class="nav-tile" onClick="{{ goWeather }}">
+        <div class="nav-icon" style="background:color-mix(in oklab, var(--series-4) 18%, var(--card-bg))">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/><g stroke="var(--series-4)" stroke-width="1.8" stroke-linecap="round"><path d="M12 1v3"/><path d="M12 20v3"/><path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/><path d="M1 12h3"/><path d="M20 12h3"/><path d="M4.2 19.8l2.1-2.1"/><path d="M17.7 6.3l2.1-2.1"/></g></svg>
+        </div>
+        <div class="nav-title-row"><div class="nav-title">날씨 현황</div><div class="nav-chevron">›</div></div>
+        <div class="nav-value">{{ nav.weatherValue }}</div>
       </div>
     </div>
-  </div>
+  </sc-if>
 
-</div>
+  <!-- 매출현황 -->
+  <sc-if value="{{ isSales }}" hint-placeholder-val="{{ false }}">
+    <div class="subheader">
+      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><div class="subheader-title">매출현황</div><div class="subheader-sub">무노스 일일영업집계 · 매출집계 기준</div></div>
+    </div>
 
-<!-- 상세 모달 -->
-<sc-if value="{{ detail.show }}" hint-placeholder-val="{{ false }}">
-  <div class="scrim" onClick="{{ closeDetail }}">
-    <div class="modal" onClick="{{ stopClick }}">
-      <div class="modal-head">
-        <div>
-          <div class="modal-title">{{ detail.title }}</div>
-          <div class="modal-sub">{{ detail.subtitle }}</div>
-        </div>
-        <button class="modal-close" onClick="{{ closeDetail }}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-
-      <sc-if value="{{ detail.isSales }}" hint-placeholder-val="{{ false }}">
-        <sc-for list="{{ detail.salesRows }}" as="r" hint-placeholder-count="6">
-          <div class="detail-row">
-            <span class="detail-dot" style="background:{{ r.color }}"></span>
-            <span class="detail-name">{{ r.name }}</span>
-            <span class="detail-value">{{ r.valueLabel }}</span>
-            <span class="detail-share">{{ r.shareLabel }}</span>
-          </div>
+    <div class="card">
+      <div class="period-tabs">
+        <sc-for list="{{ sales.periods }}" as="p" hint-placeholder-count="4">
+          <button class="tab-btn {{ p.activeClass }}" onClick="{{ p.onClick }}">{{ p.label }}</button>
         </sc-for>
-        <div class="modal-footnote">업장별·카드사별 세부 내역은 1단계 관리 범위 외입니다 (PRD §2.2 참고).</div>
-      </sc-if>
+      </div>
+      <div class="hero">{{ sales.totalLabel }}</div>
+      <div class="hero-delta {{ sales.deltaClass }}">{{ sales.deltaText }}</div>
+    </div>
 
-      <sc-if value="{{ detail.isCash }}" hint-placeholder-val="{{ false }}">
-        <table class="modal-table">
-          <tr><th>은행</th><th>전일</th><th>입금</th><th>출금</th><th>금일</th></tr>
-          <sc-for list="{{ detail.cashRows }}" as="r" hint-placeholder-count="5">
-            <tr><td>{{ r.name }}</td><td>{{ r.prev }}</td><td>{{ r.in }}</td><td>{{ r.out }}</td><td>{{ r.now }}</td></tr>
+    <div class="card">
+      <div class="card-title">품목별 매출</div>
+      <div class="card-sub">{{ sales.periodLabel }} 기준 비중</div>
+      <div class="donut-row">
+        <div class="donut-wrap">
+          <div class="donut" style="background:{{ sales.donutGradient }}"></div>
+          <div class="donut-hole"><div class="donut-total">{{ sales.totalCompact }}</div><div class="donut-sub">{{ sales.periodLabel }} 매출</div></div>
+        </div>
+        <div class="legend-list">
+          <sc-for list="{{ sales.categories }}" as="c" hint-placeholder-count="6">
+            <div class="legend-item">
+              <span class="legend-dot" style="background:{{ c.color }}"></span>
+              <span class="legend-name">{{ c.name }}</span>
+              <span class="legend-value">{{ c.valueLabel }}</span>
+              <span class="legend-share">{{ c.shareLabel }}</span>
+            </div>
           </sc-for>
-        </table>
-        <div class="modal-footnote">받을어음현황·차입금현황은 이번 샘플월 데이터 없음.</div>
-      </sc-if>
-
-      <sc-if value="{{ detail.isDay }}" hint-placeholder-val="{{ false }}">
-        <div class="modal-stat-row">
-          <div class="modal-stat"><div class="modal-stat-k">예약</div><div class="modal-stat-v">{{ detail.dayBooked }}</div></div>
-          <div class="modal-stat"><div class="modal-stat-k">잔여</div><div class="modal-stat-v">{{ detail.dayRemain }}</div></div>
-          <div class="modal-stat"><div class="modal-stat-k">가동률</div><div class="modal-stat-v">{{ detail.dayPct }}</div></div>
         </div>
-        <sc-for list="{{ detail.daySessions }}" as="r" hint-placeholder-count="3">
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- 예약현황 -->
+  <sc-if value="{{ isReservation }}" hint-placeholder-val="{{ false }}">
+    <div class="subheader">
+      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><div class="subheader-title">예약현황</div><div class="subheader-sub">2026년 9월 · 예시 데이터 · 날짜를 눌러 상세 확인</div></div>
+    </div>
+
+    <div class="card">
+      <div class="dow-row">
+        <div class="dow-cell" style="color:var(--status-critical)">SUN</div>
+        <div class="dow-cell">MON</div><div class="dow-cell">TUE</div><div class="dow-cell">WED</div><div class="dow-cell">THU</div><div class="dow-cell">FRI</div>
+        <div class="dow-cell" style="color:var(--series-1)">SAT</div>
+      </div>
+      <div class="cal-grid">
+        <sc-for list="{{ reservation.days }}" as="d" hint-placeholder-count="35">
+          <div class="cal-cell {{ d.otherClass }} {{ d.todayClass }} {{ d.selectedClass }}" style="background:{{ d.bg }}" onClick="{{ d.onClick }}">
+            <div class="cal-day {{ d.textClass }}">{{ d.dayLabel }}</div>
+            <div><div class="cal-frac {{ d.textClass }}">{{ d.fracLabel }}</div><div class="cal-pct {{ d.textClass }}">{{ d.pctLabel }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div class="card">
+      <sc-if value="{{ dayDetail.empty }}" hint-placeholder-val="{{ true }}">
+        <div class="day-detail-empty">날짜를 선택하면 상세 예약 정보를 볼 수 있어요</div>
+      </sc-if>
+      <sc-if value="{{ dayDetail.hasData }}" hint-placeholder-val="{{ false }}">
+        <div class="day-detail-head">
+          <div class="day-detail-title">{{ dayDetail.title }}</div>
+          <div class="card-sub" style="margin:0">{{ dayDetail.subtitle }}</div>
+        </div>
+        <div class="modal-stat-row">
+          <div class="modal-stat"><div class="modal-stat-k">예약</div><div class="modal-stat-v">{{ dayDetail.dayBooked }}</div></div>
+          <div class="modal-stat"><div class="modal-stat-k">잔여</div><div class="modal-stat-v">{{ dayDetail.dayRemain }}</div></div>
+          <div class="modal-stat"><div class="modal-stat-k">가동률</div><div class="modal-stat-v">{{ dayDetail.dayPct }}</div></div>
+        </div>
+        <sc-for list="{{ dayDetail.daySessions }}" as="r" hint-placeholder-count="3">
           <div class="detail-row"><span class="detail-name">{{ r.name }}</span><span class="detail-value">{{ r.valueLabel }}</span></div>
         </sc-for>
-        <div class="gf-section-label">예약 채널</div>
-        <sc-for list="{{ detail.dayChannels }}" as="r" hint-placeholder-count="4">
-          <div class="detail-row">
-            <span class="detail-dot" style="background:{{ r.color }}"></span>
-            <span class="detail-name">{{ r.name }}</span>
-            <span class="detail-value">{{ r.valueLabel }}</span>
-          </div>
+        <div class="detail-section-label">예약 채널</div>
+        <sc-for list="{{ dayDetail.dayChannels }}" as="r" hint-placeholder-count="4">
+          <div class="detail-row"><span class="detail-dot" style="background:{{ r.color }}"></span><span class="detail-name">{{ r.name }}</span><span class="detail-value">{{ r.valueLabel }}</span></div>
         </sc-for>
       </sc-if>
-
+      <sc-if value="{{ dayDetail.closed }}" hint-placeholder-val="{{ false }}">
+        <div class="day-detail-head"><div class="day-detail-title">{{ dayDetail.title }}</div></div>
+        <div class="day-detail-empty">{{ dayDetail.subtitle }}</div>
+      </sc-if>
     </div>
-  </div>
-</sc-if>
+  </sc-if>
+
+  <!-- 자금현황 -->
+  <sc-if value="{{ isCash }}" hint-placeholder-val="{{ false }}">
+    <div class="subheader">
+      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><div class="subheader-title">자금현황</div><div class="subheader-sub">더존 자금일보 · {{ cash.dateLabel }}</div></div>
+    </div>
+
+    <div class="card">
+      <div class="flow-row">
+        <div class="flow-item"><div class="flow-k">전일</div><div class="flow-v">{{ cash.yesterday }}</div></div>
+        <div class="flow-item"><div class="flow-k">입금</div><div class="flow-v">{{ cash.deposit }}</div></div>
+        <div class="flow-item"><div class="flow-k">출금</div><div class="flow-v">{{ cash.withdrawal }}</div></div>
+        <div class="flow-item"><div class="flow-k">금일</div><div class="flow-v">{{ cash.today }}</div></div>
+      </div>
+      <sc-for list="{{ cash.banks }}" as="b" hint-placeholder-count="5">
+        <div class="bank-row">
+          <div class="bank-name">{{ b.name }}</div>
+          <div class="bank-track"><div class="bank-fill" style="width:{{ b.widthPct }}"></div></div>
+          <div class="bank-amt">{{ b.amountLabel }}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div class="card">
+      <div class="card-title">은행별 자금 흐름</div>
+      <div class="card-sub">전일 → 입금/출금 → 금일 (은행별 배분 추정치)</div>
+      <table class="cash-table">
+        <tr><th>은행</th><th>전일</th><th>입금</th><th>출금</th><th>금일</th></tr>
+        <sc-for list="{{ cash.detailRows }}" as="r" hint-placeholder-count="5">
+          <tr><td>{{ r.name }}</td><td>{{ r.prev }}</td><td>{{ r.in }}</td><td>{{ r.out }}</td><td>{{ r.now }}</td></tr>
+        </sc-for>
+      </table>
+    </div>
+  </sc-if>
+
+  <!-- 그린피 현황 -->
+  <sc-if value="{{ isGreenfee }}" hint-placeholder-val="{{ false }}">
+    <div class="subheader">
+      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><div class="subheader-title">그린피 현황</div><div class="subheader-sub">회원 기준 · 1단계 관리 범위</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        단가표 <span class="badge {{ greenfee.badgeClass }}">{{ greenfee.badgeText }}</span>
+      </div>
+      <div class="month-toggle">
+        <button class="toggle-btn {{ gfIsSep }}" onClick="{{ selectSep }}">9월 (이번달)</button>
+        <button class="toggle-btn {{ gfIsOct }}" onClick="{{ selectOct }}">10월 (익월 확인)</button>
+      </div>
+      <sc-if value="{{ greenfee.hasData }}" hint-placeholder-val="{{ true }}">
+        <div class="gf-section-label">1부 · 2부 (주중 월~금 / 주말 토 / 주말 일·공휴일)</div>
+        <table class="gf-table">
+          <tr><th>구분</th><th>주중</th><th>토</th><th>일·공휴일</th></tr>
+          <sc-for list="{{ greenfee.rows12 }}" as="r" hint-placeholder-count="4">
+            <tr><td>{{ r.label }}</td><td>{{ r.weekday }}</td><td>{{ r.sat }}</td><td>{{ r.sun }}</td></tr>
+          </sc-for>
+        </table>
+        <div class="gf-section-label">3부 (월~목 / 금·토 / 일·공휴일)</div>
+        <table class="gf-table">
+          <tr><th>구분</th><th>월~목</th><th>금·토</th><th>일·공휴일</th></tr>
+          <sc-for list="{{ greenfee.rows3 }}" as="r" hint-placeholder-count="2">
+            <tr><td>{{ r.label }}</td><td>{{ r.weekday }}</td><td>{{ r.sat }}</td><td>{{ r.sun }}</td></tr>
+          </sc-for>
+        </table>
+        <div class="flat-fees">
+          <div class="flat-chip">카트료 (팀당)<b>{{ greenfee.cart }}</b></div>
+          <div class="flat-chip">캐디피 (전 부)<b>{{ greenfee.caddie }}</b></div>
+        </div>
+        <div class="exceptions">
+          <div class="gf-section-label" style="margin-top:0">날짜별 예외</div>
+          <sc-for list="{{ greenfee.exceptions }}" as="e" hint-placeholder-count="2">
+            <div class="exception-row"><span><span class="exception-date">{{ e.date }}</span>{{ e.note }}</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ greenfee.showEmpty }}" hint-placeholder-val="{{ false }}">
+        <div class="empty-note">10월 요금표가 아직 제출되지 않았습니다.<br/>현장 업로드 페이지(/upload)에서 제출 시 이 화면에 표시됩니다.</div>
+      </sc-if>
+    </div>
+
+    <div class="sim-card">
+      <div class="sim-header-strip">
+        <div>
+          <div class="sim-title">그린피 조정 시뮬레이션</div>
+          <div class="sim-sub">부별 그린피를 조정하면 최근 30일 평균 라운드 수를 기준으로 예상 매출 영향을 즉시 계산합니다.</div>
+        </div>
+        <button class="sim-reset" onClick="{{ resetAll }}">전체 초기화</button>
+      </div>
+      <div class="sim-body">
+        <div class="sim-grid">
+          <sc-for list="{{ sim.sessions }}" as="s" hint-placeholder-count="3">
+            <div class="sim-session">
+              <div class="sim-session-name">{{ s.name }}</div>
+              <div class="sim-field">
+                <div class="sim-field-label">그린피 조정 (원)</div>
+                <div class="sim-stepper">
+                  <button class="step-btn" onClick="{{ s.dec }}">−</button>
+                  <div class="sim-input">{{ s.adjLabel }}</div>
+                  <button class="step-btn" onClick="{{ s.inc }}">+</button>
+                </div>
+              </div>
+              <div class="sim-field">
+                <div class="sim-field-label">예상 라운드 수 (최근 30일 평균)</div>
+                <input class="sim-rounds-input" type="text" value="{{ s.roundsLabel }}" onChange="{{ s.onRoundsChange }}" />
+              </div>
+              <div class="sim-impact {{ s.impactClass }}">{{ s.impactLabel }}</div>
+            </div>
+          </sc-for>
+          <div class="sim-total">
+            <div class="sim-total-label">전체 예상 매출 영향</div>
+            <div class="sim-total-value {{ sim.totalClass }}">{{ sim.totalLabel }}</div>
+            <div class="sim-total-sub">{{ sim.totalSub }}</div>
+            <div class="divbars">
+              <sc-for list="{{ sim.sessions }}" as="s" hint-placeholder-count="3">
+                <div class="divbar-row">
+                  <div class="divbar-name">{{ s.shortName }}</div>
+                  <div class="divbar-axis"><div class="divbar-zero"></div><div class="divbar-fill" style="left:{{ s.barLeft }}; width:{{ s.barWidth }}; background:{{ s.barColor }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- 날씨 현황 -->
+  <sc-if value="{{ isWeather }}" hint-placeholder-val="{{ false }}">
+    <div class="subheader">
+      <button class="back-btn" onClick="{{ goHome }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div><div class="subheader-title">날씨 현황</div><div class="subheader-sub">기상청 단기예보 · 부산 기장군 · 3시간 주기 자동 갱신</div></div>
+    </div>
+    <div class="card">
+      <div class="weather-main">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/><g stroke="var(--series-4)" stroke-width="1.6" stroke-linecap="round"><path d="M12 1v3"/><path d="M12 20v3"/><path d="M4.2 4.2l2.1 2.1"/><path d="M17.7 17.7l2.1 2.1"/><path d="M1 12h3"/><path d="M20 12h3"/><path d="M4.2 19.8l2.1-2.1"/><path d="M17.7 6.3l2.1-2.1"/></g></svg>
+        <div><div class="weather-temp">{{ weather.temp }}</div><div class="weather-desc">{{ weather.desc }} · 강수확률 {{ weather.pop }}</div></div>
+      </div>
+      <div class="forecast-row">
+        <sc-for list="{{ weather.forecast }}" as="f" hint-placeholder-count="5">
+          <div class="forecast-item"><div class="forecast-day">{{ f.day }}</div><div class="forecast-t">{{ f.temp }}</div><div class="forecast-pop">☔ {{ f.pop }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
 
 </x-dc>
 <script data-dc-script>
@@ -556,10 +543,12 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = {
+      view: 'home',
+      salesPeriod: 'day',
       gfMonth: 'sep',
       adj: { p1: 0, p2: 0, p3: 0 },
       rounds: { p1: 620, p2: 210, p3: 340 },
-      detail: { type: null, day: null }
+      selectedDay: null
     };
   }
 
@@ -597,15 +586,16 @@ class Component extends DCLogic {
     const out = [];
     for (const row of data) {
       if (row[1] === 'other') {
-        out.push({ dayLabel: String(row[0]), otherClass: 'other-month', todayClass: '', bg: 'var(--pill-bg)', textClass: 'ink-text', fracLabel: '', pctLabel: '', onClick: () => {} });
+        out.push({ dayLabel: String(row[0]), otherClass: 'other-month', todayClass: '', selectedClass: '', bg: 'var(--pill-bg)', textClass: 'ink-text', fracLabel: '', pctLabel: '', onClick: () => {} });
         continue;
       }
       if (row[1] === 'closed') {
         const day = row[0];
+        const isSel = this.state.selectedDay && this.state.selectedDay.day === day;
         out.push({
-          dayLabel: String(day), otherClass: '', todayClass: '', bg: 'var(--pill-bg)', textClass: 'ink-text',
+          dayLabel: String(day), otherClass: '', todayClass: '', selectedClass: isSel ? 'is-selected' : '', bg: 'var(--pill-bg)', textClass: 'ink-text',
           fracLabel: '', pctLabel: '휴장',
-          onClick: () => this.setState({ detail: { type: 'day', day, closed: true } })
+          onClick: () => this.setState({ selectedDay: { day, closed: true } })
         });
         continue;
       }
@@ -620,29 +610,29 @@ class Component extends DCLogic {
       else if (pct < 90) { bg = 'var(--seq-5)'; dark = true; }
       else { bg = 'var(--seq-6)'; dark = true; }
       const isToday = day === 8;
+      const isSel = this.state.selectedDay && this.state.selectedDay.day === day;
       out.push({
-        dayLabel: String(day), otherClass: '', todayClass: isToday ? 'is-today' : '', bg,
+        dayLabel: String(day), otherClass: '', todayClass: isToday ? 'is-today' : '', selectedClass: isSel ? 'is-selected' : '', bg,
         textClass: dark ? 'white-text' : 'ink-text',
         fracLabel: booked + '/' + cap, pctLabel: pct + '%',
-        onClick: () => this.setState({ detail: { type: 'day', day, cap, booked, pct } })
+        onClick: () => this.setState({ selectedDay: { day, cap, booked, pct } })
       });
     }
     return out;
   }
 
-  buildDayDetail(day, cap, booked, pct, closed) {
-    if (closed) {
-      return {
-        show: true, isSales: false, isCash: false, isDay: true,
-        title: '9월 ' + day + '일 상세', subtitle: '추석 당일 휴장',
-        dayBooked: '-', dayRemain: '-', dayPct: '휴장', daySessions: [], dayChannels: []
-      };
+  buildDayDetail() {
+    const sel = this.state.selectedDay;
+    if (!sel) return { empty: true, hasData: false, closed: false };
+    if (sel.closed) {
+      return { empty: false, hasData: false, closed: true, title: '9월 ' + sel.day + '일', subtitle: '추석 당일 휴장' };
     }
+    const { day, cap, booked, pct } = sel;
     const remain = cap - booked;
     const s1 = Math.round(booked * 0.45), s2 = Math.round(booked * 0.35), s3 = booked - s1 - s2;
     const ch1 = Math.round(booked * 0.40), ch2 = Math.round(booked * 0.25), ch3 = Math.round(booked * 0.20), ch4 = booked - ch1 - ch2 - ch3;
     return {
-      show: true, isSales: false, isCash: false, isDay: true,
+      empty: false, hasData: true, closed: false,
       title: '9월 ' + day + '일 상세', subtitle: '예약현황(일별집계) 기준 · 예시 데이터',
       dayBooked: booked + '팀', dayRemain: remain + '팀', dayPct: pct + '%',
       daySessions: [
@@ -659,16 +649,8 @@ class Component extends DCLogic {
     };
   }
 
-  genSeries(n, base, amp, slope, phase) {
-    const out = [];
-    for (let i = 0; i < n; i++) out.push(Math.max(5, Math.round(base + amp * Math.sin(i * 0.9 + phase) + slope * i)));
-    return out;
-  }
-
-  renderVals() {
-    const days = this.buildReservationDays();
-
-    const salesCats = [
+  buildSales(period) {
+    const base = [
       { name: '그린피', value: 9850000, color: 'var(--series-1)' },
       { name: '카트료', value: 3200000, color: 'var(--series-2)' },
       { name: '대여료', value: 60000, color: 'var(--series-3)' },
@@ -676,15 +658,29 @@ class Component extends DCLogic {
       { name: '상품매출', value: 980000, color: 'var(--series-5)' },
       { name: '기타매출', value: 400000, color: 'var(--series-6)' }
     ];
-    const total = salesCats.reduce((a, c) => a + c.value, 0);
+    const mult = { day: 1, week: 6.4, month: 27, year: 312 }[period];
+    const skew = {
+      day:   [1, 1, 1, 1, 1, 1],
+      week:  [1, 1.05, 0.9, 1.15, 1.2, 0.8],
+      month: [1, 0.95, 0.8, 1.3, 1.4, 0.9],
+      year:  [1, 0.9, 0.7, 1.5, 1.6, 1.1]
+    }[period];
+    const cats = base.map((c, i) => ({ ...c, value: Math.round(c.value * mult * skew[i]) }));
+    const total = cats.reduce((a, c) => a + c.value, 0);
     let cum = 0;
-    const stops = salesCats.map(c => {
+    const stops = cats.map(c => {
       const start = (cum / total) * 100;
       cum += c.value;
       const end = (cum / total) * 100;
       return c.color + ' ' + start.toFixed(2) + '% ' + end.toFixed(2) + '%';
     });
-    const donutGradient = 'conic-gradient(' + stops.join(', ') + ')';
+    return { cats, total, donutGradient: 'conic-gradient(' + stops.join(', ') + ')' };
+  }
+
+  renderVals() {
+    const view = this.state.view;
+    const salesData = this.buildSales(this.state.salesPeriod);
+    const dayDetail = this.buildDayDetail();
 
     const banks = [
       { name: '부산카드', amount: 186320000 },
@@ -697,21 +693,10 @@ class Component extends DCLogic {
     const bankTotal = banks.reduce((a, b) => a + b.amount, 0);
     const totalDeposit = 49788153, totalWithdrawal = 374699441, totalYesterday = 880007242;
 
-    const curr = this.genSeries(14, 46, 9, 0.6, 0);
-    const prev = this.genSeries(14, 40, 7, 0.15, 0.6);
-    const allVals = [...curr, ...prev];
-    const minV = Math.min(...allVals), maxV = Math.max(...allVals);
-    const toPts = (arr) => arr.map((v, i) => {
-      const x = (i / (arr.length - 1)) * 560;
-      const y = 140 - ((v - minV) / (maxV - minV || 1)) * 120;
-      return x.toFixed(1) + ',' + y.toFixed(1);
-    }).join(' ');
-    const lastX = 560, lastY = 140 - ((curr[curr.length - 1] - minV) / (maxV - minV || 1)) * 120;
-
     const sessionsBase = [
-      { key: 'p1', name: '1부', shortName: '1부', rate: 145000 },
-      { key: 'p2', name: '2부', shortName: '2부', rate: 188000 },
-      { key: 'p3', name: '3부', shortName: '3부', rate: 128000 }
+      { key: 'p1', name: '1부', shortName: '1부' },
+      { key: 'p2', name: '2부', shortName: '2부' },
+      { key: 'p3', name: '3부', shortName: '3부' }
     ];
     const impacts = sessionsBase.map(s => this.state.adj[s.key] * this.state.rounds[s.key]);
     const maxAbs = Math.max(1, ...impacts.map(v => Math.abs(v)));
@@ -737,6 +722,18 @@ class Component extends DCLogic {
       };
     });
 
+    const periodMeta = {
+      day: { label: '일간', deltaText: '어제 대비 +8.2%', deltaUp: true },
+      week: { label: '주간', deltaText: '전주 대비 +5.1%', deltaUp: true },
+      month: { label: '월간', deltaText: '전월 대비 -2.3%', deltaUp: false },
+      year: { label: '연간', deltaText: '전년 대비 +11.6%', deltaUp: true }
+    };
+    const periods = ['day', 'week', 'month', 'year'].map(key => ({
+      key, label: periodMeta[key].label,
+      activeClass: this.state.salesPeriod === key ? 'active' : '',
+      onClick: () => this.setState({ salesPeriod: key })
+    }));
+
     const gfRows12 = [
       { label: '1부 · 첫팀~06:22', weekday: '130,000', sat: '160,000', sun: '160,000' },
       { label: '1부 · 06:30~06:52', weekday: '140,000', sat: '170,000', sun: '170,000' },
@@ -748,18 +745,43 @@ class Component extends DCLogic {
       { label: '3부 · 17:46~18:35', weekday: '120,000', sat: '140,000', sun: '130,000' }
     ];
 
-    let detail = { show: false, isSales: false, isCash: false, isDay: false };
-    if (this.state.detail.type === 'sales') {
-      detail = {
-        show: true, isSales: true, isCash: false, isDay: false,
-        title: '매출 상세', subtitle: '오늘 · 무노스 일일영업집계 (매출집계 기준)',
-        salesRows: salesCats.map(c => ({ name: c.name, color: c.color, valueLabel: this.fmtWon(c.value), shareLabel: this.fmtShare(c.value, total) }))
-      };
-    } else if (this.state.detail.type === 'cash') {
-      detail = {
-        show: true, isSales: false, isCash: true, isDay: false,
-        title: '자금 상세', subtitle: '9월 8일(화) · 은행별 자금 흐름',
-        cashRows: banks.map(b => {
+    return {
+      isHome: view === 'home', isSales: view === 'sales', isReservation: view === 'reservation',
+      isCash: view === 'cash', isGreenfee: view === 'greenfee', isWeather: view === 'weather',
+      goHome: () => this.setState({ view: 'home', selectedDay: null }),
+      goSales: () => this.setState({ view: 'sales', selectedDay: null }),
+      goReservation: () => this.setState({ view: 'reservation', selectedDay: null }),
+      goCash: () => this.setState({ view: 'cash', selectedDay: null }),
+      goGreenfee: () => this.setState({ view: 'greenfee', selectedDay: null }),
+      goWeather: () => this.setState({ view: 'weather', selectedDay: null }),
+
+      today: { label: '2026년 9월 8일 (화)', updated: '06:12 자동 갱신' },
+
+      nav: {
+        salesValue: '오늘 ' + this.fmtCompact(this.buildSales('day').total),
+        reservationValue: '오늘 가동률 48%',
+        cashValue: '잔액 ' + this.fmtCompact(555095954),
+        greenfeeValue: this.state.gfMonth === 'sep' ? '9월 승인됨' : '10월 제출 대기',
+        weatherValue: '27°C · 맑음'
+      },
+
+      sales: {
+        periods, periodLabel: periodMeta[this.state.salesPeriod].label,
+        totalLabel: this.fmtWon(salesData.total), totalCompact: this.fmtCompact(salesData.total),
+        deltaText: periodMeta[this.state.salesPeriod].deltaText,
+        deltaClass: periodMeta[this.state.salesPeriod].deltaUp ? 'delta-up' : 'delta-down',
+        donutGradient: salesData.donutGradient,
+        categories: salesData.cats.map(c => ({ name: c.name, color: c.color, valueLabel: this.fmtCompact(c.value), shareLabel: this.fmtShare(c.value, salesData.total) }))
+      },
+
+      reservation: { days: this.buildReservationDays() },
+      dayDetail,
+
+      cash: {
+        dateLabel: '9월 8일(화) 기준',
+        yesterday: '880,007,242', deposit: '49,788,153', withdrawal: '374,699,441', today: '555,095,954',
+        banks: banks.map(b => ({ name: b.name, widthPct: Math.round((b.amount / maxBank) * 100) + '%', amountLabel: this.fmtCompact(b.amount) })),
+        detailRows: banks.map(b => {
           const share = b.amount / bankTotal;
           return {
             name: b.name,
@@ -769,47 +791,19 @@ class Component extends DCLogic {
             now: b.amount.toLocaleString('ko-KR')
           };
         })
-      };
-    } else if (this.state.detail.type === 'day') {
-      detail = this.buildDayDetail(this.state.detail.day, this.state.detail.cap, this.state.detail.booked, this.state.detail.pct, this.state.detail.closed);
-    }
+      },
 
-    return {
-      today: { label: '2026년 9월 8일 (화)', updated: '06:12 자동 갱신' },
-      stat: {
-        salesValue: '₩' + total.toLocaleString('ko-KR'),
-        salesDeltaText: '어제 대비 +8.2%', salesDeltaClass: 'delta-up',
-        occValue: '48%', occDeltaText: '전주 화요일 대비 -3%p', occDeltaClass: 'delta-down',
-        cashValue: '₩555,095,954', cashDeltaText: '전일 대비 -₩324,911,288', cashDeltaClass: 'delta-down',
-        weatherValue: '27°C', weatherDeltaText: '맑음 · 강수확률 10%'
-      },
-      reservation: { days },
-      sales: {
-        totalCompact: this.fmtCompact(total),
-        donutGradient,
-        categories: salesCats.map(c => ({
-          name: c.name, color: c.color,
-          valueLabel: this.fmtCompact(c.value),
-          shareLabel: this.fmtShare(c.value, total)
-        }))
-      },
-      trend: {
-        gridLines: [0, 1, 2, 3].map(i => ({ y: 10 + i * 40 })),
-        currPoints: toPts(curr), prevPoints: toPts(prev), lastX, lastY
-      },
-      cash: {
-        dateLabel: '9월 8일(화) 기준',
-        yesterday: '880,007,242', deposit: '49,788,153', withdrawal: '374,699,441', today: '555,095,954',
-        banks: banks.map(b => ({ name: b.name, widthPct: Math.round((b.amount / maxBank) * 100) + '%', amountLabel: this.fmtCompact(b.amount) }))
-      },
       weather: {
         temp: '27°C', desc: '맑음', pop: '10%',
         forecast: [
           { day: '내일', temp: '26° / 19°', pop: '20%' },
           { day: '모레', temp: '24° / 18°', pop: '60%' },
-          { day: '글피', temp: '25° / 19°', pop: '30%' }
+          { day: '글피', temp: '25° / 19°', pop: '30%' },
+          { day: '9/12(토)', temp: '27° / 20°', pop: '10%' },
+          { day: '9/13(일)', temp: '26° / 20°', pop: '40%' }
         ]
       },
+
       gfIsSep: this.state.gfMonth === 'sep' ? 'active' : '',
       gfIsOct: this.state.gfMonth === 'oct' ? 'active' : '',
       selectSep: () => this.setState({ gfMonth: 'sep' }),
@@ -819,14 +813,9 @@ class Component extends DCLogic {
         rows12: gfRows12, rows3: gfRows3, cart: '100,000원', caddie: '150,000원',
         exceptions: [{ date: '9/24(목)', note: '주중요금 적용' }, { date: '9/25(금)', note: '추석당일 휴장' }]
       } : { badgeClass: 'badge-warning', badgeText: '제출 대기', hasData: false, showEmpty: true, rows12: [], rows3: [], exceptions: [] },
-      sim: { sessions, totalLabel: this.fmtSigned(totalImpact), totalClass: totalImpact >= 0 ? 'imp-pos' : 'imp-neg', totalSub: '최근 30일 평균 라운드 수 기준 추정치' },
-      resetAll: () => this.setState({ adj: { p1: 0, p2: 0, p3: 0 }, rounds: { p1: 620, p2: 210, p3: 340 } }),
 
-      detail,
-      openSalesDetail: () => this.setState({ detail: { type: 'sales' } }),
-      openCashDetail: () => this.setState({ detail: { type: 'cash' } }),
-      closeDetail: () => this.setState({ detail: { type: null } }),
-      stopClick: (e) => e.stopPropagation()
+      sim: { sessions, totalLabel: this.fmtSigned(totalImpact), totalClass: totalImpact >= 0 ? 'imp-pos' : 'imp-neg', totalSub: '최근 30일 평균 라운드 수 기준 추정치' },
+      resetAll: () => this.setState({ adj: { p1: 0, p2: 0, p3: 0 }, rounds: { p1: 620, p2: 210, p3: 340 } })
     };
   }
 }
