@@ -1,6 +1,6 @@
 # 진행 상황 요약 (Continuation Notes)
 
-최종 업데이트: 2026-09-10
+최종 업데이트: 2026-09-10 (저녁)
 대상: 골프장 현황 대시보드 (`(주)오션디앤씨 스톤게이트CC`, 부산 기장군)
 
 이 문서는 다른 세션/환경(집 PC 등)에서 작업을 이어갈 때 맥락을 빠르게 따라잡기 위한 요약입니다. 상세 요구사항과 결정 근거는 `PRD.md`를 참고하세요.
@@ -55,7 +55,10 @@
 - ✅ `web/src/lib/firebase-client.ts` (브라우저용, 읽기 전용 Firestore) / `web/src/lib/firebase-admin.ts` (서버 전용, Admin SDK) 작성 완료
 - ✅ `web/src/app/api/health/route.ts` — Firestore 쓰기/읽기 왕복 테스트 성공 확인 (`{"ok":true,...}`)
 - ✅ `web/.env.local` 설정 완료 (Firebase client config + Admin SDK 자격증명 + `UPLOAD_PIN=1234` 임시값 — **실제 운영 전 반드시 변경할 것**)
-- ⬜ **다음으로 할 것**: Firestore 데이터 스키마 실제 구현 (PRD.md §4: `reservations`/`dailySales`/`cashFlow`/`greenFeeRates`/`greenFeeApprovals`/`weatherCache`), Firestore 보안 규칙 작성(읽기 공개/쓰기 전부 차단), 엑셀 파싱 로직(`xlsx`, PRD.md §2 구조 활용), `/upload` 페이지 실제 구현, 대시보드 실제 구현(프로토타입 → 실데이터 연동)
+- ✅ **Firestore 데이터 스키마 타입 정의 완료** — `web/src/types/firestore.ts` (`ReservationDoc`, `DailySalesDoc`, `CashFlowDoc`(은행별 배열 + 입출금 상세 포함), `GreenFeeRatesDoc`(1부/2부/3부, 3부만 요일군 다름 반영), `GreenFeeApprovalDoc`, `WeatherCacheDoc`, `UploadLogDoc`), 컬렉션 이름 상수는 `web/src/lib/collections.ts`
+- ✅ **Firestore 보안 규칙 작성 완료** — `web/firestore.rules` (대시보드 데이터 컬렉션 전체 공개 읽기 / 쓰기 전부 차단). `web/firebase.json` + `web/.firebaserc`(project: `stonegate-8f538`)도 추가해둠.
+  - ⚠️ **CLI 자동 배포는 권한 부족으로 실패함** (서비스 계정 키엔 "규칙 배포" 권한이 없음 — 의도된 최소 권한이라 정상). **사용자가 Firebase 콘솔 → Firestore Database → 규칙 탭에서 위 파일 내용을 수동으로 붙여넣고 게시해야 함 — 다음 세션 시작 시 확인 필요 (아직 안 했을 수 있음).**
+- ⬜ **다음으로 할 것**: 엑셀 파싱 로직 구현(`xlsx`, PRD.md §2 구조 활용, 위 타입에 맞춰 파싱), `/upload` 페이지 실제 구현(PIN + 파싱 + Firestore 쓰기 API Route), 대시보드 실제 구현(프로토타입 → 실데이터 연동)
 - 참고: 로컬 개발 서버는 `cd web && npm run dev` → http://localhost:3000
 
 ### 4.3 아직 시작 안 한 계정 준비

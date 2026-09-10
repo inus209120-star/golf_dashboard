@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// 읽기: 대표님 조회 화면은 로그인이 없으므로 대시보드 데이터 컬렉션은 전체 공개 읽기.
+// 쓰기: 전부 차단. 실제 쓰기는 Next.js API Route가 firebase-admin(서비스 계정)으로
+// 수행하며, Admin SDK는 이 규칙을 우회하므로 클라이언트가 직접 쓸 방법이 없다.
+// (PIN 검증은 그 API Route 안에서만 이루어진다 - PRD.md §3.2 참고)
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /reservations/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /dailySales/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /cashFlow/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /greenFeeRates/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /greenFeeApprovals/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /weatherCache/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /uploadLog/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 그 외 컬렉션(예: _health 테스트 문서)은 완전 차단.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
