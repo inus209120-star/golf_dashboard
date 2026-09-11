@@ -11,7 +11,6 @@ const DETAIL_COL = { LABEL: 11, DESC: 12, AMOUNT: 13 }; // L / M / N
 const SUBTOTAL_NAMES = new Set(["보통예금계", "예적금계", "총합계", "구    분"]);
 
 function mergedGrid(sheet: XLSX.WorkSheet) {
-  const range = XLSX.utils.decode_range(sheet["!ref"] ?? "A1:A1");
   const merges = sheet["!merges"] ?? [];
   return function get(r: number, c: number): unknown {
     for (const m of merges) {

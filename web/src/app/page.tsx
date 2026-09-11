@@ -1,69 +1,72 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { adminDb } from "@/lib/firebase-admin";
+import { COLLECTIONS } from "@/lib/collections";
+import type {
+  ReservationDoc,
+  DailySalesDoc,
+  CashFlowDoc,
+  GreenFeeRatesDoc,
+  WeatherCacheDoc,
+} from "@/types/firestore";
+import DashboardClient from "./DashboardClient";
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+// This page must never be statically prerendered at build time - it reads
+// live Firestore data (uploaded on a schedule the build has no knowledge
+// of), so every request needs a fresh fetch.
+export const dynamic = "force-dynamic";
+
+function ymFromDate(date: string): string {
+  return date.slice(0, 7); // "YYYY-MM-DD" -> "YYYY-MM"
+}
+function shiftMonth(ym: string, delta: number): string {
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+async function loadData() {
+  const [reservationsSnap, cashFlowSnap, dailySalesSnap] = await Promise.all([
+    adminDb.collection(COLLECTIONS.reservations).get(),
+    adminDb.collection(COLLECTIONS.cashFlow).get(),
+    adminDb.collection(COLLECTIONS.dailySales).get(),
+  ]);
+
+  const reservations = reservationsSnap.docs.map((d) => d.data() as ReservationDoc).sort((a, b) => a.date.localeCompare(b.date));
+  const cashFlows = cashFlowSnap.docs.map((d) => d.data() as CashFlowDoc).sort((a, b) => a.date.localeCompare(b.date));
+  const dailySales = dailySalesSnap.docs.map((d) => d.data() as DailySalesDoc).sort((a, b) => a.date.localeCompare(b.date));
+
+  // Show whichever month actually has reservation data, most recent first -
+  // real deployments won't always have "this month" uploaded yet.
+  const latestReservationMonth = reservations.length ? ymFromDate(reservations[reservations.length - 1].date) : null;
+  const reservationsForMonth = latestReservationMonth
+    ? reservations.filter((r) => ymFromDate(r.date) === latestReservationMonth)
+    : [];
+
+  const latestCashFlow = cashFlows.length ? cashFlows[cashFlows.length - 1] : null;
+  const latestDailySales = dailySales.length ? dailySales[dailySales.length - 1] : null;
+
+  const todayYm = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+  const nextYm = shiftMonth(todayYm, 1);
+  const [currentGfSnap, nextGfSnap, weatherSnap] = await Promise.all([
+    adminDb.collection(COLLECTIONS.greenFeeRates).doc(todayYm).get(),
+    adminDb.collection(COLLECTIONS.greenFeeRates).doc(nextYm).get(),
+    adminDb.collection(COLLECTIONS.weatherCache).doc("current").get(),
+  ]);
+
+  return {
+    reservationsForMonth,
+    reservationMonth: latestReservationMonth,
+    dailySales,
+    latestDailySales,
+    latestCashFlow,
+    greenFeeCurrent: (currentGfSnap.exists ? (currentGfSnap.data() as GreenFeeRatesDoc) : null),
+    greenFeeCurrentYm: todayYm,
+    greenFeeNext: (nextGfSnap.exists ? (nextGfSnap.data() as GreenFeeRatesDoc) : null),
+    greenFeeNextYm: nextYm,
+    weather: (weatherSnap.exists ? (weatherSnap.data() as WeatherCacheDoc) : null),
+  };
+}
+
+export default async function Home() {
+  const data = await loadData();
+  return <DashboardClient {...data} />;
 }
