@@ -4,6 +4,7 @@ import { useState } from "react";
 import { parseReservationFile } from "@/lib/parsers/reservation";
 import { parseCashFlowFile } from "@/lib/parsers/cashFlow";
 import { parseDailySalesFile } from "@/lib/parsers/dailySales";
+import type { GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
 
 // Functional-first UI - no styling pass yet (matches the design canvas
 // prototype's look). This page proves the parse -> PIN check -> Firestore
@@ -154,6 +155,152 @@ function SalesUploader({ pin }: { pin: string }) {
   );
 }
 
+function nextYearMonth(): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+// Defaults pre-filled from the real September rate notice (PRD.md §9.2) -
+// a reasonable starting point for the first-ever submission; from the
+// second month on, field staff would want this pre-filled from last
+// month's saved rates instead (not built yet - see PROGRESS.md).
+const DEFAULT_SESSION1: GreenFeeSession1Row[] = [
+  { timeLabel: "첫팀~06:22", weekday: 130000, saturday: 160000, sundayHoliday: 160000 },
+  { timeLabel: "06:30~06:52", weekday: 140000, saturday: 170000, sundayHoliday: 170000 },
+  { timeLabel: "07:00~막팀", weekday: 150000, saturday: 180000, sundayHoliday: 180000 },
+];
+const DEFAULT_SESSION3: GreenFeeSession3Row[] = [
+  { timeLabel: "16:15~17:39", monThu: 130000, friSat: 150000, sundayHoliday: 140000 },
+  { timeLabel: "17:46~18:35", monThu: 120000, friSat: 140000, sundayHoliday: 130000 },
+];
+
+function NumberCell({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <input
+      type="text"
+      value={value.toLocaleString("ko-KR")}
+      onChange={(e) => {
+        const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
+        onChange(isNaN(n) ? 0 : n);
+      }}
+      style={{ width: 90, textAlign: "right", padding: 4 }}
+    />
+  );
+}
+
+function GreenfeeUploader({ pin }: { pin: string }) {
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [yearMonth, setYearMonth] = useState(nextYearMonth());
+  const [session1, setSession1] = useState(DEFAULT_SESSION1);
+  const [session2, setSession2] = useState({ weekday: 180000, saturday: 200000, sundayHoliday: 190000 });
+  const [session3, setSession3] = useState(DEFAULT_SESSION3);
+  const [cartFee, setCartFee] = useState(100000);
+  const [caddieFee, setCaddieFee] = useState(150000);
+  const [exceptions, setExceptions] = useState<GreenFeeException[]>([]);
+
+  function updateS1(i: number, field: keyof GreenFeeSession1Row, value: number) {
+    setSession1((rows) => rows.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
+  }
+  function updateS3(i: number, field: keyof GreenFeeSession3Row, value: number) {
+    setSession3((rows) => rows.map((r, idx) => (idx === i ? { ...r, [field]: value } : r)));
+  }
+
+  async function onSubmit() {
+    setStatus({ kind: "working" });
+    const doc: GreenFeeRatesDoc = {
+      yearMonth, session1, session2, session3, cartFee, caddieFee, exceptions,
+      status: "pending", submittedAt: null, approvedAt: null,
+    };
+    try {
+      const res = await fetch("/api/upload/greenfee", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, doc }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setStatus({ kind: "error", message: json.error ?? "제출 실패" });
+        return;
+      }
+      setStatus({ kind: "success", message: `${yearMonth} 그린피 단가표 제출 완료 - 대표님 승인 대기중` });
+    } catch (err) {
+      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
+  return (
+    <section style={{ marginBottom: 24 }}>
+      <h3>그린피 단가 입력</h3>
+      <p style={{ fontSize: 13, color: "#666" }}>
+        대상 월:{" "}
+        <input type="text" value={yearMonth} onChange={(e) => setYearMonth(e.target.value)} placeholder="YYYY-MM" style={{ padding: 4, width: 90 }} />
+      </p>
+
+      <table style={{ borderCollapse: "collapse", marginBottom: 12 }}>
+        <tbody>
+          <tr><th></th><th style={{ padding: "2px 8px" }}>주중</th><th style={{ padding: "2px 8px" }}>토</th><th style={{ padding: "2px 8px" }}>일·공휴일</th></tr>
+          {session1.map((r, i) => (
+            <tr key={r.timeLabel}>
+              <td style={{ fontSize: 12, paddingRight: 8 }}>1부 · {r.timeLabel}</td>
+              <td><NumberCell value={r.weekday} onChange={(n) => updateS1(i, "weekday", n)} /></td>
+              <td><NumberCell value={r.saturday} onChange={(n) => updateS1(i, "saturday", n)} /></td>
+              <td><NumberCell value={r.sundayHoliday} onChange={(n) => updateS1(i, "sundayHoliday", n)} /></td>
+            </tr>
+          ))}
+          <tr>
+            <td style={{ fontSize: 12, paddingRight: 8 }}>2부 · 전타임</td>
+            <td><NumberCell value={session2.weekday} onChange={(n) => setSession2((s) => ({ ...s, weekday: n }))} /></td>
+            <td><NumberCell value={session2.saturday} onChange={(n) => setSession2((s) => ({ ...s, saturday: n }))} /></td>
+            <td><NumberCell value={session2.sundayHoliday} onChange={(n) => setSession2((s) => ({ ...s, sundayHoliday: n }))} /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>3부는 요일군이 다름 (월~목 / 금·토 / 일·공휴일)</p>
+      <table style={{ borderCollapse: "collapse", marginBottom: 12 }}>
+        <tbody>
+          <tr><th></th><th style={{ padding: "2px 8px" }}>월~목</th><th style={{ padding: "2px 8px" }}>금·토</th><th style={{ padding: "2px 8px" }}>일·공휴일</th></tr>
+          {session3.map((r, i) => (
+            <tr key={r.timeLabel}>
+              <td style={{ fontSize: 12, paddingRight: 8 }}>3부 · {r.timeLabel}</td>
+              <td><NumberCell value={r.monThu} onChange={(n) => updateS3(i, "monThu", n)} /></td>
+              <td><NumberCell value={r.friSat} onChange={(n) => updateS3(i, "friSat", n)} /></td>
+              <td><NumberCell value={r.sundayHoliday} onChange={(n) => updateS3(i, "sundayHoliday", n)} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p style={{ fontSize: 13 }}>
+        카트료 (팀당): <NumberCell value={cartFee} onChange={setCartFee} />원 &nbsp;&nbsp;
+        캐디피 (전 부): <NumberCell value={caddieFee} onChange={setCaddieFee} />원
+      </p>
+
+      <div style={{ marginTop: 12 }}>
+        <p style={{ fontSize: 13, fontWeight: 600 }}>날짜별 예외 (휴장 / 요금 조정)</p>
+        {exceptions.map((e, i) => (
+          <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+            <input type="text" placeholder="YYYY-MM-DD" value={e.date} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, date: ev.target.value } : x)))} style={{ width: 110, padding: 4 }} />
+            <input type="text" placeholder="예: 추석당일 휴장" value={e.note} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, note: ev.target.value } : x)))} style={{ flex: 1, padding: 4 }} />
+            <label style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}>
+              <input type="checkbox" checked={e.closed} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, closed: ev.target.checked } : x)))} />
+              휴장
+            </label>
+            <button onClick={() => setExceptions((xs) => xs.filter((_, idx) => idx !== i))}>삭제</button>
+          </div>
+        ))}
+        <button onClick={() => setExceptions((xs) => [...xs, { date: "", note: "", closed: false }])}>+ 예외 추가</button>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <button style={{ padding: "8px 20px", fontWeight: 600 }} onClick={onSubmit}>제출</button>
+      </div>
+      <StatusLine status={status} />
+    </section>
+  );
+}
+
 export default function UploadPage() {
   const [pinInput, setPinInput] = useState("");
   const [unlockedPin, setUnlockedPin] = useState<string | null>(null);
@@ -180,7 +327,7 @@ export default function UploadPage() {
   }
 
   return (
-    <main style={{ maxWidth: 480, margin: "40px auto", fontFamily: "system-ui" }}>
+    <main style={{ maxWidth: 640, margin: "40px auto", fontFamily: "system-ui" }}>
       <h2>현장 업로드</h2>
       <p style={{ color: "#666", fontSize: 13 }}>
         파일을 선택하면 자동으로 파싱되어 저장됩니다. PIN은 서버에서도 다시 검증되므로, 틀리면 저장 단계에서 오류가 표시됩니다.
@@ -188,6 +335,8 @@ export default function UploadPage() {
       <ReservationUploader pin={unlockedPin} />
       <CashFlowUploader pin={unlockedPin} />
       <SalesUploader pin={unlockedPin} />
+      <hr style={{ margin: "24px 0" }} />
+      <GreenfeeUploader pin={unlockedPin} />
     </main>
   );
 }

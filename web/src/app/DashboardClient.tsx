@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type {
   ReservationDoc,
   DailySalesDoc,
@@ -129,6 +130,22 @@ export default function DashboardClient(props: Props) {
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [adj, setAdj] = useState({ p1: 0, p2: 0, p3: 0 });
   const [roundsOverride, setRoundsOverride] = useState<{ p1: number | null; p2: number | null; p3: number | null }>({ p1: null, p2: null, p3: null });
+  const [approving, setApproving] = useState(false);
+  const router = useRouter();
+
+  async function approveGreenFee(ym: string) {
+    setApproving(true);
+    try {
+      await fetch("/api/greenfee/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ yearMonth: ym }),
+      });
+      router.refresh();
+    } finally {
+      setApproving(false);
+    }
+  }
 
   function go(v: View) {
     setView(v);
@@ -513,8 +530,15 @@ export default function DashboardClient(props: Props) {
             <div className="card">
               <div className="card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 단가표
-                <span className={`badge ${gf?.status === "approved" ? "badge-good" : "badge-warning"}`}>
-                  {gf ? (gf.status === "approved" ? "승인됨" : "승인 대기") : "미입력"}
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span className={`badge ${gf?.status === "approved" ? "badge-good" : "badge-warning"}`}>
+                    {gf ? (gf.status === "approved" ? "승인됨" : "승인 대기") : "미입력"}
+                  </span>
+                  {gf && gf.status !== "approved" && (
+                    <button className="toggle-btn active" disabled={approving} onClick={() => approveGreenFee(gfYm)}>
+                      {approving ? "처리중..." : "승인하기"}
+                    </button>
+                  )}
                 </span>
               </div>
               <div className="month-toggle">
