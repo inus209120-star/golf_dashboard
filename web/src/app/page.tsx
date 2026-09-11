@@ -46,21 +46,23 @@ async function loadData() {
 
   const todayYm = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
   const nextYm = shiftMonth(todayYm, 1);
-  const [currentGfSnap, nextGfSnap, weatherSnap] = await Promise.all([
-    adminDb.collection(COLLECTIONS.greenFeeRates).doc(todayYm).get(),
-    adminDb.collection(COLLECTIONS.greenFeeRates).doc(nextYm).get(),
+  const [greenFeeAllSnap, weatherSnap] = await Promise.all([
+    adminDb.collection(COLLECTIONS.greenFeeRates).get(),
     adminDb.collection(COLLECTIONS.weatherCache).doc("current").get(),
   ]);
+  const greenFeeAll = greenFeeAllSnap.docs
+    .map((d) => d.data() as GreenFeeRatesDoc)
+    .sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
 
   return {
+    reservations, // full history - used for cross-collection joins (RevPAR, recent-days table)
     reservationsForMonth,
     reservationMonth: latestReservationMonth,
     dailySales,
     latestDailySales,
     latestCashFlow,
-    greenFeeCurrent: (currentGfSnap.exists ? (currentGfSnap.data() as GreenFeeRatesDoc) : null),
+    greenFeeAll,
     greenFeeCurrentYm: todayYm,
-    greenFeeNext: (nextGfSnap.exists ? (nextGfSnap.data() as GreenFeeRatesDoc) : null),
     greenFeeNextYm: nextYm,
     weather: (weatherSnap.exists ? (weatherSnap.data() as WeatherCacheDoc) : null),
   };

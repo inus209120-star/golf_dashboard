@@ -11,14 +11,14 @@ import type {
 } from "@/types/firestore";
 
 interface Props {
+  reservations: ReservationDoc[];
   reservationsForMonth: ReservationDoc[];
   reservationMonth: string | null;
   dailySales: DailySalesDoc[];
   latestDailySales: DailySalesDoc | null;
   latestCashFlow: CashFlowDoc | null;
-  greenFeeCurrent: GreenFeeRatesDoc | null;
+  greenFeeAll: GreenFeeRatesDoc[];
   greenFeeCurrentYm: string;
-  greenFeeNext: GreenFeeRatesDoc | null;
   greenFeeNextYm: string;
   weather: WeatherCacheDoc | null;
 }
@@ -119,14 +119,14 @@ const SideIcon = {
 
 export default function DashboardClient(props: Props) {
   const {
-    reservationsForMonth, reservationMonth, dailySales, latestDailySales,
-    latestCashFlow, greenFeeCurrent, greenFeeCurrentYm,
-    greenFeeNext, greenFeeNextYm, weather,
+    reservations, reservationsForMonth, reservationMonth, dailySales, latestDailySales,
+    latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather,
   } = props;
 
   const [view, setView] = useState<View>("dashboard");
   const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>("day");
-  const [gfMonth, setGfMonth] = useState<"current" | "next">("current");
+  const [selectedYm, setSelectedYm] = useState(greenFeeCurrentYm);
+  const [gfYear, setGfYear] = useState(greenFeeCurrentYm.slice(0, 4));
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [adj, setAdj] = useState({ p1: 0, p2: 0, p3: 0 });
   const [roundsOverride, setRoundsOverride] = useState<{ p1: number | null; p2: number | null; p3: number | null }>({ p1: null, p2: null, p3: null });
@@ -153,6 +153,7 @@ export default function DashboardClient(props: Props) {
   }
 
   const today = todayStr();
+  const reservationByDate = useMemo(() => new Map(reservations.map((r) => [r.date, r])), [reservations]);
 
   // ---- reservation calendar ----
   const calendarDays = useMemo(() => {
@@ -172,6 +173,27 @@ export default function DashboardClient(props: Props) {
 
   const selectedReservation = selectedDay ? reservationsForMonth.find((r) => r.date === selectedDay) ?? null : null;
 
+  const maxSlots = Math.max(1, ...reservationsForMonth.map((r) => r.totalSlots));
+  const channelTotals = useMemo(() => {
+    const totals = reservationsForMonth.reduce(
+      (a, r) => ({
+        internet: a.internet + r.internetBookings,
+        mobile: a.mobile + r.mobileBookings,
+        phone: a.phone + r.phoneBookings,
+        other: a.other + r.otherBookings,
+      }),
+      { internet: 0, mobile: 0, phone: 0, other: 0 }
+    );
+    const total = totals.internet + totals.mobile + totals.phone + totals.other;
+    return [
+      { name: "인터넷", value: totals.internet, color: SERIES[0] },
+      { name: "모바일", value: totals.mobile, color: SERIES[2] },
+      { name: "전화", value: totals.phone, color: SERIES[3] },
+      { name: "기타", value: totals.other, color: SERIES[4] },
+    ].map((c) => ({ ...c, total }));
+  }, [reservationsForMonth]);
+  const channelTotal = channelTotals[0]?.total ?? 0;
+
   // ---- sales periods ----
   const latestSalesDate = latestDailySales?.date ?? null;
   const periodDocs = useMemo(() => {
@@ -185,6 +207,31 @@ export default function DashboardClient(props: Props) {
   const periodSum = sumSales(periodDocs);
   const periodLabel = { day: "일간", week: "주간", month: "월간", year: "연간" }[salesPeriod];
   const periodCats = salesCategories(periodSum);
+
+  // KPI: 예약팀수 합계/가동률 평균 and 객단가(RevPAR) - joined against reservations by
+  // date, since sales and reservation data don't necessarily share one "current month".
+  const periodReservations = periodDocs.map((d) => reservationByDate.get(d.date)).filter((r): r is ReservationDoc => !!r);
+  const periodRounds = periodReservations.reduce((a, r) => a + r.totalBookings, 0);
+  const periodSlots = periodReservations.reduce((a, r) => a + r.totalSlots, 0);
+  const periodOccPct = periodSlots > 0 ? Math.round((periodRounds / periodSlots) * 100) : null;
+  const revpar = periodSum && periodRounds > 0
+    ? (periodSum.greenFee + periodSum.foodBeverage + periodSum.cartFee) / periodRounds
+    : null;
+
+  const recentSalesRows = dailySales.slice(-10).reverse().map((d) => ({
+    doc: d,
+    resv: reservationByDate.get(d.date) ?? null,
+  }));
+
+  const monthlyTrend = useMemo(() => {
+    const byMonth = new Map<string, number>();
+    for (const d of dailySales) {
+      const ym = d.date.slice(0, 7);
+      byMonth.set(ym, (byMonth.get(ym) ?? 0) + d.total);
+    }
+    return Array.from(byMonth.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [dailySales]);
+  const maxTrend = Math.max(1, ...monthlyTrend.map(([, v]) => v));
 
   // ---- greenfee simulation base rounds (avg of available reservation days) ----
   const avgRounds = useMemo(() => {
@@ -207,8 +254,16 @@ export default function DashboardClient(props: Props) {
   const totalImpact = impacts.p1 + impacts.p2 + impacts.p3;
   const maxAbsImpact = Math.max(1, Math.abs(impacts.p1), Math.abs(impacts.p2), Math.abs(impacts.p3));
 
-  const gf = gfMonth === "current" ? greenFeeCurrent : greenFeeNext;
-  const gfYm = gfMonth === "current" ? greenFeeCurrentYm : greenFeeNextYm;
+  const greenFeeMap = useMemo(() => new Map(greenFeeAll.map((g) => [g.yearMonth, g])), [greenFeeAll]);
+  const greenFeeCurrent = greenFeeMap.get(greenFeeCurrentYm) ?? null;
+  const gf = greenFeeMap.get(selectedYm) ?? null;
+  const gfYm = selectedYm;
+  const gfYearsWithData = useMemo(() => {
+    const years = new Set(greenFeeAll.map((g) => g.yearMonth.slice(0, 4)));
+    years.add(greenFeeCurrentYm.slice(0, 4));
+    return Array.from(years).sort();
+  }, [greenFeeAll, greenFeeCurrentYm]);
+
 
   // ---- dashboard overview data ----
   const overviewCats = salesCategories(latestDailySales).sort((a, b) => b.value - a.value).slice(0, 3);
@@ -379,6 +434,27 @@ export default function DashboardClient(props: Props) {
                 </>
               ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다. /upload에서 일일영업집계를 업로드해주세요.</div>}
             </div>
+
+            {periodSum && (
+              <div className="kpi-row">
+                <div className="kpi-card">
+                  <div className="kpi-label">매출액</div>
+                  <div className="kpi-value">{fmtCompact(periodSum.total)}</div>
+                  <div className="kpi-sub">{periodLabel} 합계</div>
+                </div>
+                <div className="kpi-card">
+                  <div className="kpi-label">객단가 (RevPAR)</div>
+                  <div className="kpi-value">{revpar !== null ? fmtCompact(revpar) : "-"}</div>
+                  <div className="kpi-sub">그린피+식음+카트료 ÷ 예약팀수</div>
+                </div>
+                <div className="kpi-card">
+                  <div className="kpi-label">예약팀수 · 가동률</div>
+                  <div className="kpi-value">{periodRounds.toLocaleString("ko-KR")}팀</div>
+                  <div className="kpi-sub">{periodOccPct !== null ? `가동률 ${periodOccPct}%` : "예약 데이터 없음"}</div>
+                </div>
+              </div>
+            )}
+
             {periodSum && (
               <div className="card">
                 <div className="card-title">품목별 매출</div>
@@ -401,6 +477,42 @@ export default function DashboardClient(props: Props) {
                 </div>
               </div>
             )}
+
+            <div className="card">
+              <div className="card-title">월간 매출 추이</div>
+              <div className="card-sub">월별 매출 합계 (데이터가 쌓일수록 채워집니다)</div>
+              {monthlyTrend.length ? (
+                <div className="trend-bar-row">
+                  {monthlyTrend.map(([ym, total]) => (
+                    <div className="trend-bar-col" key={ym}>
+                      <div className="trend-bar-value">{fmtCompact(total)}</div>
+                      <div className="trend-bar" style={{ height: `${Math.max(2, (total / maxTrend) * 100)}%` }} />
+                      <div className="trend-bar-label">{ym}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : <div className="day-detail-empty">아직 데이터가 없습니다</div>}
+            </div>
+
+            <div className="card">
+              <div className="card-title">최근 영업일 상세</div>
+              <div className="card-sub">최근 업로드된 일자 기준</div>
+              {recentSalesRows.length ? (
+                <table className="cash-table">
+                  <tbody>
+                    <tr><th>일자</th><th>매출</th><th>예약팀수</th><th>가동률</th></tr>
+                    {recentSalesRows.map(({ doc, resv }) => (
+                      <tr key={doc.date}>
+                        <td>{doc.date}</td>
+                        <td>{doc.total.toLocaleString("ko-KR")}</td>
+                        <td>{resv ? `${resv.totalBookings}팀` : "-"}</td>
+                        <td>{resv ? `${Math.round((resv.totalBookings / (resv.totalSlots || 1)) * 100)}%` : "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다</div>}
+            </div>
           </>
         )}
 
@@ -453,6 +565,56 @@ export default function DashboardClient(props: Props) {
                 </>
               ) : <div className="day-detail-empty">아직 업로드된 예약 데이터가 없습니다. /upload에서 예약현황(일별집계)를 업로드해주세요.</div>}
             </div>
+
+            {reservationsForMonth.length > 0 && (
+              <div className="card">
+                <div className="card-title">일별 예약수 vs 잔여수</div>
+                <div className="card-sub">{reservationMonth} · 전체타임 대비 비중</div>
+                <div className="resv-chart-legend">
+                  <div className="chart-legend-item" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--text-secondary)" }}><span style={{ width: 10, height: 10, borderRadius: 3, background: "var(--series-1)", display: "inline-block" }} />예약</div>
+                  <div className="chart-legend-item" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--text-secondary)" }}><span style={{ width: 10, height: 10, borderRadius: 3, background: "var(--pill-bg)", border: "1px solid var(--divider)", display: "inline-block" }} />잔여</div>
+                </div>
+                <div className="resv-chart-row">
+                  {reservationsForMonth.map((r) => {
+                    const heightPct = Math.max(2, (r.totalSlots / maxSlots) * 100);
+                    const bookedPct = r.totalSlots > 0 ? (r.totalBookings / r.totalSlots) * 100 : 0;
+                    return (
+                      <div className="resv-chart-col" key={r.date} title={`${r.date}: 예약 ${r.totalBookings} / 전체 ${r.totalSlots}`}>
+                        <div className="resv-chart-stack" style={{ height: `${heightPct}%` }}>
+                          <div className="resv-chart-remain" style={{ height: `${100 - bookedPct}%` }} />
+                          <div className="resv-chart-booked" style={{ height: `${bookedPct}%` }} />
+                        </div>
+                        <div className="resv-chart-label">{r.date.slice(-2)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {channelTotal > 0 && (
+              <div className="card">
+                <div className="card-title">예약 채널별 비중</div>
+                <div className="card-sub">{reservationMonth} 합계</div>
+                <div className="donut-row">
+                  <div className="donut-wrap">
+                    <div className="donut" style={{ background: donutGradient(channelTotals, channelTotal) }} />
+                    <div className="donut-hole"><div className="donut-total">{channelTotal.toLocaleString("ko-KR")}팀</div><div className="donut-sub">전체 예약</div></div>
+                  </div>
+                  <div className="legend-list">
+                    {channelTotals.map((c) => (
+                      <div className="legend-item" key={c.name}>
+                        <span className="legend-dot" style={{ background: c.color }} />
+                        <span className="legend-name">{c.name}</span>
+                        <span className="legend-value">{c.value.toLocaleString("ko-KR")}팀</span>
+                        <span className="legend-share">{fmtShare(c.value, channelTotal)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="card">
               {!selectedReservation ? (
                 <div className="day-detail-empty">날짜를 선택하면 상세 예약 정보를 볼 수 있어요</div>
@@ -542,8 +704,31 @@ export default function DashboardClient(props: Props) {
                 </span>
               </div>
               <div className="month-toggle">
-                <button className={`toggle-btn ${gfMonth === "current" ? "active" : ""}`} onClick={() => setGfMonth("current")}>{greenFeeCurrentYm} (이번달)</button>
-                <button className={`toggle-btn ${gfMonth === "next" ? "active" : ""}`} onClick={() => setGfMonth("next")}>{greenFeeNextYm} (익월 확인)</button>
+                <button className={`toggle-btn ${selectedYm === greenFeeCurrentYm ? "active" : ""}`} onClick={() => setSelectedYm(greenFeeCurrentYm)}>{greenFeeCurrentYm} (이번달)</button>
+                <button className={`toggle-btn ${selectedYm === greenFeeNextYm ? "active" : ""}`} onClick={() => setSelectedYm(greenFeeNextYm)}>{greenFeeNextYm} (익월 확인)</button>
+              </div>
+
+              <div className="gf-section-label" style={{ marginTop: 14 }}>연도별 조회</div>
+              <div className="year-row">
+                {gfYearsWithData.map((y) => (
+                  <button key={y} className="year-btn" style={gfYear === y ? { background: "var(--navy)", color: "#fff" } : undefined} onClick={() => setGfYear(y)}>{y}년</button>
+                ))}
+              </div>
+              <div className="month-grid">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const mm = String(i + 1).padStart(2, "0");
+                  const ym = `${gfYear}-${mm}`;
+                  const hasData = greenFeeMap.has(ym);
+                  return (
+                    <button
+                      key={ym}
+                      className={`month-cell ${hasData ? "has-data" : ""} ${selectedYm === ym ? "selected" : ""}`}
+                      onClick={() => setSelectedYm(ym)}
+                    >
+                      {i + 1}월
+                    </button>
+                  );
+                })}
               </div>
               {gf ? (
                 <>
