@@ -8,6 +8,9 @@ import type {
   WeatherCacheDoc,
 } from "@/types/firestore";
 import DashboardClient from "./DashboardClient";
+import { fetchAndCacheWeather } from "@/lib/weather";
+
+const WEATHER_STALE_MS = 3 * 60 * 60 * 1000; // KMA 단기예보 재발표 주기(3시간)
 
 // This page must never be statically prerendered at build time - it reads
 // live Firestore data (uploaded on a schedule the build has no knowledge
@@ -54,6 +57,19 @@ async function loadData() {
     .map((d) => d.data() as GreenFeeRatesDoc)
     .sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
 
+  let weather = weatherSnap.exists ? (weatherSnap.data() as WeatherCacheDoc) : null;
+  const isStale = !weather || Date.now() - new Date(weather.fetchedAt).getTime() > WEATHER_STALE_MS;
+  if (isStale) {
+    try {
+      weather = await fetchAndCacheWeather();
+    } catch (err) {
+      // Keep serving whatever's cached (possibly null) rather than fail the whole
+      // dashboard load over a transient KMA API hiccup - log for now, surface a
+      // proper "연동 오류" status to the UI later if this keeps happening.
+      console.error("weather refresh failed:", err);
+    }
+  }
+
   return {
     reservations, // full history - used for cross-collection joins (RevPAR, recent-days table)
     reservationsForMonth,
@@ -64,7 +80,7 @@ async function loadData() {
     greenFeeAll,
     greenFeeCurrentYm: todayYm,
     greenFeeNextYm: nextYm,
-    weather: (weatherSnap.exists ? (weatherSnap.data() as WeatherCacheDoc) : null),
+    weather,
   };
 }
 
