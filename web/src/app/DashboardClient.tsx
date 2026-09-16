@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   ReservationDoc,
+  DailyVisitorDoc,
   DailySalesDoc,
   CashFlowDoc,
   GreenFeeRatesDoc,
@@ -14,6 +15,7 @@ interface Props {
   reservations: ReservationDoc[];
   reservationsForMonth: ReservationDoc[];
   reservationMonth: string | null;
+  dailyVisitors: DailyVisitorDoc[];
   dailySales: DailySalesDoc[];
   latestDailySales: DailySalesDoc | null;
   latestCashFlow: CashFlowDoc | null;
@@ -119,7 +121,7 @@ const SideIcon = {
 
 export default function DashboardClient(props: Props) {
   const {
-    reservations, reservationsForMonth, reservationMonth, dailySales, latestDailySales,
+    reservations, reservationsForMonth, reservationMonth, dailyVisitors, dailySales, latestDailySales,
     latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather,
   } = props;
 
@@ -154,6 +156,7 @@ export default function DashboardClient(props: Props) {
 
   const today = todayStr();
   const reservationByDate = useMemo(() => new Map(reservations.map((r) => [r.date, r])), [reservations]);
+  const visitorByDate = useMemo(() => new Map(dailyVisitors.map((v) => [v.date, v])), [dailyVisitors]);
 
   // ---- reservation calendar ----
   const calendarDays = useMemo(() => {
@@ -172,6 +175,7 @@ export default function DashboardClient(props: Props) {
   }, [reservationMonth, reservationsForMonth]);
 
   const selectedReservation = selectedDay ? reservationsForMonth.find((r) => r.date === selectedDay) ?? null : null;
+  const selectedVisitor = selectedDay ? visitorByDate.get(selectedDay) ?? null : null;
 
   const maxSlots = Math.max(1, ...reservationsForMonth.map((r) => r.totalSlots));
   const channelTotals = useMemo(() => {
@@ -615,6 +619,27 @@ export default function DashboardClient(props: Props) {
               </div>
             )}
 
+            {dailyVisitors.length > 0 && (
+              <div className="card">
+                <div className="card-title">실제 내장 현황 (팀수/인원)</div>
+                <div className="card-sub">종합영업일보 기준 · 최근 {Math.min(dailyVisitors.length, 14)}일</div>
+                <table className="cash-table">
+                  <tbody>
+                    <tr><th>일자</th><th>요일</th><th>팀수</th><th>인원</th><th>팀당인원</th></tr>
+                    {dailyVisitors.slice(-14).reverse().map((v) => (
+                      <tr key={v.date}>
+                        <td>{v.date}</td>
+                        <td>{v.dayOfWeek}</td>
+                        <td>{v.teams}팀</td>
+                        <td>{v.persons}명</td>
+                        <td>{v.avgPersonsPerTeam.toFixed(2)}명</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             <div className="card">
               {!selectedReservation ? (
                 <div className="day-detail-empty">날짜를 선택하면 상세 예약 정보를 볼 수 있어요</div>
@@ -628,6 +653,9 @@ export default function DashboardClient(props: Props) {
                     <div className="modal-stat"><div className="modal-stat-k">예약</div><div className="modal-stat-v">{selectedReservation.totalBookings}팀</div></div>
                     <div className="modal-stat"><div className="modal-stat-k">잔여</div><div className="modal-stat-v">{selectedReservation.totalRemaining}팀</div></div>
                     <div className="modal-stat"><div className="modal-stat-k">가동률</div><div className="modal-stat-v">{Math.round((selectedReservation.totalBookings / (selectedReservation.totalSlots || 1)) * 100)}%</div></div>
+                    {selectedVisitor && (
+                      <div className="modal-stat"><div className="modal-stat-k">실제 내장 인원</div><div className="modal-stat-v">{selectedVisitor.persons}명</div></div>
+                    )}
                   </div>
                   <div className="detail-row"><span className="detail-name">1부 예약</span><span className="detail-value">{selectedReservation.session1Bookings}팀</span></div>
                   <div className="detail-row"><span className="detail-name">2부 예약</span><span className="detail-value">{selectedReservation.session2Bookings}팀</span></div>

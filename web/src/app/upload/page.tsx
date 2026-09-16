@@ -4,7 +4,8 @@ import { useState } from "react";
 import { parseReservationFile } from "@/lib/parsers/reservation";
 import { parseCashFlowFile } from "@/lib/parsers/cashFlow";
 import { parseDailySalesFile } from "@/lib/parsers/dailySales";
-import type { GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
+import { parseDailyVisitorFile } from "@/lib/parsers/dailyVisitors";
+import type { DailyVisitorDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
 
 // Functional-first UI - no styling pass yet (matches the design canvas
 // prototype's look). This page proves the parse -> PIN check -> Firestore
@@ -150,6 +151,58 @@ function SalesUploader({ pin }: { pin: string }) {
     <section style={{ marginBottom: 24 }}>
       <h3>일일영업집계 (매출)</h3>
       <input type="file" accept=".xls,.xlsx" onChange={onFile} />
+      <StatusLine status={status} />
+    </section>
+  );
+}
+
+function DailyVisitorsUploader({ pin }: { pin: string }) {
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
+
+  async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    setStatus({ kind: "working" });
+    try {
+      const docs: DailyVisitorDoc[] = [];
+      const skipped: string[] = [];
+      for (const file of files) {
+        const buf = await file.arrayBuffer();
+        const result = parseDailyVisitorFile(buf);
+        if (result.doc) {
+          docs.push(result.doc);
+        } else {
+          skipped.push(`${file.name}: ${result.error ?? "인식 실패"}`);
+        }
+      }
+      if (docs.length === 0) {
+        setStatus({ kind: "error", message: `인식된 데이터가 없습니다. ${skipped.join(", ")}` });
+        return;
+      }
+      const res = await fetch("/api/upload/daily-visitors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, docs, skipped, total: files.length, fileName: files.map((f) => f.name).join(", ") }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
+        return;
+      }
+      const skipNote = skipped.length ? ` (인식 안 됨: ${skipped.join(", ")})` : "";
+      setStatus({ kind: "success", message: `${files.length}개 파일 중 ${docs.length}일 저장 완료${skipNote}` });
+    } catch (err) {
+      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+    } finally {
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <section style={{ marginBottom: 24 }}>
+      <h3>종합영업일보 (실제 내장 팀수/인원)</h3>
+      <p style={{ fontSize: 13, color: "#666" }}>하루에 한 파일씩 나오는 리포트라, 여러 날짜 파일을 한 번에 선택해 올릴 수 있습니다.</p>
+      <input type="file" accept=".xls,.xlsx" multiple onChange={onFiles} />
       <StatusLine status={status} />
     </section>
   );
@@ -335,6 +388,7 @@ export default function UploadPage() {
       <ReservationUploader pin={unlockedPin} />
       <CashFlowUploader pin={unlockedPin} />
       <SalesUploader pin={unlockedPin} />
+      <DailyVisitorsUploader pin={unlockedPin} />
       <hr style={{ margin: "24px 0" }} />
       <GreenfeeUploader pin={unlockedPin} />
     </main>

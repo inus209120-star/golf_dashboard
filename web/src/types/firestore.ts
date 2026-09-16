@@ -26,6 +26,19 @@ export interface ReservationDoc {
   uploadedAt: string; // ISO timestamp
 }
 
+/** dailyVisitors/{date} — date = "YYYY-MM-DD". Source: 무노스 종합영업일보
+ * ("팀수 및 객단가" 표의 "당 일" 행) - 그날 실제 내장한 팀수/인원. 예약현황
+ * (예약현황(일별집계) 기준 예약 파이프라인)과는 별개 지표라서 reservations
+ * 문서를 건드리지 않고 독립된 컬렉션으로 둔다. */
+export interface DailyVisitorDoc {
+  date: string;
+  dayOfWeek: string; // 요일, e.g. "화요일"
+  teams: number; // 실제 내장 팀수
+  persons: number; // 실제 내장 인원
+  avgPersonsPerTeam: number; // 팀당인원
+  uploadedAt: string;
+}
+
 /** dailySales/{date} — date = "YYYY-MM-DD". Source: 무노스 일일영업집계 (매출집계 6항목만). */
 export interface DailySalesDoc {
   date: string;
@@ -129,7 +142,7 @@ export interface WeatherCacheDoc {
 /** Upload result summary written alongside each parsed upload, so the
  * upload page can show "N개 시트 중 M개 인식됨" without re-parsing. */
 export interface UploadLogDoc {
-  kind: "cashFlow" | "dailySales" | "reservation";
+  kind: "cashFlow" | "dailySales" | "reservation" | "dailyVisitors";
   uploadedAt: string;
   fileName: string;
   recognized: number;

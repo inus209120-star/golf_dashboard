@@ -2,6 +2,7 @@
 // doesn't silently create a sibling collection instead of erroring.
 export const COLLECTIONS = {
   reservations: "reservations",
+  dailyVisitors: "dailyVisitors",
   dailySales: "dailySales",
   cashFlow: "cashFlow",
   greenFeeRates: "greenFeeRates",

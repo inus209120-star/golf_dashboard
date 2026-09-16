@@ -10,6 +10,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+    match /dailyVisitors/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
     match /dailySales/{doc} {
       allow read: if true;
       allow write: if false;

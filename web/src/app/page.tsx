@@ -2,6 +2,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/collections";
 import type {
   ReservationDoc,
+  DailyVisitorDoc,
   DailySalesDoc,
   CashFlowDoc,
   GreenFeeRatesDoc,
@@ -27,15 +28,17 @@ function shiftMonth(ym: string, delta: number): string {
 }
 
 async function loadData() {
-  const [reservationsSnap, cashFlowSnap, dailySalesSnap] = await Promise.all([
+  const [reservationsSnap, cashFlowSnap, dailySalesSnap, dailyVisitorsSnap] = await Promise.all([
     adminDb.collection(COLLECTIONS.reservations).get(),
     adminDb.collection(COLLECTIONS.cashFlow).get(),
     adminDb.collection(COLLECTIONS.dailySales).get(),
+    adminDb.collection(COLLECTIONS.dailyVisitors).get(),
   ]);
 
   const reservations = reservationsSnap.docs.map((d) => d.data() as ReservationDoc).sort((a, b) => a.date.localeCompare(b.date));
   const cashFlows = cashFlowSnap.docs.map((d) => d.data() as CashFlowDoc).sort((a, b) => a.date.localeCompare(b.date));
   const dailySales = dailySalesSnap.docs.map((d) => d.data() as DailySalesDoc).sort((a, b) => a.date.localeCompare(b.date));
+  const dailyVisitors = dailyVisitorsSnap.docs.map((d) => d.data() as DailyVisitorDoc).sort((a, b) => a.date.localeCompare(b.date));
 
   // Show whichever month actually has reservation data, most recent first -
   // real deployments won't always have "this month" uploaded yet.
@@ -74,6 +77,7 @@ async function loadData() {
     reservations, // full history - used for cross-collection joins (RevPAR, recent-days table)
     reservationsForMonth,
     reservationMonth: latestReservationMonth,
+    dailyVisitors,
     dailySales,
     latestDailySales,
     latestCashFlow,
