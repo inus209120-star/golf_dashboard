@@ -1,6 +1,6 @@
 # 진행 상황 요약 (Continuation Notes)
 
-최종 업데이트: 2026-09-16 (전체 서체를 Pretendard로 교체)
+최종 업데이트: 2026-09-16 (날씨 현황에 풍속/풍향/습도 추가)
 대상: 골프장 현황 대시보드 (`(주)오션디앤씨 스톤게이트CC`, 부산 기장군)
 
 이 문서는 다른 세션/환경(집 PC 등)에서 작업을 이어갈 때 맥락을 빠르게 따라잡기 위한 요약입니다. 상세 요구사항과 결정 근거는 `PRD.md`를 참고하세요.
@@ -124,6 +124,13 @@
   - `globals.css`의 `body` font-family를 `"Pretendard Variable", Pretendard, system-ui, ...`로 변경 (버튼/카드 등은 대부분 `font-family: inherit`라 자동으로 같이 바뀜). `/upload` 페이지(PIN 게이트+업로드 폼)는 원래부터 "디자인 미적용, 기능 검증 우선"으로 남겨둔 상태라 이번에도 그대로 둠(스타일 적용 안 함).
   - 겸사겸사 `<html lang="en">`으로 남아있던 것도 `lang="ko"`로 수정(실제 콘텐츠는 전부 한글이라 원래 잘못된 값이었음)
   - **검증**: 헤드리스 브라우저로 `getComputedStyle(document.body).fontFamily`가 실제로 `"Pretendard Variable", Pretendard, ...`로 적용됨을 확인, 데스크톱/모바일 스크린샷으로 실제 글자 모양이 바뀐 것도 육안 확인. 타입체크+lint+프로덕션 빌드 전부 통과.
+- ✅ **날씨 현황에 풍속/풍향/습도 추가** (2026-09-16)
+  - 사용자가 날씨 상세 화면 아래쪽이 비어 보인다며 바람/해풍 등 추가 데이터 요청 → 기상청 단기예보 API(`getVilageFcst`) 응답에 이미 WSD(풍속)/VEC(풍향)/REH(습도) 카테고리가 포함돼 있음을 실제 응답으로 재확인, 새 API 연동 없이 기존 파서만 확장
+  - `web/src/types/firestore.ts` — `WeatherCacheDoc`에 `windSpeed`(m/s), `windDir`(16방위 한글, 예: "북동풍"), `humidity`(%) 필드 추가
+  - `web/src/lib/weather.ts` — `firstSlot`에서 WSD/VEC/REH 파싱, VEC(0~360도)를 16방위 한글 라벨로 변환하는 `windDirLabel()` 추가
+  - `web/src/app/DashboardClient.tsx` — 날씨 현황 화면의 예보 카드 아래에 "현재 기상 상세"(풍속/풍향/습도 3칸) 섹션 추가
+  - **검증**: `/api/weather/refresh` 실제 호출로 풍속 6.3m/s·북동풍·습도 55% 등 실제 값 확인, 모바일 스크린샷으로 레이아웃도 확인(오버플로우 없음). 타입체크+lint+프로덕션 빌드 전부 통과.
+  - 참고: 같은 API가 WAV(파고)도 제공하지만 골프장엔 직접 관련이 낮아 보류함 — 필요시 언제든 같은 방식으로 추가 가능
 - ⬜ **다음으로 할 것**: `UPLOAD_PIN` 실제 값으로 변경(현재 `1234` 임시값), 모바일/데스크톱 KPI 카드 시각 디자인 반영 여부 결정, 나머지 디자인 다듬기(나중으로 보류 중)
 - 참고: 2번째 달부터는 그린피 입력 폼이 "전달 저장값"을 기본값으로 불러오면 더 편할 텐데, 지금은 항상 9월 안내문 기준 고정값으로 프리필됨 (개선 여지로 남겨둠)
 - 참고: 로컬 개발 서버는 `cd web && npm run dev` → http://localhost:3000

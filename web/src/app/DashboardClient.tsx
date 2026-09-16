@@ -901,6 +901,12 @@ export default function DashboardClient(props: Props) {
                       </div>
                     ))}
                   </div>
+                  <div className="detail-section-label">현재 기상 상세</div>
+                  <div className="modal-stat-row">
+                    <div className="modal-stat"><div className="modal-stat-k">풍속</div><div className="modal-stat-v">{weather.windSpeed}m/s</div></div>
+                    <div className="modal-stat"><div className="modal-stat-k">풍향</div><div className="modal-stat-v">{weather.windDir}</div></div>
+                    <div className="modal-stat"><div className="modal-stat-k">습도</div><div className="modal-stat-v">{weather.humidity}%</div></div>
+                  </div>
                 </>
               ) : <div className="day-detail-empty">날씨 연동이 아직 설정되지 않았습니다.</div>}
             </div>

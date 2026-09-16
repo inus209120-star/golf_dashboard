@@ -46,6 +46,14 @@ function describe(sky: string | undefined, pty: string | undefined): string {
   return sky ? (SKY_DESC[sky] ?? "-") : "-";
 }
 
+const COMPASS_16 = ["북", "북북동", "북동", "동북동", "동", "동남동", "남동", "남남동", "남", "남남서", "남서", "서남서", "서", "서북서", "북서", "북북서"];
+
+/** KMA VEC is wind-origin bearing in degrees (0-360, meteorological convention). */
+function windDirLabel(deg: number): string {
+  const idx = Math.round(deg / 22.5) % 16;
+  return `${COMPASS_16[idx]}풍`;
+}
+
 function dayLabel(fcstDate: string, todayYmd: string): string {
   const toDate = (s: string) => new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)));
   const diffDays = Math.round((toDate(fcstDate).getTime() - toDate(todayYmd).getTime()) / 86400000);
@@ -100,6 +108,9 @@ export async function fetchAndCacheWeather(): Promise<WeatherCacheDoc> {
   const temp = Number(firstSlot.get("TMP") ?? "0");
   const pop = Number(firstSlot.get("POP") ?? "0");
   const desc = describe(firstSlot.get("SKY"), firstSlot.get("PTY"));
+  const windSpeed = Number(firstSlot.get("WSD") ?? "0");
+  const windDir = windDirLabel(Number(firstSlot.get("VEC") ?? "0"));
+  const humidity = Number(firstSlot.get("REH") ?? "0");
 
   // Daily forecast: group slots by date, take min/max temp seen that day (TMN/TMX only
   // appear at specific slots, but every slot also carries TMP - min/max over TMP is a
@@ -128,7 +139,7 @@ export async function fetchAndCacheWeather(): Promise<WeatherCacheDoc> {
       pop: v.pops.length ? Math.max(...v.pops) : pop,
     }));
 
-  const doc: WeatherCacheDoc = { fetchedAt: now.toISOString(), temp, desc, pop, forecast };
+  const doc: WeatherCacheDoc = { fetchedAt: now.toISOString(), temp, desc, pop, windSpeed, windDir, humidity, forecast };
   await adminDb.collection(COLLECTIONS.weatherCache).doc("current").set(doc);
   return doc;
 }

@@ -139,6 +139,9 @@ export interface WeatherCacheDoc {
   temp: number;
   desc: string;
   pop: number;
+  windSpeed: number; // 풍속 (m/s)
+  windDir: string; // 풍향, 16방위 한글 (예: "북서풍")
+  humidity: number; // 습도 (%)
   forecast: WeatherForecastItem[];
 }
 
