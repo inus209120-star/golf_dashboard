@@ -1,6 +1,11 @@
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/collections";
-import type { WeatherCacheDoc, WeatherForecastItem } from "@/types/firestore";
+import type { WeatherCacheDoc, WeatherForecastItem, WeatherWarningItem } from "@/types/firestore";
+
+// 특보현황 조회(wrn_now_data.php)에서 우리가 신경 쓰는 지역 코드만 필터링.
+// L1082500 = 부산동부(기장군 포함, weather.go.kr 특보구역 안내 기준),
+// L1150000 = 부산 전체(폭염/한파/황사처럼 부산 전역에 한 번에 발표되는 특보 대비).
+const OUR_REGION_IDS = new Set(["L1082500", "L1150000"]);
 
 // 기상청 API허브 (apihub.kma.go.kr) 단기예보 조회서비스 (VilageFcstInfoService_2.0).
 // Issued 8x/day at 02/05/08/11/14/17/20/23, available ~10min after each.
@@ -52,6 +57,33 @@ const COMPASS_16 = ["북", "북북동", "북동", "동북동", "동", "동남동
 function windDirLabel(deg: number): string {
   const idx = Math.round(deg / 22.5) % 16;
   return `${COMPASS_16[idx]}풍`;
+}
+
+/**
+ * Fetches currently-active 기상특보 (강풍/호우/대설/폭염/한파/태풍 등) for our
+ * region from the legacy 특보현황 조회 API. Unlike getVilageFcst, this
+ * responds in EUC-KR (not UTF-8/JSON) - a plain-text table with '#'
+ * comment/header lines and one data row per line, columns separated by
+ * commas and terminated with '='. There's no region filter parameter,
+ * so we fetch the nationwide list and filter client-side by REG_ID.
+ */
+async function fetchActiveWarnings(authKey: string): Promise<WeatherWarningItem[]> {
+  const res = await fetch(`https://apihub.kma.go.kr/api/typ01/url/wrn_now_data.php?fe=f&authKey=${authKey}`);
+  if (!res.ok) throw new Error(`KMA 특보 API HTTP ${res.status}`);
+  const buf = await res.arrayBuffer();
+  const text = new TextDecoder("euc-kr").decode(buf);
+
+  const warnings: WeatherWarningItem[] = [];
+  for (const rawLine of text.split("\n")) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const cols = line.split(",").map((c) => c.trim());
+    // REG_UP, REG_UP_KO, REG_ID, REG_KO, TM_FC, TM_EF, WRN, LVL, CMD, ED_TM
+    const [, , regId, regKo, tmFc, tmEf, wrn, lvl] = cols;
+    if (!regId || !OUR_REGION_IDS.has(regId)) continue;
+    warnings.push({ type: wrn ?? "", level: lvl ?? "", regionName: regKo ?? "", effectiveFrom: tmFc ?? "", effectiveTo: tmEf ?? "" });
+  }
+  return warnings;
 }
 
 function dayLabel(fcstDate: string, todayYmd: string): string {
@@ -139,7 +171,16 @@ export async function fetchAndCacheWeather(): Promise<WeatherCacheDoc> {
       pop: v.pops.length ? Math.max(...v.pops) : pop,
     }));
 
-  const doc: WeatherCacheDoc = { fetchedAt: now.toISOString(), temp, desc, pop, windSpeed, windDir, humidity, forecast };
+  let warnings: WeatherWarningItem[] = [];
+  try {
+    warnings = await fetchActiveWarnings(authKey);
+  } catch (err) {
+    // Same fallback stance as the outer refresh in page.tsx - a warnings-API
+    // hiccup shouldn't take down the temp/forecast data that already succeeded.
+    console.error("weather warnings fetch failed:", err);
+  }
+
+  const doc: WeatherCacheDoc = { fetchedAt: now.toISOString(), temp, desc, pop, windSpeed, windDir, humidity, warnings, forecast };
   await adminDb.collection(COLLECTIONS.weatherCache).doc("current").set(doc);
   return doc;
 }

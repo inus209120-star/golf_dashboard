@@ -39,6 +39,11 @@ function fmtCompact(n: number): string {
   if (n >= 10000) return Math.round(n / 10000).toLocaleString("ko-KR") + "만";
   return String(Math.round(n));
 }
+function fmtWrnTime(tm: string): string {
+  // "YYYYMMDDHHmm" -> "MM/DD HH:mm"
+  if (!/^\d{12}$/.test(tm)) return tm;
+  return `${tm.slice(4, 6)}/${tm.slice(6, 8)} ${tm.slice(8, 10)}:${tm.slice(10, 12)}`;
+}
 function fmtShare(value: number, total: number): string {
   if (total <= 0) return "0%";
   const pct = (value / total) * 100;
@@ -339,6 +344,9 @@ export default function DashboardClient(props: Props) {
               <div className="stat-tile">
                 <div className="stat-label">날씨 · 기장군</div>
                 <div className="stat-value">{weather ? `${weather.temp}°C` : "데이터 없음"}</div>
+                {weather && weather.warnings.length > 0 && (
+                  <div className="stat-delta" style={{ color: "var(--status-critical)" }}>⚠ {weather.warnings[0].type}{weather.warnings[0].level}</div>
+                )}
               </div>
             </div>
             <div className="dash-grid">
@@ -888,6 +896,17 @@ export default function DashboardClient(props: Props) {
             <div className="card">
               {weather ? (
                 <>
+                  {weather.warnings.length > 0 && (
+                    <div className="warning-banner">
+                      {weather.warnings.map((w, i) => (
+                        <div className="warning-banner-item" key={i}>
+                          <span className="warning-banner-icon">⚠</span>
+                          <span className="warning-banner-text">{w.regionName} {w.type}{w.level}</span>
+                          <span className="warning-banner-time">{fmtWrnTime(w.effectiveFrom)} 발표</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="weather-main">
                     <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/></svg>
                     <div><div className="weather-temp">{weather.temp}°C</div><div className="weather-desc">{weather.desc} · 강수확률 {weather.pop}%</div></div>

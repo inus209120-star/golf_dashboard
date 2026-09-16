@@ -216,6 +216,11 @@ a { color: var(--green); text-decoration: none; }
 .detail-section-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); margin: 14px 0 2px; }
 
 /* weather */
+.warning-banner { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.warning-banner-item { display: flex; align-items: center; gap: 8px; background: color-mix(in oklab, var(--status-critical) 12%, var(--card-bg)); border: 1px solid color-mix(in oklab, var(--status-critical) 30%, var(--card-bg)); border-radius: 10px; padding: 10px 14px; flex-wrap: wrap; }
+.warning-banner-icon { font-size: 15px; }
+.warning-banner-text { font-size: 13px; font-weight: 700; color: color-mix(in oklab, var(--status-critical) 80%, var(--text-primary)); }
+.warning-banner-time { font-size: 11px; color: var(--text-muted); margin-left: auto; }
 .weather-main { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
 .weather-temp { font-size: 36px; font-weight: 800; }
 .weather-desc { font-size: 13px; color: var(--text-secondary); }

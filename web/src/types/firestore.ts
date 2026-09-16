@@ -134,6 +134,15 @@ export interface WeatherForecastItem {
   pop: number; // 강수확률 %
 }
 
+/** 기상청 특보현황 조회(wrn_now_data.php) - 현재 발효 중인 기상특보 1건. */
+export interface WeatherWarningItem {
+  type: string; // 특보종류 (예: "강풍", "호우", "폭염")
+  level: string; // 특보수준 (예: "주의보", "경보", "예비")
+  regionName: string; // 특보구역명 (예: "부산동부")
+  effectiveFrom: string; // 발표시각 (YYYYMMDDHHmm)
+  effectiveTo: string; // 발효시각 (YYYYMMDDHHmm)
+}
+
 export interface WeatherCacheDoc {
   fetchedAt: string;
   temp: number;
@@ -142,6 +151,7 @@ export interface WeatherCacheDoc {
   windSpeed: number; // 풍속 (m/s)
   windDir: string; // 풍향, 16방위 한글 (예: "북서풍")
   humidity: number; // 습도 (%)
+  warnings: WeatherWarningItem[]; // 부산동부(기장군 포함) 발효 중인 기상특보
   forecast: WeatherForecastItem[];
 }
 
