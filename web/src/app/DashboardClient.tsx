@@ -293,6 +293,15 @@ export default function DashboardClient(props: Props) {
         <button className={`side-item ${view === "weather" ? "active" : ""}`} onClick={() => go("weather")}>{SideIcon.weather}날씨 현황</button>
       </div>
 
+      <nav className="tabbar">
+        <button className={`tab-item ${view === "dashboard" ? "active" : ""}`} onClick={() => go("dashboard")}>{SideIcon.dashboard}<span>요약</span></button>
+        <button className={`tab-item ${view === "sales" ? "active" : ""}`} onClick={() => go("sales")}>{SideIcon.sales}<span>매출</span></button>
+        <button className={`tab-item ${view === "reservation" ? "active" : ""}`} onClick={() => go("reservation")}>{SideIcon.reservation}<span>예약</span></button>
+        <button className={`tab-item ${view === "cash" ? "active" : ""}`} onClick={() => go("cash")}>{SideIcon.cash}<span>자금</span></button>
+        <button className={`tab-item ${view === "greenfee" ? "active" : ""}`} onClick={() => go("greenfee")}>{SideIcon.greenfee}<span>그린피</span></button>
+        <button className={`tab-item ${view === "weather" ? "active" : ""}`} onClick={() => go("weather")}>{SideIcon.weather}<span>날씨</span></button>
+      </nav>
+
       <div className="main-area">
         <div className="utility-bar">
           <div className="search-pill">
@@ -405,7 +414,7 @@ export default function DashboardClient(props: Props) {
                 ) : <div className="day-detail-empty">{greenFeeCurrentYm} 요금표가 아직 없습니다</div>}
               </button>
 
-              <button className="mini-card" onClick={() => go("weather")} style={{ gridColumn: "span 2" }}>
+              <button className="mini-card mini-card-wide" onClick={() => go("weather")}>
                 <div className="mini-card-head"><div className="mini-card-title">날씨 현황</div><div className="mini-chevron">›</div></div>
                 {weather ? (
                   <div className="mini-weather-row">
@@ -500,6 +509,7 @@ export default function DashboardClient(props: Props) {
               <div className="card-title">최근 영업일 상세</div>
               <div className="card-sub">최근 업로드된 일자 기준</div>
               {recentSalesRows.length ? (
+                <div className="table-scroll">
                 <table className="cash-table">
                   <tbody>
                     <tr><th>일자</th><th>매출</th><th>예약팀수</th><th>가동률</th></tr>
@@ -513,6 +523,7 @@ export default function DashboardClient(props: Props) {
                     ))}
                   </tbody>
                 </table>
+                </div>
               ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다</div>}
             </div>
           </>
@@ -621,6 +632,7 @@ export default function DashboardClient(props: Props) {
               <div className="card">
                 <div className="card-title">실제 내장 현황 (팀수/인원)</div>
                 <div className="card-sub">종합영업일보 기준 · 최근 {Math.min(dailyVisitors.length, 14)}일</div>
+                <div className="table-scroll">
                 <table className="cash-table">
                   <tbody>
                     <tr><th>일자</th><th>요일</th><th>팀수</th><th>인원</th><th>팀당인원</th></tr>
@@ -635,6 +647,7 @@ export default function DashboardClient(props: Props) {
                     ))}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
 
@@ -692,6 +705,7 @@ export default function DashboardClient(props: Props) {
                 <div className="card">
                   <div className="card-title">은행별 자금 흐름</div>
                   <div className="card-sub">전일 → 입금/출금 → 금일</div>
+                  <div className="table-scroll">
                   <table className="cash-table">
                     <tbody>
                       <tr><th>은행</th><th>전일</th><th>입금</th><th>출금</th><th>금일</th></tr>
@@ -706,6 +720,7 @@ export default function DashboardClient(props: Props) {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </>
             ) : <div className="card"><div className="day-detail-empty">아직 업로드된 자금 데이터가 없습니다. /upload에서 자금일보를 업로드해주세요.</div></div>}
@@ -759,6 +774,7 @@ export default function DashboardClient(props: Props) {
               {gf ? (
                 <>
                   <div className="gf-section-label">1부 · 2부</div>
+                  <div className="table-scroll">
                   <table className="gf-table">
                     <tbody>
                       <tr><th>구분</th><th>주중</th><th>토</th><th>일·공휴일</th></tr>
@@ -768,7 +784,9 @@ export default function DashboardClient(props: Props) {
                       <tr><td>2부 · 전타임</td><td>{gf.session2.weekday.toLocaleString("ko-KR")}</td><td>{gf.session2.saturday.toLocaleString("ko-KR")}</td><td>{gf.session2.sundayHoliday.toLocaleString("ko-KR")}</td></tr>
                     </tbody>
                   </table>
+                  </div>
                   <div className="gf-section-label">3부 (월~목 / 금·토 / 일·공휴일)</div>
+                  <div className="table-scroll">
                   <table className="gf-table">
                     <tbody>
                       <tr><th>구분</th><th>월~목</th><th>금·토</th><th>일·공휴일</th></tr>
@@ -777,6 +795,7 @@ export default function DashboardClient(props: Props) {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                   <div className="flat-fees">
                     <div className="flat-chip">카트료 (팀당)<b>{gf.cartFee.toLocaleString("ko-KR")}원</b></div>
                     <div className="flat-chip">캐디피 (전 부)<b>{gf.caddieFee.toLocaleString("ko-KR")}원</b></div>
