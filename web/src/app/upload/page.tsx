@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { parseReservationFile } from "@/lib/parsers/reservation";
 import { parseCashFlowFile } from "@/lib/parsers/cashFlow";
-import { parseDailySalesFile } from "@/lib/parsers/dailySales";
+import { parseBusinessDailySalesFile } from "@/lib/parsers/businessDailySales";
 import { parseDailyVisitorFile } from "@/lib/parsers/dailyVisitors";
-import type { DailyVisitorDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
+import type { DailySalesDoc, DailyVisitorDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
 
 // Functional-first UI - no styling pass yet (matches the design canvas
 // prototype's look). This page proves the parse -> PIN check -> Firestore
@@ -108,55 +108,10 @@ function CashFlowUploader({ pin }: { pin: string }) {
   );
 }
 
-function SalesUploader({ pin }: { pin: string }) {
-  const [status, setStatus] = useState<Status>({ kind: "idle" });
-
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setStatus({ kind: "working" });
-    try {
-      const buf = await file.arrayBuffer();
-      const result = parseDailySalesFile(buf);
-      if (result.isMultiDay) {
-        setStatus({
-          kind: "error",
-          message: `이 파일은 ${result.rangeStart} ~ ${result.rangeEnd} 범위를 담고 있습니다. 무노스에서 조회 기간을 "하루"로 지정해 다시 추출해주세요.`,
-        });
-        return;
-      }
-      if (!result.doc) {
-        setStatus({ kind: "error", message: result.error ?? "인식 실패" });
-        return;
-      }
-      const res = await fetch("/api/upload/sales", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin, doc: result.doc, fileName: file.name }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
-        return;
-      }
-      setStatus({ kind: "success", message: `${result.doc.date} 매출 저장 완료 (매출합계 ${result.doc.total.toLocaleString("ko-KR")}원)` });
-    } catch (err) {
-      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
-    } finally {
-      e.target.value = "";
-    }
-  }
-
-  return (
-    <section style={{ marginBottom: 24 }}>
-      <h3>일일영업집계 (매출)</h3>
-      <input type="file" accept=".xls,.xlsx" onChange={onFile} />
-      <StatusLine status={status} />
-    </section>
-  );
-}
-
-function DailyVisitorsUploader({ pin }: { pin: string }) {
+// 종합영업일보 한 파일에서 매출(dailySales)과 실제 내장 팀수/인원
+// (dailyVisitors)을 동시에 뽑아 각자의 컬렉션에 저장한다. 하루에 한
+// 파일씩 나오는 리포트라 여러 날짜 파일을 한 번에 선택해 올릴 수 있다.
+function BusinessDailyUploader({ pin }: { pin: string }) {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
@@ -164,33 +119,52 @@ function DailyVisitorsUploader({ pin }: { pin: string }) {
     if (files.length === 0) return;
     setStatus({ kind: "working" });
     try {
-      const docs: DailyVisitorDoc[] = [];
+      const salesDocs: DailySalesDoc[] = [];
+      const visitorDocs: DailyVisitorDoc[] = [];
       const skipped: string[] = [];
       for (const file of files) {
         const buf = await file.arrayBuffer();
-        const result = parseDailyVisitorFile(buf);
-        if (result.doc) {
-          docs.push(result.doc);
-        } else {
-          skipped.push(`${file.name}: ${result.error ?? "인식 실패"}`);
-        }
+        const salesResult = parseBusinessDailySalesFile(buf);
+        const visitorResult = parseDailyVisitorFile(buf);
+        if (salesResult.doc) salesDocs.push(salesResult.doc);
+        else skipped.push(`${file.name} (매출): ${salesResult.error ?? "인식 실패"}`);
+        if (visitorResult.doc) visitorDocs.push(visitorResult.doc);
+        else skipped.push(`${file.name} (팀수/인원): ${visitorResult.error ?? "인식 실패"}`);
       }
-      if (docs.length === 0) {
+      if (salesDocs.length === 0 && visitorDocs.length === 0) {
         setStatus({ kind: "error", message: `인식된 데이터가 없습니다. ${skipped.join(", ")}` });
         return;
       }
-      const res = await fetch("/api/upload/daily-visitors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin, docs, skipped, total: files.length, fileName: files.map((f) => f.name).join(", ") }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
-        return;
+      const fileName = files.map((f) => f.name).join(", ");
+      const [salesRes, visitorRes] = await Promise.all([
+        salesDocs.length
+          ? fetch("/api/upload/daily-sales", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pin, docs: salesDocs, skipped, total: files.length, fileName }),
+            })
+          : null,
+        visitorDocs.length
+          ? fetch("/api/upload/daily-visitors", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pin, docs: visitorDocs, skipped, total: files.length, fileName }),
+            })
+          : null,
+      ]);
+      for (const res of [salesRes, visitorRes]) {
+        if (!res) continue;
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
+          return;
+        }
       }
       const skipNote = skipped.length ? ` (인식 안 됨: ${skipped.join(", ")})` : "";
-      setStatus({ kind: "success", message: `${files.length}개 파일 중 ${docs.length}일 저장 완료${skipNote}` });
+      setStatus({
+        kind: "success",
+        message: `${files.length}개 파일 중 매출 ${salesDocs.length}일 · 팀수/인원 ${visitorDocs.length}일 저장 완료${skipNote}`,
+      });
     } catch (err) {
       setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
     } finally {
@@ -200,7 +174,7 @@ function DailyVisitorsUploader({ pin }: { pin: string }) {
 
   return (
     <section style={{ marginBottom: 24 }}>
-      <h3>종합영업일보 (실제 내장 팀수/인원)</h3>
+      <h3>종합영업일보 (매출 · 실제 내장 팀수/인원)</h3>
       <p style={{ fontSize: 13, color: "#666" }}>하루에 한 파일씩 나오는 리포트라, 여러 날짜 파일을 한 번에 선택해 올릴 수 있습니다.</p>
       <input type="file" accept=".xls,.xlsx" multiple onChange={onFiles} />
       <StatusLine status={status} />
@@ -387,8 +361,7 @@ export default function UploadPage() {
       </p>
       <ReservationUploader pin={unlockedPin} />
       <CashFlowUploader pin={unlockedPin} />
-      <SalesUploader pin={unlockedPin} />
-      <DailyVisitorsUploader pin={unlockedPin} />
+      <BusinessDailyUploader pin={unlockedPin} />
       <hr style={{ margin: "24px 0" }} />
       <GreenfeeUploader pin={unlockedPin} />
     </main>

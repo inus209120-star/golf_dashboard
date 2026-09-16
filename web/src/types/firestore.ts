@@ -39,16 +39,19 @@ export interface DailyVisitorDoc {
   uploadedAt: string;
 }
 
-/** dailySales/{date} — date = "YYYY-MM-DD". Source: 무노스 일일영업집계 (매출집계 6항목만). */
+/** dailySales/{date} — date = "YYYY-MM-DD". Source: 무노스 종합영업일보
+ * ("영업현황" 매출 표의 "일계" 행). 2026-09-16부로 일일영업집계에서 이
+ * 리포트로 전환 - 대여료가 이 리포트엔 별도 항목으로 없어서 스키마에서
+ * 뺐고(대여료 자체가 크지 않아 그냥 없는 걸로 확정), 카테고리명도 이
+ * 리포트 표기를 그대로 따른다(입장료->greenFee, 프로샵->proShop 등). */
 export interface DailySalesDoc {
   date: string;
-  greenFee: number; // 그린피
+  greenFee: number; // 입장료
   cartFee: number; // 카트료
-  rentalFee: number; // 대여료
-  foodBeverage: number; // 식음매출
-  proShop: number; // 상품매출
-  other: number; // 기타매출
-  total: number; // 매출합계 (합산값, 검증용으로도 저장)
+  foodBeverage: number; // 식음료
+  proShop: number; // 프로샵
+  other: number; // 기타
+  total: number; // 총매출
   uploadedAt: string;
 }
 

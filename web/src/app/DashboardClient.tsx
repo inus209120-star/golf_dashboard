@@ -51,7 +51,6 @@ function salesCategories(doc: DailySalesDoc | null) {
   return [
     { name: "그린피", value: doc.greenFee, color: SERIES[0] },
     { name: "카트료", value: doc.cartFee, color: SERIES[1] },
-    { name: "대여료", value: doc.rentalFee, color: SERIES[2] },
     { name: "식음매출", value: doc.foodBeverage, color: SERIES[3] },
     { name: "상품매출", value: doc.proShop, color: SERIES[4] },
     { name: "기타매출", value: doc.other, color: SERIES[5] },
@@ -63,7 +62,6 @@ function sumSales(docs: DailySalesDoc[]): DailySalesDoc | null {
     date: acc.date,
     greenFee: acc.greenFee + d.greenFee,
     cartFee: acc.cartFee + d.cartFee,
-    rentalFee: acc.rentalFee + d.rentalFee,
     foodBeverage: acc.foodBeverage + d.foodBeverage,
     proShop: acc.proShop + d.proShop,
     other: acc.other + d.other,
@@ -422,7 +420,7 @@ export default function DashboardClient(props: Props) {
 
         {view === "sales" && (
           <>
-            <div className="subheader"><div className="subheader-title">매출현황</div><div className="subheader-sub">무노스 일일영업집계 · 매출집계 기준</div></div>
+            <div className="subheader"><div className="subheader-title">매출현황</div><div className="subheader-sub">무노스 종합영업일보 · 영업현황 매출 기준</div></div>
             <div className="card">
               <div className="period-tabs">
                 {(["day", "week", "month", "year"] as SalesPeriod[]).map((p) => (
@@ -436,7 +434,7 @@ export default function DashboardClient(props: Props) {
                   <div className="hero">{fmtWon(periodSum.total)}</div>
                   <div className="hero-delta">{periodDocs.length}일 합계 기준 ({periodDocs[0]?.date} ~ {periodDocs[periodDocs.length - 1]?.date})</div>
                 </>
-              ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다. /upload에서 일일영업집계를 업로드해주세요.</div>}
+              ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다. /upload에서 종합영업일보를 업로드해주세요.</div>}
             </div>
 
             {periodSum && (
