@@ -299,11 +299,11 @@ export default function DashboardClient(props: Props) {
       </div>
 
       <nav className="tabbar">
-        <button className={`tab-item ${view === "sales" ? "active" : ""}`} onClick={() => go("sales")}>{SideIcon.sales}<span>매출</span></button>
-        <button className={`tab-item ${view === "reservation" ? "active" : ""}`} onClick={() => go("reservation")}>{SideIcon.reservation}<span>예약</span></button>
-        <button className={`tab-item ${view === "cash" ? "active" : ""}`} onClick={() => go("cash")}>{SideIcon.cash}<span>자금</span></button>
-        <button className={`tab-item ${view === "greenfee" ? "active" : ""}`} onClick={() => go("greenfee")}>{SideIcon.greenfee}<span>그린피</span></button>
-        <button className={`tab-item ${view === "weather" ? "active" : ""}`} onClick={() => go("weather")}>{SideIcon.weather}<span>날씨</span></button>
+        <button className={`tab-item ${view === "sales" ? "active" : ""}`} onClick={() => go("sales")}><span className="tab-icon-badge" style={{ background: "var(--series-1)" }}>{SideIcon.sales}</span><span>매출</span></button>
+        <button className={`tab-item ${view === "reservation" ? "active" : ""}`} onClick={() => go("reservation")}><span className="tab-icon-badge" style={{ background: "var(--series-3)" }}>{SideIcon.reservation}</span><span>예약</span></button>
+        <button className={`tab-item ${view === "cash" ? "active" : ""}`} onClick={() => go("cash")}><span className="tab-icon-badge" style={{ background: "var(--navy)" }}>{SideIcon.cash}</span><span>자금</span></button>
+        <button className={`tab-item ${view === "greenfee" ? "active" : ""}`} onClick={() => go("greenfee")}><span className="tab-icon-badge" style={{ background: "var(--green)" }}>{SideIcon.greenfee}</span><span>그린피</span></button>
+        <button className={`tab-item ${view === "weather" ? "active" : ""}`} onClick={() => go("weather")}><span className="tab-icon-badge" style={{ background: "var(--series-4)" }}>{SideIcon.weather}</span><span>날씨</span></button>
       </nav>
 
       <div className="main-area">

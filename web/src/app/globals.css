@@ -313,8 +313,10 @@ a { color: var(--green); text-decoration: none; }
    desktop; the sidebar itself is hidden below the 860px breakpoint. */
 .tabbar { display: none; }
 .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; flex: 1; padding: 8px 2px; background: none; border: none; color: var(--text-muted); font-family: inherit; cursor: pointer; }
-.tab-item svg { flex-shrink: 0; width: 20px; height: 20px; }
-.tab-item span { font-size: 11px; font-weight: 700; }
+.tab-icon-badge { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 9px; color: #fff; opacity: 0.55; transition: opacity .15s ease; }
+.tab-icon-badge svg { flex-shrink: 0; width: 17px; height: 17px; }
+.tab-item span:last-child { font-size: 11px; font-weight: 700; }
+.tab-item.active .tab-icon-badge { opacity: 1; }
 .tab-item.active { color: var(--green); }
 
 /* wraps any wide table so it scrolls horizontally instead of overflowing
