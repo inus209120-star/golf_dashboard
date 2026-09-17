@@ -322,7 +322,7 @@ a { color: var(--green); text-decoration: none; }
 .table-scroll { overflow-x: auto; }
 
 @media (max-width: 860px) {
-  .app-shell { flex-direction: column; }
+  .app-shell { flex-direction: column; align-items: stretch; }
   .sidebar { display: none; }
   .main-area { max-width: 100%; padding: 16px 16px calc(74px + env(safe-area-inset-bottom, 0px)); }
   .sim-grid, .dash-stat-row, .dash-grid, .kpi-row { grid-template-columns: 1fr; }
