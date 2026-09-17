@@ -89,6 +89,12 @@ a { color: var(--green); text-decoration: none; }
 .util-icons { display: flex; align-items: center; gap: 10px; }
 .icon-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--card-bg); box-shadow: var(--card-shadow); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
 .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.text-scale-btn { border: none; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.text-scale-btn.active { background: color-mix(in oklab, var(--green) 16%, var(--card-bg)); color: var(--green); box-shadow: none; outline: 1.5px solid var(--green); }
+
+/* 글자 크게 보기 - app-shell 전체를 확대해 글자와 함께 아이콘/여백도 비례해서 커지도록 함 */
+.app-shell[data-text-scale="lg"] { zoom: 1.18; }
+.app-shell[data-text-scale="xl"] { zoom: 1.38; }
 
 .title-row { margin-bottom: 20px; }
 .page-title { font-size: 19px; font-weight: 700; }

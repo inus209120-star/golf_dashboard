@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   ReservationDoc,
@@ -136,6 +136,25 @@ export default function DashboardClient(props: Props) {
   const [adj, setAdj] = useState({ p1: 0, p2: 0, p3: 0 });
   const [roundsOverride, setRoundsOverride] = useState<{ p1: number | null; p2: number | null; p3: number | null }>({ p1: null, p2: null, p3: null });
   const [approving, setApproving] = useState(false);
+  const [textScale, setTextScale] = useState<"base" | "lg" | "xl">("base");
+
+  // 노안 등 시력이 안 좋은 사용자를 위한 글자 크게 보기 - 기기별로 기억되도록 localStorage에 저장.
+  // localStorage는 서버에 없으므로 초기 렌더는 항상 "base"로 서버/클라이언트를 일치시키고,
+  // 하이드레이션 이후에만 저장된 값으로 갱신한다(그래서 setState-in-effect 룰은 여기선 의도된 예외).
+  useEffect(() => {
+    const saved = localStorage.getItem("textScale");
+    if (saved === "lg" || saved === "xl") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- post-hydration localStorage sync, not a derived-state anti-pattern
+      setTextScale(saved);
+    }
+  }, []);
+  function cycleTextScale() {
+    setTextScale((s) => {
+      const next = s === "base" ? "lg" : s === "lg" ? "xl" : "base";
+      localStorage.setItem("textScale", next);
+      return next;
+    });
+  }
   const router = useRouter();
 
   async function approveGreenFee(ym: string) {
@@ -282,7 +301,7 @@ export default function DashboardClient(props: Props) {
   const maxBank = Math.max(1, ...(latestCashFlow?.banks.map((b) => b.todayBalance) ?? [1]));
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-text-scale={textScale}>
       <div className="sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-mark">
@@ -315,6 +334,14 @@ export default function DashboardClient(props: Props) {
           <div className="util-right">
             <div className="today-label">{today}<br/>실시간 기준</div>
             <div className="util-icons">
+              <button
+                className={`icon-btn text-scale-btn ${textScale !== "base" ? "active" : ""}`}
+                onClick={cycleTextScale}
+                title="글자 크게 보기"
+                aria-label="글자 크게 보기"
+              >
+                가
+              </button>
               <div className="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg></div>
               <div className="avatar">대표</div>
             </div>
