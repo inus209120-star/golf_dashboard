@@ -107,14 +107,14 @@ a { color: var(--green); text-decoration: none; }
 .mini-card-wide { grid-column: span 2; }
 
 .mini-donut-row { display: flex; align-items: center; gap: 18px; }
-.mini-donut-wrap { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
-.mini-donut { width: 84px; height: 84px; border-radius: 50%; }
-.mini-donut-hole { position: absolute; inset: 13px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.mini-donut-total { font-size: 11.5px; font-weight: 800; }
-.mini-legend { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-.mini-legend-item { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--text-secondary); }
+.mini-donut-wrap { position: relative; width: 104px; height: 104px; flex-shrink: 0; }
+.mini-donut { width: 104px; height: 104px; border-radius: 50%; }
+.mini-donut-hole { position: absolute; inset: 16px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.mini-donut-total { font-size: 13px; font-weight: 800; }
+.mini-legend { display: flex; flex-direction: column; gap: 8px; }
+.mini-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); }
 .mini-legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
-.mini-legend-name { flex: 1; }
+.mini-legend-name { min-width: 52px; }
 .mini-legend-value { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
 .mini-bar-row { display: flex; align-items: flex-end; gap: 7px; height: 74px; }
