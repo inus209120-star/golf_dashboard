@@ -299,7 +299,6 @@ export default function DashboardClient(props: Props) {
       </div>
 
       <nav className="tabbar">
-        <button className={`tab-item ${view === "dashboard" ? "active" : ""}`} onClick={() => go("dashboard")}>{SideIcon.dashboard}<span>요약</span></button>
         <button className={`tab-item ${view === "sales" ? "active" : ""}`} onClick={() => go("sales")}>{SideIcon.sales}<span>매출</span></button>
         <button className={`tab-item ${view === "reservation" ? "active" : ""}`} onClick={() => go("reservation")}>{SideIcon.reservation}<span>예약</span></button>
         <button className={`tab-item ${view === "cash" ? "active" : ""}`} onClick={() => go("cash")}>{SideIcon.cash}<span>자금</span></button>

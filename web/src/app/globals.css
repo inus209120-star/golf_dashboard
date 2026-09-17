@@ -312,9 +312,9 @@ a { color: var(--green); text-decoration: none; }
 /* bottom tab bar - mobile nav, mirrors the sidebar's 6 items. Hidden on
    desktop; the sidebar itself is hidden below the 860px breakpoint. */
 .tabbar { display: none; }
-.tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; padding: 7px 2px; background: none; border: none; color: var(--text-muted); font-family: inherit; cursor: pointer; }
-.tab-item svg { flex-shrink: 0; }
-.tab-item span { font-size: 9.5px; font-weight: 700; }
+.tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; flex: 1; padding: 8px 2px; background: none; border: none; color: var(--text-muted); font-family: inherit; cursor: pointer; }
+.tab-item svg { flex-shrink: 0; width: 20px; height: 20px; }
+.tab-item span { font-size: 11px; font-weight: 700; }
 .tab-item.active { color: var(--green); }
 
 /* wraps any wide table so it scrolls horizontally instead of overflowing
