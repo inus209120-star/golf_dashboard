@@ -324,8 +324,7 @@ export default function DashboardClient(props: Props) {
         {view === "dashboard" && (
           <>
             <div className="title-row">
-              <div className="page-title">Dashboard</div>
-              <div className="page-title-sub">최신 반영 데이터를 한눈에 확인하세요 · 카드를 누르면 상세로 이동합니다</div>
+              <div className="page-title">스톤게이트CC</div>
             </div>
             <div className="dash-stat-row">
               <div className="stat-tile">
