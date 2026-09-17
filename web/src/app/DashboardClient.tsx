@@ -420,6 +420,7 @@ export default function DashboardClient(props: Props) {
 
         {view === "sales" && (
           <>
+            <button className="back-btn" onClick={() => go("dashboard")}>‹ 스톤게이트CC</button>
             <div className="subheader"><div className="subheader-title">매출현황</div><div className="subheader-sub">무노스 종합영업일보 · 영업현황 매출 기준</div></div>
             <div className="card">
               <div className="period-tabs">
@@ -522,6 +523,7 @@ export default function DashboardClient(props: Props) {
 
         {view === "reservation" && (
           <>
+            <button className="back-btn" onClick={() => go("dashboard")}>‹ 스톤게이트CC</button>
             <div className="subheader">
               <div className="subheader-title">예약현황</div>
               <div className="subheader-sub">{reservationMonth ? `${reservationMonth} · 무노스 예약현황(일별집계)` : "데이터 없음"} · 날짜를 눌러 상세 확인</div>
@@ -675,6 +677,7 @@ export default function DashboardClient(props: Props) {
 
         {view === "cash" && (
           <>
+            <button className="back-btn" onClick={() => go("dashboard")}>‹ 스톤게이트CC</button>
             <div className="subheader"><div className="subheader-title">자금현황</div><div className="subheader-sub">더존 자금일보 {latestCashFlow ? `· ${latestCashFlow.date} 기준` : ""}</div></div>
             {latestCashFlow ? (
               <>
@@ -720,6 +723,7 @@ export default function DashboardClient(props: Props) {
 
         {view === "greenfee" && (
           <>
+            <button className="back-btn" onClick={() => go("dashboard")}>‹ 스톤게이트CC</button>
             <div className="subheader"><div className="subheader-title">그린피 현황</div><div className="subheader-sub">회원 기준 · 1단계 관리 범위</div></div>
             <div className="card">
               <div className="card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -875,6 +879,7 @@ export default function DashboardClient(props: Props) {
 
         {view === "weather" && (
           <>
+            <button className="back-btn" onClick={() => go("dashboard")}>‹ 스톤게이트CC</button>
             <div className="subheader"><div className="subheader-title">날씨 현황</div><div className="subheader-sub">기상청 단기예보 · 부산 기장군 · 3시간 주기 자동 갱신</div></div>
             <div className="card">
               {weather ? (
