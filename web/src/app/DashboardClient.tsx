@@ -326,27 +326,6 @@ export default function DashboardClient(props: Props) {
             <div className="title-row">
               <div className="page-title">스톤게이트CC</div>
             </div>
-            <div className="dash-stat-row">
-              <div className="stat-tile">
-                <div className="stat-label">매출 {latestDailySales ? `(${latestDailySales.date})` : ""}</div>
-                <div className="stat-value">{latestDailySales ? fmtCompact(overviewTotal) : "데이터 없음"}</div>
-              </div>
-              <div className="stat-tile">
-                <div className="stat-label">예약 가동률 {latestReservation ? `(${latestReservation.date})` : ""}</div>
-                <div className="stat-value">{occPct !== null ? `${occPct}%` : "데이터 없음"}</div>
-              </div>
-              <div className="stat-tile">
-                <div className="stat-label">자금 잔액 {latestCashFlow ? `(${latestCashFlow.date})` : ""}</div>
-                <div className="stat-value">{latestCashFlow ? fmtCompact(latestCashFlow.todayBalance) : "데이터 없음"}</div>
-              </div>
-              <div className="stat-tile">
-                <div className="stat-label">날씨 · 기장군</div>
-                <div className="stat-value">{weather ? `${weather.temp}°C` : "데이터 없음"}</div>
-                {weather && weather.warnings.length > 0 && (
-                  <div className="stat-delta" style={{ color: "var(--status-critical)" }}>⚠ {weather.warnings[0].type}{weather.warnings[0].level}</div>
-                )}
-              </div>
-            </div>
             <div className="dash-grid">
               <button className="mini-card" onClick={() => go("sales")}>
                 <div className="mini-card-head"><div className="mini-card-title">매출현황</div><div className="mini-chevron">›</div></div>
@@ -371,6 +350,7 @@ export default function DashboardClient(props: Props) {
 
               <button className="mini-card" onClick={() => go("reservation")}>
                 <div className="mini-card-head"><div className="mini-card-title">예약현황</div><div className="mini-chevron">›</div></div>
+                {occPct !== null && <div className="stat-value" style={{ marginBottom: 12 }}>{occPct}%</div>}
                 {reservationMini.length ? (
                   <div className="mini-bar-row">
                     {reservationMini.map((r) => {
@@ -423,10 +403,15 @@ export default function DashboardClient(props: Props) {
               <button className="mini-card mini-card-wide" onClick={() => go("weather")}>
                 <div className="mini-card-head"><div className="mini-card-title">날씨 현황</div><div className="mini-chevron">›</div></div>
                 {weather ? (
-                  <div className="mini-weather-row">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/></svg>
-                    <div><div className="mini-weather-temp">{weather.temp}°C</div><div className="weather-desc">{weather.desc}</div></div>
-                  </div>
+                  <>
+                    <div className="mini-weather-row">
+                      <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/></svg>
+                      <div><div className="mini-weather-temp">{weather.temp}°C</div><div className="weather-desc">{weather.desc}</div></div>
+                    </div>
+                    {weather.warnings.length > 0 && (
+                      <div className="stat-delta" style={{ color: "var(--status-critical)", marginTop: 10 }}>⚠ {weather.warnings[0].regionName} {weather.warnings[0].type}{weather.warnings[0].level}</div>
+                    )}
+                  </>
                 ) : <div className="day-detail-empty">날씨 연동이 아직 설정되지 않았습니다</div>}
               </button>
             </div>
