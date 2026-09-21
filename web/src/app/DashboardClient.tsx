@@ -340,7 +340,7 @@ export default function DashboardClient(props: Props) {
                 title="글자 크게 보기"
                 aria-label="글자 크게 보기"
               >
-                가
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M11 8v6M8 11h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
               </button>
               <div className="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg></div>
               <div className="avatar">대표</div>
