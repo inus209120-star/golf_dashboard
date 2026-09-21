@@ -27,7 +27,7 @@ interface Props {
 }
 
 type View = "dashboard" | "sales" | "reservation" | "cash" | "greenfee" | "weather";
-type SalesPeriod = "day" | "week" | "month" | "year";
+type SalesPeriod = "day" | "week" | "month" | "year" | "range";
 
 const SERIES = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)", "var(--series-6)"];
 
@@ -137,6 +137,8 @@ export default function DashboardClient(props: Props) {
   const [view, setView] = useState<View>("dashboard");
   const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>("day");
   const [pickedSalesDate, setPickedSalesDate] = useState<string | null>(null);
+  const [rangeStart, setRangeStart] = useState<string | null>(null);
+  const [rangeEnd, setRangeEnd] = useState<string | null>(null);
   const [selectedYm, setSelectedYm] = useState(greenFeeCurrentYm);
   const [gfYear, setGfYear] = useState(greenFeeCurrentYm.slice(0, 4));
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -231,6 +233,8 @@ export default function DashboardClient(props: Props) {
   // ---- sales periods ----
   const latestSalesDate = latestDailySales?.date ?? null;
   const dayDate = pickedSalesDate ?? latestSalesDate;
+  const effectiveRangeEnd = rangeEnd ?? latestSalesDate;
+  const effectiveRangeStart = rangeStart ?? (effectiveRangeEnd ? shiftDay(effectiveRangeEnd, -6) : null);
   const periodDocs = useMemo(() => {
     if (!latestSalesDate) return [];
     if (salesPeriod === "day") {
@@ -238,13 +242,18 @@ export default function DashboardClient(props: Props) {
       const doc = dailySales.find((d) => d.date === dayDate);
       return doc ? [doc] : [];
     }
+    if (salesPeriod === "range") {
+      if (!effectiveRangeStart || !effectiveRangeEnd) return [];
+      const [lo, hi] = effectiveRangeStart <= effectiveRangeEnd ? [effectiveRangeStart, effectiveRangeEnd] : [effectiveRangeEnd, effectiveRangeStart];
+      return dailySales.filter((d) => d.date >= lo && d.date <= hi);
+    }
     const idx = dailySales.findIndex((d) => d.date === latestSalesDate);
     if (salesPeriod === "week") return dailySales.slice(Math.max(0, idx - 6), idx + 1);
     if (salesPeriod === "month") return dailySales.filter((d) => d.date.slice(0, 7) === latestSalesDate.slice(0, 7));
     return dailySales.filter((d) => d.date.slice(0, 4) === latestSalesDate.slice(0, 4));
-  }, [dailySales, latestSalesDate, dayDate, salesPeriod]);
+  }, [dailySales, latestSalesDate, dayDate, effectiveRangeStart, effectiveRangeEnd, salesPeriod]);
   const periodSum = sumSales(periodDocs);
-  const periodLabel = { day: "일간", week: "주간", month: "월간", year: "연간" }[salesPeriod];
+  const periodLabel = { day: "일간", week: "주간", month: "월간", year: "연간", range: "기간" }[salesPeriod];
   const periodCats = salesCategories(periodSum);
 
   // KPI: 예약팀수 합계/가동률 평균 and 객단가(RevPAR) - joined against reservations by
@@ -501,9 +510,9 @@ export default function DashboardClient(props: Props) {
             <div className="subheader"><div className="subheader-title">매출현황</div><div className="subheader-sub">무노스 종합영업일보 · 영업현황 매출 기준</div></div>
             <div className="card">
               <div className="period-tabs">
-                {(["day", "week", "month", "year"] as SalesPeriod[]).map((p) => (
+                {(["day", "week", "month", "year", "range"] as SalesPeriod[]).map((p) => (
                   <button key={p} className={`tab-btn ${salesPeriod === p ? "active" : ""}`} onClick={() => setSalesPeriod(p)}>
-                    {{ day: "일간", week: "주간", month: "월간", year: "연간" }[p]}
+                    {{ day: "일간", week: "주간", month: "월간", year: "연간", range: "기간" }[p]}
                   </button>
                 ))}
               </div>
@@ -526,6 +535,25 @@ export default function DashboardClient(props: Props) {
                   {pickedSalesDate && (
                     <button className="day-search-reset" onClick={() => setPickedSalesDate(null)}>최신으로</button>
                   )}
+                </div>
+              )}
+              {salesPeriod === "range" && effectiveRangeStart && effectiveRangeEnd && (
+                <div className="range-search-row">
+                  <input
+                    type="date"
+                    className="day-search-input"
+                    value={effectiveRangeStart}
+                    max={todayStr()}
+                    onChange={(e) => e.target.value && setRangeStart(e.target.value)}
+                  />
+                  <span className="range-search-sep">~</span>
+                  <input
+                    type="date"
+                    className="day-search-input"
+                    value={effectiveRangeEnd}
+                    max={todayStr()}
+                    onChange={(e) => e.target.value && setRangeEnd(e.target.value)}
+                  />
                 </div>
               )}
               {periodSum ? (

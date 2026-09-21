@@ -171,6 +171,8 @@ a { color: var(--green); text-decoration: none; }
 .day-search-btn:disabled { color: var(--text-muted); cursor: not-allowed; opacity: 0.5; }
 .day-search-input { flex: 1; min-width: 0; max-width: 180px; border: 1px solid var(--divider); border-radius: 8px; padding: 7px 10px; font-size: 13px; color: var(--text-primary); background: var(--card-bg); font-family: inherit; }
 .day-search-reset { flex-shrink: 0; border: none; background: var(--pill-bg); color: var(--text-secondary); font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.range-search-row { display: flex; align-items: center; gap: 8px; margin: -8px 0 18px; }
+.range-search-sep { flex-shrink: 0; color: var(--text-muted); font-size: 12.5px; }
 
 .hero { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; }
 .hero-delta { font-size: 12.5px; margin-top: 5px; font-weight: 600; }
