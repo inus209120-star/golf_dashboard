@@ -733,10 +733,10 @@ export default function DashboardClient(props: Props) {
                       {latestCashFlow.banks.map((b) => (
                         <tr key={b.name}>
                           <td>{b.name}</td>
-                          <td>{b.prevBalance.toLocaleString("ko-KR")}</td>
-                          <td>{b.deposit.toLocaleString("ko-KR")}</td>
-                          <td>{b.withdrawal.toLocaleString("ko-KR")}</td>
-                          <td>{b.todayBalance.toLocaleString("ko-KR")}</td>
+                          <td>{fmtCompact(b.prevBalance)}</td>
+                          <td>{fmtCompact(b.deposit)}</td>
+                          <td>{fmtCompact(b.withdrawal)}</td>
+                          <td>{fmtCompact(b.todayBalance)}</td>
                         </tr>
                       ))}
                     </tbody>
