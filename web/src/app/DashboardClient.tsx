@@ -101,6 +101,11 @@ function todayStr(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+function shiftDay(dateStr: string, delta: number): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(y, m - 1, d + delta);
+  return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+}
 
 const SideIcon = {
   dashboard: (
@@ -131,6 +136,7 @@ export default function DashboardClient(props: Props) {
 
   const [view, setView] = useState<View>("dashboard");
   const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>("day");
+  const [pickedSalesDate, setPickedSalesDate] = useState<string | null>(null);
   const [selectedYm, setSelectedYm] = useState(greenFeeCurrentYm);
   const [gfYear, setGfYear] = useState(greenFeeCurrentYm.slice(0, 4));
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -224,14 +230,19 @@ export default function DashboardClient(props: Props) {
 
   // ---- sales periods ----
   const latestSalesDate = latestDailySales?.date ?? null;
+  const dayDate = pickedSalesDate ?? latestSalesDate;
   const periodDocs = useMemo(() => {
     if (!latestSalesDate) return [];
+    if (salesPeriod === "day") {
+      if (!dayDate) return [];
+      const doc = dailySales.find((d) => d.date === dayDate);
+      return doc ? [doc] : [];
+    }
     const idx = dailySales.findIndex((d) => d.date === latestSalesDate);
-    if (salesPeriod === "day") return idx >= 0 ? [dailySales[idx]] : [];
     if (salesPeriod === "week") return dailySales.slice(Math.max(0, idx - 6), idx + 1);
     if (salesPeriod === "month") return dailySales.filter((d) => d.date.slice(0, 7) === latestSalesDate.slice(0, 7));
     return dailySales.filter((d) => d.date.slice(0, 4) === latestSalesDate.slice(0, 4));
-  }, [dailySales, latestSalesDate, salesPeriod]);
+  }, [dailySales, latestSalesDate, dayDate, salesPeriod]);
   const periodSum = sumSales(periodDocs);
   const periodLabel = { day: "일간", week: "주간", month: "월간", year: "연간" }[salesPeriod];
   const periodCats = salesCategories(periodSum);
@@ -496,6 +507,27 @@ export default function DashboardClient(props: Props) {
                   </button>
                 ))}
               </div>
+              {salesPeriod === "day" && dayDate && (
+                <div className="day-search-row">
+                  <button className="day-search-btn" onClick={() => setPickedSalesDate(shiftDay(dayDate, -1))} aria-label="이전 날짜">‹</button>
+                  <input
+                    type="date"
+                    className="day-search-input"
+                    value={dayDate}
+                    max={todayStr()}
+                    onChange={(e) => e.target.value && setPickedSalesDate(e.target.value)}
+                  />
+                  <button
+                    className="day-search-btn"
+                    onClick={() => setPickedSalesDate(shiftDay(dayDate, 1))}
+                    disabled={dayDate >= todayStr()}
+                    aria-label="다음 날짜"
+                  >›</button>
+                  {pickedSalesDate && (
+                    <button className="day-search-reset" onClick={() => setPickedSalesDate(null)}>최신으로</button>
+                  )}
+                </div>
+              )}
               {periodSum ? (
                 <>
                   <div className="hero">{fmtWon(periodSum.total)}</div>
