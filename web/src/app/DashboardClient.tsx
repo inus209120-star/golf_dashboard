@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   ReservationDoc,
@@ -139,7 +139,6 @@ export default function DashboardClient(props: Props) {
   const [approving, setApproving] = useState(false);
   const [textScale, setTextScale] = useState<"base" | "lg" | "xl">("base");
   const [dashDate, setDashDate] = useState(() => todayStr());
-  const dateStripRef = useRef<HTMLDivElement>(null);
 
   // 노안 등 시력이 안 좋은 사용자를 위한 글자 크게 보기 - 기기별로 기억되도록 localStorage에 저장.
   // localStorage는 서버에 없으므로 초기 렌더는 항상 "base"로 서버/클라이언트를 일치시키고,
@@ -294,14 +293,18 @@ export default function DashboardClient(props: Props) {
 
 
   // ---- dashboard overview data ----
-  // 14-day strip ending today (no future dates - this is a past-performance
+  // 5-day strip ending today (no future dates - this is a past-performance
   // dashboard, not a schedule), oldest first so "today" lands on the right.
+  // Fixed at 5 slots sized to fill the row exactly (flex:1 each, no
+  // scrolling) so "today" is always visible without swiping - an earlier
+  // 14-day scrollable version auto-scrolled to the end on mount, but that
+  // didn't reliably land on a real phone.
   const dashDays = useMemo(() => {
     const [ty, tm, td] = today.split("-").map(Number);
     const base = new Date(ty, tm - 1, td);
     const weekdayNames = ["일", "월", "화", "수", "목", "금", "토"];
     const days: { date: string; day: number; weekday: string }[] = [];
-    for (let i = 13; i >= 0; i--) {
+    for (let i = 4; i >= 0; i--) {
       const d = new Date(base);
       d.setDate(base.getDate() - i);
       days.push({
@@ -312,9 +315,6 @@ export default function DashboardClient(props: Props) {
     }
     return days;
   }, [today]);
-  useEffect(() => {
-    dateStripRef.current?.scrollTo({ left: dateStripRef.current.scrollWidth });
-  }, []);
 
   const dashDailySales = dailySales.find((d) => d.date === dashDate) ?? null;
   const dashReservation = reservationByDate.get(dashDate) ?? null;
@@ -380,7 +380,7 @@ export default function DashboardClient(props: Props) {
             <div className="title-row">
               <div className="page-title">스톤게이트CC</div>
             </div>
-            <div className="date-strip" ref={dateStripRef}>
+            <div className="date-strip">
               {dashDays.map((d) => (
                 <button
                   key={d.date}
