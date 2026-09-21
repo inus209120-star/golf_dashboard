@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   ReservationDoc,
@@ -18,6 +18,7 @@ interface Props {
   dailyVisitors: DailyVisitorDoc[];
   dailySales: DailySalesDoc[];
   latestDailySales: DailySalesDoc | null;
+  cashFlows: CashFlowDoc[];
   latestCashFlow: CashFlowDoc | null;
   greenFeeAll: GreenFeeRatesDoc[];
   greenFeeCurrentYm: string;
@@ -125,7 +126,7 @@ const SideIcon = {
 export default function DashboardClient(props: Props) {
   const {
     reservations, reservationsForMonth, reservationMonth, dailyVisitors, dailySales, latestDailySales,
-    latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather,
+    cashFlows, latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather,
   } = props;
 
   const [view, setView] = useState<View>("dashboard");
@@ -137,6 +138,8 @@ export default function DashboardClient(props: Props) {
   const [roundsOverride, setRoundsOverride] = useState<{ p1: number | null; p2: number | null; p3: number | null }>({ p1: null, p2: null, p3: null });
   const [approving, setApproving] = useState(false);
   const [textScale, setTextScale] = useState<"base" | "lg" | "xl">("base");
+  const [dashDate, setDashDate] = useState(() => todayStr());
+  const dateStripRef = useRef<HTMLDivElement>(null);
 
   // 노안 등 시력이 안 좋은 사용자를 위한 글자 크게 보기 - 기기별로 기억되도록 localStorage에 저장.
   // localStorage는 서버에 없으므로 초기 렌더는 항상 "base"로 서버/클라이언트를 일치시키고,
@@ -281,7 +284,6 @@ export default function DashboardClient(props: Props) {
   const maxAbsImpact = Math.max(1, Math.abs(impacts.p1), Math.abs(impacts.p2), Math.abs(impacts.p3));
 
   const greenFeeMap = useMemo(() => new Map(greenFeeAll.map((g) => [g.yearMonth, g])), [greenFeeAll]);
-  const greenFeeCurrent = greenFeeMap.get(greenFeeCurrentYm) ?? null;
   const gf = greenFeeMap.get(selectedYm) ?? null;
   const gfYm = selectedYm;
   const gfYearsWithData = useMemo(() => {
@@ -292,13 +294,38 @@ export default function DashboardClient(props: Props) {
 
 
   // ---- dashboard overview data ----
-  const overviewCats = salesCategories(latestDailySales).sort((a, b) => b.value - a.value).slice(0, 3);
-  const overviewTotal = latestDailySales?.total ?? 0;
-  const latestReservation = reservationsForMonth.length ? reservationsForMonth[reservationsForMonth.length - 1] : null;
-  const occPct = latestReservation ? Math.round((latestReservation.totalBookings / (latestReservation.totalSlots || 1)) * 100) : null;
-  const reservationMini = reservationsForMonth.slice(-7);
-  const topBanks = (latestCashFlow?.banks ?? []).slice().sort((a, b) => b.todayBalance - a.todayBalance).slice(0, 2);
-  const maxBank = Math.max(1, ...(latestCashFlow?.banks.map((b) => b.todayBalance) ?? [1]));
+  // 14-day strip ending today (no future dates - this is a past-performance
+  // dashboard, not a schedule), oldest first so "today" lands on the right.
+  const dashDays = useMemo(() => {
+    const [ty, tm, td] = today.split("-").map(Number);
+    const base = new Date(ty, tm - 1, td);
+    const weekdayNames = ["일", "월", "화", "수", "목", "금", "토"];
+    const days: { date: string; day: number; weekday: string }[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(base);
+      d.setDate(base.getDate() - i);
+      days.push({
+        date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+        day: d.getDate(),
+        weekday: weekdayNames[d.getDay()],
+      });
+    }
+    return days;
+  }, [today]);
+  useEffect(() => {
+    dateStripRef.current?.scrollTo({ left: dateStripRef.current.scrollWidth });
+  }, []);
+
+  const dashDailySales = dailySales.find((d) => d.date === dashDate) ?? null;
+  const dashReservation = reservationByDate.get(dashDate) ?? null;
+  const dashCashFlow = cashFlows.find((c) => c.date === dashDate) ?? null;
+  const dashGreenFee = greenFeeMap.get(dashDate.slice(0, 7)) ?? null;
+  const overviewCats = salesCategories(dashDailySales).sort((a, b) => b.value - a.value).slice(0, 3);
+  const overviewTotal = dashDailySales?.total ?? 0;
+  const occPct = dashReservation ? Math.round((dashReservation.totalBookings / (dashReservation.totalSlots || 1)) * 100) : null;
+  const reservationMini = reservations.filter((r) => r.date <= dashDate).slice(-7);
+  const topBanks = (dashCashFlow?.banks ?? []).slice().sort((a, b) => b.todayBalance - a.todayBalance).slice(0, 2);
+  const maxBank = Math.max(1, ...(dashCashFlow?.banks.map((b) => b.todayBalance) ?? [1]));
 
   return (
     <div className="app-shell" data-text-scale={textScale}>
@@ -353,13 +380,25 @@ export default function DashboardClient(props: Props) {
             <div className="title-row">
               <div className="page-title">스톤게이트CC</div>
             </div>
+            <div className="date-strip" ref={dateStripRef}>
+              {dashDays.map((d) => (
+                <button
+                  key={d.date}
+                  className={`date-chip ${d.date === dashDate ? "active" : ""}`}
+                  onClick={() => setDashDate(d.date)}
+                >
+                  <span className="date-chip-dow">{d.weekday}</span>
+                  <span className="date-chip-day">{d.day}</span>
+                </button>
+              ))}
+            </div>
             <div className="dash-grid">
               <button className="mini-card" onClick={() => go("sales")}>
                 <div className="mini-card-head"><div className="mini-card-title">매출현황</div><div className="mini-chevron">›</div></div>
-                {latestDailySales ? (
+                {dashDailySales ? (
                   <div className="mini-donut-row">
                     <div className="mini-donut-wrap">
-                      <div className="mini-donut" style={{ background: donutGradient(salesCategories(latestDailySales), overviewTotal) }} />
+                      <div className="mini-donut" style={{ background: donutGradient(salesCategories(dashDailySales), overviewTotal) }} />
                       <div className="mini-donut-hole"><div className="mini-donut-total">{fmtCompact(overviewTotal)}</div></div>
                     </div>
                     <div className="mini-legend">
@@ -395,11 +434,11 @@ export default function DashboardClient(props: Props) {
 
               <button className="mini-card" onClick={() => go("cash")}>
                 <div className="mini-card-head"><div className="mini-card-title">자금현황</div><div className="mini-chevron">›</div></div>
-                {latestCashFlow ? (
+                {dashCashFlow ? (
                   <>
                     <div className="mini-flow-row">
-                      <div className="mini-line"><span>전일</span><b>{fmtCompact(latestCashFlow.prevBalance)}</b></div>
-                      <div className="mini-line"><span>금일</span><b>{fmtCompact(latestCashFlow.todayBalance)}</b></div>
+                      <div className="mini-line"><span>전일</span><b>{fmtCompact(dashCashFlow.prevBalance)}</b></div>
+                      <div className="mini-line"><span>금일</span><b>{fmtCompact(dashCashFlow.todayBalance)}</b></div>
                     </div>
                     {topBanks.map((b) => (
                       <div className="bank-row" key={b.name}>
@@ -415,16 +454,16 @@ export default function DashboardClient(props: Props) {
               <button className="mini-card" onClick={() => go("greenfee")}>
                 <div className="mini-card-head">
                   <div className="mini-card-title">그린피 현황</div>
-                  <span className={`badge ${greenFeeCurrent?.status === "approved" ? "badge-good" : "badge-warning"}`}>
-                    {greenFeeCurrent ? (greenFeeCurrent.status === "approved" ? "승인됨" : "승인 대기") : "미입력"}
+                  <span className={`badge ${dashGreenFee?.status === "approved" ? "badge-good" : "badge-warning"}`}>
+                    {dashGreenFee ? (dashGreenFee.status === "approved" ? "승인됨" : "승인 대기") : "미입력"}
                   </span>
                 </div>
-                {greenFeeCurrent ? (
+                {dashGreenFee ? (
                   <>
-                    <div className="mini-line"><span>카트료 (팀당)</span><b>{greenFeeCurrent.cartFee.toLocaleString("ko-KR")}원</b></div>
-                    <div className="mini-line"><span>캐디피 (전 부)</span><b>{greenFeeCurrent.caddieFee.toLocaleString("ko-KR")}원</b></div>
+                    <div className="mini-line"><span>카트료 (팀당)</span><b>{dashGreenFee.cartFee.toLocaleString("ko-KR")}원</b></div>
+                    <div className="mini-line"><span>캐디피 (전 부)</span><b>{dashGreenFee.caddieFee.toLocaleString("ko-KR")}원</b></div>
                   </>
-                ) : <div className="day-detail-empty">{greenFeeCurrentYm} 요금표가 아직 없습니다</div>}
+                ) : <div className="day-detail-empty">{dashDate.slice(0, 7)} 요금표가 아직 없습니다</div>}
               </button>
 
               <button className="mini-card mini-card-wide" onClick={() => go("weather")}>

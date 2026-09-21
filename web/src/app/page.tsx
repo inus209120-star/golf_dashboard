@@ -80,6 +80,7 @@ async function loadData() {
     dailyVisitors,
     dailySales,
     latestDailySales,
+    cashFlows, // full history - lets the Dashboard overview's date strip look up any past day
     latestCashFlow,
     greenFeeAll,
     greenFeeCurrentYm: todayYm,
