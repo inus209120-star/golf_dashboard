@@ -459,10 +459,8 @@ export default function DashboardClient(props: Props) {
                 <div className="mini-card-head"><div className="mini-card-title">자금현황</div><div className="mini-chevron">›</div></div>
                 {dashCashFlow ? (
                   <>
-                    <div className="mini-flow-row">
-                      <div className="mini-line"><span>전일</span><b>{fmtCompact(dashCashFlow.prevBalance)}</b></div>
-                      <div className="mini-line"><span>금일</span><b>{fmtCompact(dashCashFlow.todayBalance)}</b></div>
-                    </div>
+                    <div className="mini-cash-total">{fmtCompact(dashCashFlow.todayBalance)}</div>
+                    <div className="mini-cash-sub">총 보유자금 · 전일 {fmtCompact(dashCashFlow.prevBalance)}</div>
                     {topBanks.map((b) => (
                       <div className="bank-row" key={b.name}>
                         <div className="bank-name">{b.name}</div>
@@ -783,12 +781,12 @@ export default function DashboardClient(props: Props) {
             {latestCashFlow ? (
               <>
                 <div className="card">
-                  <div className="flow-row">
-                    <div className="flow-item"><div className="flow-k">전일</div><div className="flow-v">{fmtCompact(latestCashFlow.prevBalance)}</div></div>
-                    <div className="flow-item"><div className="flow-k">입금</div><div className="flow-v">{fmtCompact(latestCashFlow.deposit)}</div></div>
-                    <div className="flow-item"><div className="flow-k">출금</div><div className="flow-v">{fmtCompact(latestCashFlow.withdrawal)}</div></div>
-                    <div className="flow-item"><div className="flow-k">금일</div><div className="flow-v">{fmtCompact(latestCashFlow.todayBalance)}</div></div>
-                  </div>
+                  <div className="card-title">총 보유자금</div>
+                  <div className="hero">{fmtWon(latestCashFlow.todayBalance)}</div>
+                  <div className="hero-delta">전일 {fmtCompact(latestCashFlow.prevBalance)} · 입금 {fmtCompact(latestCashFlow.deposit)} · 출금 {fmtCompact(latestCashFlow.withdrawal)}</div>
+                </div>
+                <div className="card">
+                  <div className="card-title">계좌별 잔액</div>
                   {latestCashFlow.banks.map((b) => (
                     <div className="bank-row" key={b.name}>
                       <div className="bank-name">{b.name}</div>

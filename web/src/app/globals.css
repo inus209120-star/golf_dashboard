@@ -134,9 +134,11 @@ a { color: var(--green); text-decoration: none; }
 .mini-resv-frac { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .mini-resv-pct { font-size: 15px; font-weight: 700; color: var(--text-secondary); }
 
-.mini-flow-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
 .mini-line { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; color: var(--text-secondary); }
 .mini-line b { color: var(--text-primary); font-weight: 700; }
+
+.mini-cash-total { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.mini-cash-sub { font-size: 12px; color: var(--text-secondary); margin: 4px 0 14px; }
 
 .mini-weather-row { display: flex; align-items: center; gap: 14px; }
 .mini-weather-temp { font-size: 24px; font-weight: 800; }
