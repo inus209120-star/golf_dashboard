@@ -27,7 +27,6 @@ interface Props {
 }
 
 type View = "dashboard" | "sales" | "reservation" | "cash" | "greenfee" | "weather";
-type SalesPeriod = "day" | "week" | "month" | "year" | "range";
 
 const SERIES = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)", "var(--series-6)"];
 
@@ -135,8 +134,6 @@ export default function DashboardClient(props: Props) {
   } = props;
 
   const [view, setView] = useState<View>("dashboard");
-  const [salesPeriod, setSalesPeriod] = useState<SalesPeriod>("day");
-  const [pickedSalesDate, setPickedSalesDate] = useState<string | null>(null);
   const [rangeStart, setRangeStart] = useState<string | null>(null);
   const [rangeEnd, setRangeEnd] = useState<string | null>(null);
   const [selectedYm, setSelectedYm] = useState(greenFeeCurrentYm);
@@ -232,28 +229,15 @@ export default function DashboardClient(props: Props) {
 
   // ---- sales periods ----
   const latestSalesDate = latestDailySales?.date ?? null;
-  const dayDate = pickedSalesDate ?? latestSalesDate;
   const effectiveRangeEnd = rangeEnd ?? latestSalesDate;
   const effectiveRangeStart = rangeStart ?? (effectiveRangeEnd ? shiftDay(effectiveRangeEnd, -6) : null);
   const periodDocs = useMemo(() => {
-    if (!latestSalesDate) return [];
-    if (salesPeriod === "day") {
-      if (!dayDate) return [];
-      const doc = dailySales.find((d) => d.date === dayDate);
-      return doc ? [doc] : [];
-    }
-    if (salesPeriod === "range") {
-      if (!effectiveRangeStart || !effectiveRangeEnd) return [];
-      const [lo, hi] = effectiveRangeStart <= effectiveRangeEnd ? [effectiveRangeStart, effectiveRangeEnd] : [effectiveRangeEnd, effectiveRangeStart];
-      return dailySales.filter((d) => d.date >= lo && d.date <= hi);
-    }
-    const idx = dailySales.findIndex((d) => d.date === latestSalesDate);
-    if (salesPeriod === "week") return dailySales.slice(Math.max(0, idx - 6), idx + 1);
-    if (salesPeriod === "month") return dailySales.filter((d) => d.date.slice(0, 7) === latestSalesDate.slice(0, 7));
-    return dailySales.filter((d) => d.date.slice(0, 4) === latestSalesDate.slice(0, 4));
-  }, [dailySales, latestSalesDate, dayDate, effectiveRangeStart, effectiveRangeEnd, salesPeriod]);
+    if (!effectiveRangeStart || !effectiveRangeEnd) return [];
+    const [lo, hi] = effectiveRangeStart <= effectiveRangeEnd ? [effectiveRangeStart, effectiveRangeEnd] : [effectiveRangeEnd, effectiveRangeStart];
+    return dailySales.filter((d) => d.date >= lo && d.date <= hi);
+  }, [dailySales, effectiveRangeStart, effectiveRangeEnd]);
   const periodSum = sumSales(periodDocs);
-  const periodLabel = { day: "일간", week: "주간", month: "월간", year: "연간", range: "기간" }[salesPeriod];
+  const periodLabel = "기간";
   const periodCats = salesCategories(periodSum);
 
   // KPI: 예약팀수 합계/가동률 평균 and 객단가(RevPAR) - joined against reservations by
@@ -509,35 +493,7 @@ export default function DashboardClient(props: Props) {
             <button className="back-btn" onClick={() => go("dashboard")}>‹ 스톤게이트CC</button>
             <div className="subheader"><div className="subheader-title">매출현황</div><div className="subheader-sub">무노스 종합영업일보 · 영업현황 매출 기준</div></div>
             <div className="card">
-              <div className="period-tabs">
-                {(["day", "week", "month", "year", "range"] as SalesPeriod[]).map((p) => (
-                  <button key={p} className={`tab-btn ${salesPeriod === p ? "active" : ""}`} onClick={() => setSalesPeriod(p)}>
-                    {{ day: "일간", week: "주간", month: "월간", year: "연간", range: "기간" }[p]}
-                  </button>
-                ))}
-              </div>
-              {salesPeriod === "day" && dayDate && (
-                <div className="day-search-row">
-                  <button className="day-search-btn" onClick={() => setPickedSalesDate(shiftDay(dayDate, -1))} aria-label="이전 날짜">‹</button>
-                  <input
-                    type="date"
-                    className="day-search-input"
-                    value={dayDate}
-                    max={todayStr()}
-                    onChange={(e) => e.target.value && setPickedSalesDate(e.target.value)}
-                  />
-                  <button
-                    className="day-search-btn"
-                    onClick={() => setPickedSalesDate(shiftDay(dayDate, 1))}
-                    disabled={dayDate >= todayStr()}
-                    aria-label="다음 날짜"
-                  >›</button>
-                  {pickedSalesDate && (
-                    <button className="day-search-reset" onClick={() => setPickedSalesDate(null)}>최신으로</button>
-                  )}
-                </div>
-              )}
-              {salesPeriod === "range" && effectiveRangeStart && effectiveRangeEnd && (
+              {effectiveRangeStart && effectiveRangeEnd && (
                 <div className="range-search-row">
                   <input
                     type="date"

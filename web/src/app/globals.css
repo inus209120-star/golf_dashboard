@@ -161,17 +161,9 @@ a { color: var(--green); text-decoration: none; }
 .badge-good { background: color-mix(in oklab, var(--status-good) 14%, var(--card-bg)); color: var(--status-good); }
 .badge-warning { background: color-mix(in oklab, var(--status-warning) 18%, var(--card-bg)); color: color-mix(in oklab, var(--status-warning) 70%, var(--text-primary)); }
 
-/* period tabs */
-.period-tabs { display: flex; gap: 6px; background: var(--pill-bg); padding: 3px; border-radius: 10px; margin-bottom: 18px; width: fit-content; }
-.tab-btn { border: none; background: transparent; padding: 7px 16px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); cursor: pointer; font-family: inherit; }
-.tab-btn.active { background: var(--card-bg); color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-
-.day-search-row { display: flex; align-items: center; gap: 8px; margin: -8px 0 18px; }
-.day-search-btn { flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--pill-bg); color: var(--text-primary); font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
-.day-search-btn:disabled { color: var(--text-muted); cursor: not-allowed; opacity: 0.5; }
+/* sales range search */
 .day-search-input { flex: 1; min-width: 0; max-width: 180px; border: 1px solid var(--divider); border-radius: 8px; padding: 7px 10px; font-size: 13px; color: var(--text-primary); background: var(--card-bg); font-family: inherit; }
-.day-search-reset { flex-shrink: 0; border: none; background: var(--pill-bg); color: var(--text-secondary); font-size: 12px; font-weight: 600; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-family: inherit; white-space: nowrap; }
-.range-search-row { display: flex; align-items: center; gap: 8px; margin: -8px 0 18px; }
+.range-search-row { display: flex; align-items: center; gap: 8px; margin: 0 0 18px; }
 .range-search-sep { flex-shrink: 0; color: var(--text-muted); font-size: 12.5px; }
 
 .hero { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; }
