@@ -101,7 +101,6 @@ a { color: var(--green); text-decoration: none; }
 .page-title-sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 2px; }
 
 /* dashboard overview */
-.stat-value { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
 .stat-delta { font-size: 11.5px; margin-top: 5px; font-weight: 600; }
 
 /* dashboard overview date strip - past days only, today anchored on the right */
@@ -131,10 +130,9 @@ a { color: var(--green); text-decoration: none; }
 .mini-legend-name { min-width: 52px; }
 .mini-legend-value { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
-.mini-bar-row { display: flex; align-items: flex-end; gap: 7px; height: 74px; }
-.mini-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 5px; }
-.mini-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--series-3); }
-.mini-bar-label { font-size: 9px; color: var(--text-muted); }
+.mini-resv-stat { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; min-height: 104px; }
+.mini-resv-frac { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.mini-resv-pct { font-size: 15px; font-weight: 700; color: var(--text-secondary); }
 
 .mini-flow-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
 .mini-line { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; color: var(--text-secondary); }

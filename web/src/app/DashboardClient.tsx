@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   ReservationDoc,
@@ -183,6 +183,34 @@ export default function DashboardClient(props: Props) {
     setSelectedDay(null);
   }
 
+  // Detail screens never change the URL, so the phone's hardware/gesture
+  // back button had nothing to "undo" and just left the whole site instead
+  // of returning to the summary screen. Fix: push exactly one history entry
+  // when entering any detail screen (kept at depth 1 even when hopping
+  // between detail screens via the tab bar), and treat a browser-back
+  // (popstate) the same as tapping the in-app back button.
+  const pushedHistoryRef = useRef(false);
+  useEffect(() => {
+    function onPopState() {
+      pushedHistoryRef.current = false;
+      setView("dashboard");
+      setSelectedDay(null);
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+  useEffect(() => {
+    if (view === "dashboard") {
+      if (pushedHistoryRef.current) {
+        pushedHistoryRef.current = false;
+        window.history.back();
+      }
+    } else if (!pushedHistoryRef.current) {
+      window.history.pushState({ dashboardDetail: true }, "");
+      pushedHistoryRef.current = true;
+    }
+  }, [view]);
+
   const today = todayStr();
   const reservationByDate = useMemo(() => new Map(reservations.map((r) => [r.date, r])), [reservations]);
   const visitorByDate = useMemo(() => new Map(dailyVisitors.map((v) => [v.date, v])), [dailyVisitors]);
@@ -326,8 +354,7 @@ export default function DashboardClient(props: Props) {
   const dashGreenFee = greenFeeMap.get(dashDate.slice(0, 7)) ?? null;
   const overviewCats = salesCategories(dashDailySales).sort((a, b) => b.value - a.value).slice(0, 3);
   const overviewTotal = dashDailySales?.total ?? 0;
-  const occPct = dashReservation ? Math.round((dashReservation.totalBookings / (dashReservation.totalSlots || 1)) * 100) : null;
-  const reservationMini = reservations.filter((r) => r.date <= dashDate).slice(-7);
+  const occPct = dashReservation ? (dashReservation.totalBookings / (dashReservation.totalSlots || 1)) * 100 : null;
   const topBanks = (dashCashFlow?.banks ?? []).slice().sort((a, b) => b.todayBalance - a.todayBalance).slice(0, 2);
   const maxBank = Math.max(1, ...(dashCashFlow?.banks.map((b) => b.todayBalance) ?? [1]));
 
@@ -420,18 +447,10 @@ export default function DashboardClient(props: Props) {
 
               <button className="mini-card" onClick={() => go("reservation")}>
                 <div className="mini-card-head"><div className="mini-card-title">예약현황</div><div className="mini-chevron">›</div></div>
-                {occPct !== null && <div className="stat-value" style={{ marginBottom: 12 }}>{occPct}%</div>}
-                {reservationMini.length ? (
-                  <div className="mini-bar-row">
-                    {reservationMini.map((r) => {
-                      const pct = Math.round((r.totalBookings / (r.totalSlots || 1)) * 100);
-                      return (
-                        <div className="mini-bar-col" key={r.date}>
-                          <div className="mini-bar" style={{ height: `${Math.max(4, Math.min(100, pct))}%` }} />
-                          <div className="mini-bar-label">{r.date.slice(-2)}</div>
-                        </div>
-                      );
-                    })}
+                {dashReservation ? (
+                  <div className="mini-resv-stat">
+                    <div className="mini-resv-frac">{dashReservation.totalBookings}/{dashReservation.totalSlots}</div>
+                    <div className="mini-resv-pct">{occPct!.toFixed(1)}%</div>
                   </div>
                 ) : <div className="day-detail-empty">아직 업로드된 예약 데이터가 없습니다</div>}
               </button>
