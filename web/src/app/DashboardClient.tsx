@@ -46,6 +46,9 @@ function fmtWrnTime(tm: string): string {
   if (!/^\d{12}$/.test(tm)) return tm;
   return `${tm.slice(4, 6)}/${tm.slice(6, 8)} ${tm.slice(8, 10)}:${tm.slice(10, 12)}`;
 }
+function fmtEok(n: number): string {
+  return (n / 100000000).toFixed(1) + "억";
+}
 function fmtShare(value: number, total: number): string {
   if (total <= 0) return "0%";
   const pct = (value / total) * 100;
@@ -650,7 +653,7 @@ export default function DashboardClient(props: Props) {
                       <div className="legend-item" key={c.name}>
                         <span className="legend-dot" style={{ background: c.color }} />
                         <span className="legend-name">{c.name}</span>
-                        <span className="legend-value">{fmtCompact(c.value)}</span>
+                        <span className="legend-value">{fmtEok(c.value)}</span>
                         <span className="legend-share">{fmtShare(c.value, periodSum.total)}</span>
                       </div>
                     ))}
