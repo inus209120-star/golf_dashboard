@@ -426,6 +426,12 @@ export default function DashboardClient(props: Props) {
   const occPct = dashReservation ? (dashReservation.totalBookings / (dashReservation.totalSlots || 1)) * 100 : null;
   const topBanks = (dashCashFlow?.banks ?? []).slice().sort((a, b) => b.todayBalance - a.todayBalance).slice(0, 2);
   const maxBank = Math.max(1, ...(dashCashFlow?.banks.map((b) => b.todayBalance) ?? [1]));
+  // 자금현황 상세화면의 "계좌별 잔액"은 dashCashFlow(요약화면에서 고른 날짜)가
+  // 아니라 latestCashFlow(가장 최근 업로드)를 보여주므로, 막대 비율의 기준도
+  // 따로 latestCashFlow 기준 최대값을 써야 한다 - 이걸 공유해서 쓰면
+  // dashCashFlow가 없는 날(예: 오늘처럼 자금 데이터가 아직 없는 날짜)엔
+  // maxBank가 1로 떨어져 모든 막대가 수백~수십억 %로 튀어나가는 버그가 있었음.
+  const maxLatestBank = Math.max(1, ...(latestCashFlow?.banks.map((b) => b.todayBalance) ?? [1]));
 
   return (
     <div className="app-shell" data-text-scale={textScale}>
@@ -865,7 +871,7 @@ export default function DashboardClient(props: Props) {
                   {latestCashFlow.banks.map((b) => (
                     <div className="bank-row" key={b.name}>
                       <div className="bank-name">{b.name}</div>
-                      <div className="bank-track"><div className="bank-fill" style={{ width: `${Math.round((b.todayBalance / maxBank) * 100)}%` }} /></div>
+                      <div className="bank-track"><div className="bank-fill" style={{ width: `${Math.round((b.todayBalance / maxLatestBank) * 100)}%` }} /></div>
                       <div className="bank-amt">{fmtCompact(b.todayBalance)}</div>
                     </div>
                   ))}
