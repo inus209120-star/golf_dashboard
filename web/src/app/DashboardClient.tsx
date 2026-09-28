@@ -325,9 +325,14 @@ export default function DashboardClient(props: Props) {
     ? 0
     : periodDocs.reduce((a, d) => a + (reservationByDate.get(d.date)?.totalSlots ?? 0), 0);
   const periodOccPct = periodSlots > 0 ? Math.round((periodRounds / periodSlots) * 100) : null;
-  const revpar = periodSum && periodRounds > 0
-    ? (periodSum.greenFee + periodSum.foodBeverage + periodSum.cartFee) / periodRounds
-    : null;
+  // 객단가 = 총매출 ÷ 실제 내장 인원 - 종합영업일보 자체의 "객단가"(전체) 계산과
+  // 그대로 맞춘 것(예전엔 팀수로 나눠서 무노스 원본 수치와 안 맞았음, 2026-09-28
+  // 수정). dailySales/dailyVisitors는 같은 종합영업일보 파일에서 함께
+  // 뽑히므로 매출 있는 날짜엔 항상 인원 데이터도 같이 있다.
+  const periodPersons = monthlyFallback
+    ? monthlyFallback.persons
+    : periodDocs.reduce((a, d) => a + (visitorByDate.get(d.date)?.persons ?? 0), 0);
+  const revpar = periodSum && periodPersons > 0 ? periodSum.total / periodPersons : null;
 
   const recentSalesRows = dailySales.slice(-10).reverse().map((d) => ({
     doc: d,
@@ -613,9 +618,9 @@ export default function DashboardClient(props: Props) {
                   <div className="kpi-sub">{periodLabel} 합계</div>
                 </div>
                 <div className="kpi-card">
-                  <div className="kpi-label">객단가 (RevPAR)</div>
+                  <div className="kpi-label">객단가</div>
                   <div className="kpi-value">{revpar !== null ? fmtCompact(revpar) : "-"}</div>
-                  <div className="kpi-sub">그린피+식음+카트료 ÷ 예약팀수</div>
+                  <div className="kpi-sub">총매출 ÷ 실제 내장 인원</div>
                 </div>
                 <div className="kpi-card">
                   <div className="kpi-label">예약팀수 · 가동률</div>
