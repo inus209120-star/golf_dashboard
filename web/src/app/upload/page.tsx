@@ -5,7 +5,8 @@ import { parseReservationFile } from "@/lib/parsers/reservation";
 import { parseCashFlowFile } from "@/lib/parsers/cashFlow";
 import { parseBusinessDailySalesFile } from "@/lib/parsers/businessDailySales";
 import { parseDailyVisitorFile } from "@/lib/parsers/dailyVisitors";
-import type { DailySalesDoc, DailyVisitorDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
+import { parseMonthlySalesFile } from "@/lib/parsers/monthlySales";
+import type { DailySalesDoc, DailyVisitorDoc, MonthlySalesDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
 
 // Functional-first UI - no styling pass yet (matches the design canvas
 // prototype's look). This page proves the parse -> PIN check -> Firestore
@@ -176,6 +177,62 @@ function BusinessDailyUploader({ pin }: { pin: string }) {
     <section style={{ marginBottom: 24 }}>
       <h3>종합영업일보 (매출 · 실제 내장 팀수/인원)</h3>
       <p style={{ fontSize: 13, color: "#666" }}>하루에 한 파일씩 나오는 리포트라, 여러 날짜 파일을 한 번에 선택해 올릴 수 있습니다.</p>
+      <input type="file" accept=".xls,.xlsx" multiple onChange={onFiles} />
+      <StatusLine status={status} />
+    </section>
+  );
+}
+
+// 일별 업로드가 없는 과거 월(예: dailySales 도입 전인 2026년 1~8월)의 실적을
+// 채워 넣기 위한 업로더. 종합영업일보를 "그 달의 마지막 영업일" 기준으로
+// 뽑으면 그 안의 "월계"(매출)/"당 월"(팀수·인원) 값이 이미 그 달 전체
+// 합계이므로, 그 파일 하나만으로 한 달치를 채운다 - monthlySales.ts 참고.
+function MonthlyBackfillUploader({ pin }: { pin: string }) {
+  const [status, setStatus] = useState<Status>({ kind: "idle" });
+
+  async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    setStatus({ kind: "working" });
+    try {
+      const docs: MonthlySalesDoc[] = [];
+      const skipped: string[] = [];
+      for (const file of files) {
+        const buf = await file.arrayBuffer();
+        const result = parseMonthlySalesFile(buf);
+        if (result.doc) docs.push(result.doc);
+        else skipped.push(`${file.name}: ${result.error ?? "인식 실패"}`);
+      }
+      if (docs.length === 0) {
+        setStatus({ kind: "error", message: `인식된 데이터가 없습니다. ${skipped.join(", ")}` });
+        return;
+      }
+      const fileName = files.map((f) => f.name).join(", ");
+      const res = await fetch("/api/upload/monthly-sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, docs, skipped, total: files.length, fileName }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
+        return;
+      }
+      const skipNote = skipped.length ? ` (인식 안 됨: ${skipped.join(", ")})` : "";
+      setStatus({ kind: "success", message: `${files.length}개 파일 중 ${docs.length}개월 저장 완료 (${docs.map((d) => d.yearMonth).join(", ")})${skipNote}` });
+    } catch (err) {
+      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+    } finally {
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <section style={{ marginBottom: 24 }}>
+      <h3>월별 실적 백필 (일별 데이터 없는 과거 월용)</h3>
+      <p style={{ fontSize: 13, color: "#666" }}>
+        종합영업일보를 <b>그 달의 마지막 영업일</b> 기준으로 뽑아서 올려주세요 (예: 2월이면 2월 28일치 하루 파일). 그 안의 &ldquo;월계&rdquo;/&ldquo;당 월&rdquo; 값을 그 달 전체 합계로 저장합니다. 여러 달 파일을 한 번에 선택할 수 있습니다.
+      </p>
       <input type="file" accept=".xls,.xlsx" multiple onChange={onFiles} />
       <StatusLine status={status} />
     </section>
@@ -362,6 +419,7 @@ export default function UploadPage() {
       <ReservationUploader pin={unlockedPin} />
       <CashFlowUploader pin={unlockedPin} />
       <BusinessDailyUploader pin={unlockedPin} />
+      <MonthlyBackfillUploader pin={unlockedPin} />
       <hr style={{ margin: "24px 0" }} />
       <GreenfeeUploader pin={unlockedPin} />
     </main>

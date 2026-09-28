@@ -4,6 +4,7 @@ import type {
   ReservationDoc,
   DailyVisitorDoc,
   DailySalesDoc,
+  MonthlySalesDoc,
   CashFlowDoc,
   GreenFeeRatesDoc,
   WeatherCacheDoc,
@@ -28,17 +29,19 @@ function shiftMonth(ym: string, delta: number): string {
 }
 
 async function loadData() {
-  const [reservationsSnap, cashFlowSnap, dailySalesSnap, dailyVisitorsSnap] = await Promise.all([
+  const [reservationsSnap, cashFlowSnap, dailySalesSnap, dailyVisitorsSnap, monthlySalesSnap] = await Promise.all([
     adminDb.collection(COLLECTIONS.reservations).get(),
     adminDb.collection(COLLECTIONS.cashFlow).get(),
     adminDb.collection(COLLECTIONS.dailySales).get(),
     adminDb.collection(COLLECTIONS.dailyVisitors).get(),
+    adminDb.collection(COLLECTIONS.monthlySales).get(),
   ]);
 
   const reservations = reservationsSnap.docs.map((d) => d.data() as ReservationDoc).sort((a, b) => a.date.localeCompare(b.date));
   const cashFlows = cashFlowSnap.docs.map((d) => d.data() as CashFlowDoc).sort((a, b) => a.date.localeCompare(b.date));
   const dailySales = dailySalesSnap.docs.map((d) => d.data() as DailySalesDoc).sort((a, b) => a.date.localeCompare(b.date));
   const dailyVisitors = dailyVisitorsSnap.docs.map((d) => d.data() as DailyVisitorDoc).sort((a, b) => a.date.localeCompare(b.date));
+  const monthlySales = monthlySalesSnap.docs.map((d) => d.data() as MonthlySalesDoc).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
 
   // Show whichever month actually has reservation data, most recent first -
   // real deployments won't always have "this month" uploaded yet.
@@ -80,6 +83,7 @@ async function loadData() {
     dailyVisitors,
     dailySales,
     latestDailySales,
+    monthlySales, // 일별 데이터가 없는 과거 월(예: 2026년 1~8월) 백필용 - monthlyTrend 참고
     cashFlows, // full history - lets the Dashboard overview's date strip look up any past day
     latestCashFlow,
     greenFeeAll,

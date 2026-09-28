@@ -55,6 +55,27 @@ export interface DailySalesDoc {
   uploadedAt: string;
 }
 
+/** monthlySales/{yearMonth} — yearMonth = "YYYY-MM". Source: 무노스 종합영업일보,
+ * 그 달의 마지막 영업일 파일에서 "월계"(매출 표)와 "당 월"(팀수 및 객단가 표)
+ * 행을 읽음. 일별 파일이 없는 과거 월(예: dailySales/dailyVisitors 도입 전인
+ * 2026년 1~8월)의 실적을 하루하루가 아니라 달 단위로만 보관하기 위한 용도 -
+ * dailySales/dailyVisitors와 겹치는 월이 있으면 대시보드 쪽에서 일별 합계를
+ * 우선하고 이 문서는 무시한다(정의는 DashboardClient의 monthlyTrend 참고). */
+export interface MonthlySalesDoc {
+  yearMonth: string;
+  asOfDate: string; // 이 월계 수치를 뽑은 기준일(그 달의 마지막 영업일), "YYYY-MM-DD"
+  greenFee: number; // 입장료
+  cartFee: number; // 카트료
+  foodBeverage: number; // 식음료
+  proShop: number; // 프로샵
+  other: number; // 기타
+  total: number; // 총매출
+  teams: number; // 실제 내장 팀수 (당 월 누적)
+  persons: number; // 실제 내장 인원 (당 월 누적)
+  avgPersonsPerTeam: number; // 팀당인원
+  uploadedAt: string;
+}
+
 /** cashFlow/{date} — date = "YYYY-MM-DD", 영업일만 존재 (주말은 문서 자체가 없음). Source: 더존 자금일보. */
 export interface CashFlowBank {
   name: string; // 은행명 (계좌번호는 저장하지 않음 - 민감정보 최소화)
@@ -158,7 +179,7 @@ export interface WeatherCacheDoc {
 /** Upload result summary written alongside each parsed upload, so the
  * upload page can show "N개 시트 중 M개 인식됨" without re-parsing. */
 export interface UploadLogDoc {
-  kind: "cashFlow" | "dailySales" | "reservation" | "dailyVisitors";
+  kind: "cashFlow" | "dailySales" | "reservation" | "dailyVisitors" | "monthlySales";
   uploadedAt: string;
   fileName: string;
   recognized: number;

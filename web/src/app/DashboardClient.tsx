@@ -6,6 +6,7 @@ import type {
   ReservationDoc,
   DailyVisitorDoc,
   DailySalesDoc,
+  MonthlySalesDoc,
   CashFlowDoc,
   GreenFeeRatesDoc,
   WeatherCacheDoc,
@@ -18,6 +19,7 @@ interface Props {
   dailyVisitors: DailyVisitorDoc[];
   dailySales: DailySalesDoc[];
   latestDailySales: DailySalesDoc | null;
+  monthlySales: MonthlySalesDoc[];
   cashFlows: CashFlowDoc[];
   latestCashFlow: CashFlowDoc | null;
   greenFeeAll: GreenFeeRatesDoc[];
@@ -129,7 +131,7 @@ const SideIcon = {
 
 export default function DashboardClient(props: Props) {
   const {
-    reservations, reservationsForMonth, reservationMonth, dailyVisitors, dailySales, latestDailySales,
+    reservations, reservationsForMonth, reservationMonth, dailyVisitors, dailySales, latestDailySales, monthlySales,
     cashFlows, latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather,
   } = props;
 
@@ -283,14 +285,20 @@ export default function DashboardClient(props: Props) {
     resv: reservationByDate.get(d.date) ?? null,
   }));
 
+  // 일별 업로드(dailySales)가 있는 달은 그걸 합산해서 쓰고, 일별 데이터가
+  // 아예 없는 달(예: dailySales 도입 전인 2026년 1~8월)만 monthlySales
+  // 백필 문서로 채운다 - 같은 달에 둘 다 있으면 더 정확한 일별 합계를 우선.
   const monthlyTrend = useMemo(() => {
     const byMonth = new Map<string, number>();
     for (const d of dailySales) {
       const ym = d.date.slice(0, 7);
       byMonth.set(ym, (byMonth.get(ym) ?? 0) + d.total);
     }
+    for (const m of monthlySales) {
+      if (!byMonth.has(m.yearMonth)) byMonth.set(m.yearMonth, m.total);
+    }
     return Array.from(byMonth.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-  }, [dailySales]);
+  }, [dailySales, monthlySales]);
   const maxTrend = Math.max(1, ...monthlyTrend.map(([, v]) => v));
 
   // ---- greenfee simulation base rounds (avg of available reservation days) ----

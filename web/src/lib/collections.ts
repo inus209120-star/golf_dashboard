@@ -4,6 +4,7 @@ export const COLLECTIONS = {
   reservations: "reservations",
   dailyVisitors: "dailyVisitors",
   dailySales: "dailySales",
+  monthlySales: "monthlySales",
   cashFlow: "cashFlow",
   greenFeeRates: "greenFeeRates",
   greenFeeApprovals: "greenFeeApprovals",
