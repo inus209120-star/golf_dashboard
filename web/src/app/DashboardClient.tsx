@@ -285,17 +285,24 @@ export default function DashboardClient(props: Props) {
     resv: reservationByDate.get(d.date) ?? null,
   }));
 
-  // 일별 업로드(dailySales)가 있는 달은 그걸 합산해서 쓰고, 일별 데이터가
-  // 아예 없는 달(예: dailySales 도입 전인 2026년 1~8월)만 monthlySales
-  // 백필 문서로 채운다 - 같은 달에 둘 다 있으면 더 정확한 일별 합계를 우선.
+  // 일별 업로드(dailySales)와 월별 백필(monthlySales)을 합쳐서 월간 추이를
+  // 만든다. 어느 쪽을 쓸지는 "더 늦은 날짜까지 커버하는 쪽"으로 고른다 -
+  // dailySales 도입 전 달(예: 2026년 1~8월)은 monthlySales만 있어서 그걸
+  // 쓰고, 진행 중인 달처럼 둘 다 있을 때도(예: 9월 일별은 9/13까지만 올라와
+  // 있는데 월별 백필은 9/27 기준으로 더 최신인 경우) 더 최근 기준일 쪽이
+  // 그 달을 더 완전하게 반영하므로 그쪽 합계를 쓴다.
   const monthlyTrend = useMemo(() => {
-    const byMonth = new Map<string, number>();
+    const dailySumByMonth = new Map<string, number>();
+    const dailyMaxDateByMonth = new Map<string, string>();
     for (const d of dailySales) {
       const ym = d.date.slice(0, 7);
-      byMonth.set(ym, (byMonth.get(ym) ?? 0) + d.total);
+      dailySumByMonth.set(ym, (dailySumByMonth.get(ym) ?? 0) + d.total);
+      if (!dailyMaxDateByMonth.has(ym) || d.date > dailyMaxDateByMonth.get(ym)!) dailyMaxDateByMonth.set(ym, d.date);
     }
+    const byMonth = new Map<string, number>(dailySumByMonth);
     for (const m of monthlySales) {
-      if (!byMonth.has(m.yearMonth)) byMonth.set(m.yearMonth, m.total);
+      const dailyMaxDate = dailyMaxDateByMonth.get(m.yearMonth);
+      if (!dailyMaxDate || m.asOfDate > dailyMaxDate) byMonth.set(m.yearMonth, m.total);
     }
     return Array.from(byMonth.entries()).sort((a, b) => a[0].localeCompare(b[0]));
   }, [dailySales, monthlySales]);
@@ -592,14 +599,16 @@ export default function DashboardClient(props: Props) {
               <div className="card-title">월간 매출 추이</div>
               <div className="card-sub">월별 매출 합계 (데이터가 쌓일수록 채워집니다)</div>
               {monthlyTrend.length ? (
-                <div className="trend-bar-row">
-                  {monthlyTrend.map(([ym, total]) => (
-                    <div className="trend-bar-col" key={ym}>
-                      <div className="trend-bar-value">{fmtCompact(total)}</div>
-                      <div className="trend-bar" style={{ height: `${Math.max(2, (total / maxTrend) * 100)}%` }} />
-                      <div className="trend-bar-label">{ym}</div>
-                    </div>
-                  ))}
+                <div className="table-scroll">
+                  <div className="trend-bar-row">
+                    {monthlyTrend.map(([ym, total]) => (
+                      <div className="trend-bar-col" key={ym}>
+                        <div className="trend-bar-value">{fmtCompact(total)}</div>
+                        <div className="trend-bar" style={{ height: `${Math.max(2, (total / maxTrend) * 100)}%` }} />
+                        <div className="trend-bar-label">{ym}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : <div className="day-detail-empty">아직 데이터가 없습니다</div>}
             </div>
