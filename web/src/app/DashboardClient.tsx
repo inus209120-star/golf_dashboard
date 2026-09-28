@@ -107,6 +107,11 @@ function shiftDay(dateStr: string, delta: number): string {
   const dt = new Date(y, m - 1, d + delta);
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
 }
+function lastDayOfMonth(ym: string): string {
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(y, m, 0); // day 0 of next month = last day of this month
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 const SideIcon = {
   dashboard: (
@@ -266,14 +271,48 @@ export default function DashboardClient(props: Props) {
     const [lo, hi] = effectiveRangeStart <= effectiveRangeEnd ? [effectiveRangeStart, effectiveRangeEnd] : [effectiveRangeEnd, effectiveRangeStart];
     return dailySales.filter((d) => d.date >= lo && d.date <= hi);
   }, [dailySales, effectiveRangeStart, effectiveRangeEnd]);
-  const periodSum = sumSales(periodDocs);
+
+  const monthlySalesByYm = useMemo(() => new Map(monthlySales.map((m) => [m.yearMonth, m])), [monthlySales]);
+  // 선택한 기간이 정확히 "어느 달의 1일~말일" 전체이고, 그 달을 일별 데이터가
+  // 아직 다 못 채우고 있으면(예: 2026년 1~8월처럼 일별 파일 자체가 없는 달)
+  // 월별 백필("월계") 합계로 대체한다 - 부분 기간(예: "2월10일~20일")은 일별
+  // 데이터 없이는 답을 낼 수 없어 대상에서 제외.
+  const monthlyFallback = useMemo(() => {
+    if (!effectiveRangeStart || !effectiveRangeEnd) return null;
+    const ym = effectiveRangeStart.slice(0, 7);
+    if (effectiveRangeEnd.slice(0, 7) !== ym) return null;
+    if (effectiveRangeStart !== `${ym}-01`) return null;
+    if (effectiveRangeEnd !== lastDayOfMonth(ym)) return null;
+    const monthDoc = monthlySalesByYm.get(ym);
+    if (!monthDoc) return null;
+    const dailyMaxDate = periodDocs.reduce((max, d) => (d.date > max ? d.date : max), "");
+    if (dailyMaxDate && dailyMaxDate >= monthDoc.asOfDate) return null; // 일별 데이터가 이미 그 달을 다 커버함
+    return monthDoc;
+  }, [effectiveRangeStart, effectiveRangeEnd, monthlySalesByYm, periodDocs]);
+
+  const periodSum = monthlyFallback
+    ? {
+        date: monthlyFallback.asOfDate,
+        greenFee: monthlyFallback.greenFee,
+        cartFee: monthlyFallback.cartFee,
+        foodBeverage: monthlyFallback.foodBeverage,
+        proShop: monthlyFallback.proShop,
+        other: monthlyFallback.other,
+        total: monthlyFallback.total,
+        uploadedAt: monthlyFallback.uploadedAt,
+      }
+    : sumSales(periodDocs);
   const periodLabel = "기간";
   const periodCats = salesCategories(periodSum);
 
   // KPI: 예약팀수 합계/가동률 평균 and 객단가(RevPAR) - joined against reservations by
   // date, since sales and reservation data don't necessarily share one "current month".
-  const periodReservations = periodDocs.map((d) => reservationByDate.get(d.date)).filter((r): r is ReservationDoc => !!r);
-  const periodRounds = periodReservations.reduce((a, r) => a + r.totalBookings, 0);
+  // 월별 백필 모드에서는 날짜별 조인이 불가능하므로 팀수/인원은 그 달의
+  // "당 월" 누적값을 그대로 쓰고(가동률은 전체타임 데이터가 없어 계속 공란).
+  const periodReservations = monthlyFallback
+    ? []
+    : periodDocs.map((d) => reservationByDate.get(d.date)).filter((r): r is ReservationDoc => !!r);
+  const periodRounds = monthlyFallback ? monthlyFallback.teams : periodReservations.reduce((a, r) => a + r.totalBookings, 0);
   const periodSlots = periodReservations.reduce((a, r) => a + r.totalSlots, 0);
   const periodOccPct = periodSlots > 0 ? Math.round((periodRounds / periodSlots) * 100) : null;
   const revpar = periodSum && periodRounds > 0
@@ -547,7 +586,11 @@ export default function DashboardClient(props: Props) {
               {periodSum ? (
                 <>
                   <div className="hero">{fmtWon(periodSum.total)}</div>
-                  <div className="hero-delta">{periodDocs.length}일 합계 기준 ({periodDocs[0]?.date} ~ {periodDocs[periodDocs.length - 1]?.date})</div>
+                  <div className="hero-delta">
+                    {monthlyFallback
+                      ? `${monthlyFallback.yearMonth} 월별 실적 기준 (일별 데이터 없음)`
+                      : `${periodDocs.length}일 합계 기준 (${periodDocs[0]?.date} ~ ${periodDocs[periodDocs.length - 1]?.date})`}
+                  </div>
                 </>
               ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다. /upload에서 종합영업일보를 업로드해주세요.</div>}
             </div>
