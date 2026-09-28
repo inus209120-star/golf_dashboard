@@ -307,13 +307,23 @@ export default function DashboardClient(props: Props) {
 
   // KPI: 예약팀수 합계/가동률 평균 and 객단가(RevPAR) - joined against reservations by
   // date, since sales and reservation data don't necessarily share one "current month".
-  // 월별 백필 모드에서는 날짜별 조인이 불가능하므로 팀수/인원은 그 달의
+  // 예약현황(일별집계)은 아직 8월까지만 있어서(9월부터는 그 파일이 안 올라옴),
+  // 9월처럼 reservations가 없는 날짜는 종합영업일보의 dailyVisitors(실제 내장
+  // 팀수)로 대체한다 - 가동률(전체타임 대비 %)은 dailyVisitors에 전체타임
+  // 정보가 없어 그 날짜만큼은 계속 계산에서 빠진다(0으로 취급되지 않도록
+  // 분모인 periodSlots에도 안 더함).
+  // 월별 백필 모드에서는 날짜별 조인이 불가능하므로 팀수는 그 달의
   // "당 월" 누적값을 그대로 쓰고(가동률은 전체타임 데이터가 없어 계속 공란).
-  const periodReservations = monthlyFallback
-    ? []
-    : periodDocs.map((d) => reservationByDate.get(d.date)).filter((r): r is ReservationDoc => !!r);
-  const periodRounds = monthlyFallback ? monthlyFallback.teams : periodReservations.reduce((a, r) => a + r.totalBookings, 0);
-  const periodSlots = periodReservations.reduce((a, r) => a + r.totalSlots, 0);
+  const periodRounds = monthlyFallback
+    ? monthlyFallback.teams
+    : periodDocs.reduce((a, d) => {
+        const r = reservationByDate.get(d.date);
+        if (r) return a + r.totalBookings;
+        return a + (visitorByDate.get(d.date)?.teams ?? 0);
+      }, 0);
+  const periodSlots = monthlyFallback
+    ? 0
+    : periodDocs.reduce((a, d) => a + (reservationByDate.get(d.date)?.totalSlots ?? 0), 0);
   const periodOccPct = periodSlots > 0 ? Math.round((periodRounds / periodSlots) * 100) : null;
   const revpar = periodSum && periodRounds > 0
     ? (periodSum.greenFee + periodSum.foodBeverage + periodSum.cartFee) / periodRounds
