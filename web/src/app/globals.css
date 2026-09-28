@@ -180,7 +180,7 @@ a { color: var(--green); text-decoration: none; }
 .legend-list { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 220px; }
 .legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; }
 .legend-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
-.legend-name { color: var(--text-secondary); flex: 1; }
+.legend-name { color: var(--text-secondary); min-width: 52px; }
 .legend-value { font-weight: 600; font-variant-numeric: tabular-nums; }
 .legend-share { color: var(--text-muted); width: 40px; text-align: right; }
 
@@ -355,7 +355,7 @@ a { color: var(--green); text-decoration: none; }
   /* donut + legend side by side even on narrow phones, instead of wrapping
      the legend below the donut - shrink both to fit (104px matches the
      mini-donut size elsewhere for visual consistency). */
-  .donut-row { gap: 16px; flex-wrap: nowrap; }
+  .donut-row { gap: 24px; flex-wrap: nowrap; }
   .donut-wrap { width: 104px; height: 104px; }
   .donut { width: 104px; height: 104px; }
   .donut-hole { inset: 16px; }
