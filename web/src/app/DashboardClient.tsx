@@ -648,7 +648,7 @@ export default function DashboardClient(props: Props) {
                       <div className="trend-bar-col" key={ym}>
                         <div className="trend-bar-value">{fmtCompact(total)}</div>
                         <div className="trend-bar" style={{ height: `${Math.max(2, (total / maxTrend) * 100)}%` }} />
-                        <div className="trend-bar-label">{ym}</div>
+                        <div className="trend-bar-label">{ym.slice(2)}</div>
                       </div>
                     ))}
                   </div>
