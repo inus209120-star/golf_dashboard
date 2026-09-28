@@ -39,7 +39,17 @@ async function loadData() {
 
   const reservations = reservationsSnap.docs.map((d) => d.data() as ReservationDoc).sort((a, b) => a.date.localeCompare(b.date));
   const cashFlows = cashFlowSnap.docs.map((d) => d.data() as CashFlowDoc).sort((a, b) => a.date.localeCompare(b.date));
-  const dailySales = dailySalesSnap.docs.map((d) => d.data() as DailySalesDoc).sort((a, b) => a.date.localeCompare(b.date));
+  // A handful of dailySales docs predate the 2026-09-16 switch to 종합영업일보
+  // (old 일일영업집계 parser) and still carry its since-removed "rentalFee"
+  // field - drop those rather than let them masquerade as real single-day
+  // figures (one such doc, 2026-08-31, actually holds that whole month's
+  // total under one date, which corrupts both the 최근 영업일 상세 table and
+  // the 기간 검색's "is this month already covered by daily data" check).
+  const dailySales = dailySalesSnap.docs
+    .map((d) => d.data())
+    .filter((d) => !("rentalFee" in d))
+    .map((d) => d as DailySalesDoc)
+    .sort((a, b) => a.date.localeCompare(b.date));
   const dailyVisitors = dailyVisitorsSnap.docs.map((d) => d.data() as DailyVisitorDoc).sort((a, b) => a.date.localeCompare(b.date));
   const monthlySales = monthlySalesSnap.docs.map((d) => d.data() as MonthlySalesDoc).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
 
