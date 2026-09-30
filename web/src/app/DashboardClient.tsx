@@ -46,8 +46,8 @@ function fmtWrnTime(tm: string): string {
   if (!/^\d{12}$/.test(tm)) return tm;
   return `${tm.slice(4, 6)}/${tm.slice(6, 8)} ${tm.slice(8, 10)}:${tm.slice(10, 12)}`;
 }
-function fmtEok(n: number): string {
-  return (n / 100000000).toFixed(1) + "억";
+function fmtEok(n: number, decimals = 1): string {
+  return (n / 100000000).toFixed(decimals) + "억";
 }
 function fmtShare(value: number, total: number): string {
   if (total <= 0) return "0%";
@@ -513,9 +513,9 @@ export default function DashboardClient(props: Props) {
                 <div className="mini-card-head"><div className="mini-card-title">매출현황</div><div className="mini-chevron">›</div></div>
                 {dashDailySales ? (
                   <>
-                    <div className="mini-line"><span>일매출</span><b>{fmtCompact(dashDailySales.total)}</b></div>
-                    <div className="mini-line"><span>월매출 (누적)</span><b>{fmtCompact(dashDailySales.monthToDateTotal)}</b></div>
-                    <div className="mini-line"><span>년매출 (누적)</span><b>{fmtCompact(dashDailySales.yearToDateTotal)}</b></div>
+                    <div className="mini-line"><span>일매출</span><b>{fmtEok(dashDailySales.total, 2)}</b></div>
+                    <div className="mini-line"><span>월매출 (누적)</span><b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b></div>
+                    <div className="mini-line"><span>년매출 (누적)</span><b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b></div>
                   </>
                 ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다</div>}
               </button>
