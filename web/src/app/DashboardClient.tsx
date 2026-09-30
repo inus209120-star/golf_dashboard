@@ -562,7 +562,7 @@ export default function DashboardClient(props: Props) {
                       <div className="mini-line">
                         <span className="mini-line-label">월매출 (누적)</span>
                         <span className="mini-line-val">
-                          <b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b>
+                          <b>{fmtEok(dashDailySales.monthToDateTotal, 1)}</b>
                           {monthYoyPct !== null && (
                             <>
                               <em className={monthYoyPct >= 0 ? "delta-up" : "delta-down"}>
@@ -576,7 +576,7 @@ export default function DashboardClient(props: Props) {
                       <div className="mini-line">
                         <span className="mini-line-label">년매출 (누적)</span>
                         <span className="mini-line-val">
-                          <b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b>
+                          <b>{fmtEok(dashDailySales.yearToDateTotal, 1)}</b>
                           {yearYoyPct !== null && (
                             <>
                               <em className={yearYoyPct >= 0 ? "delta-up" : "delta-down"}>전년비 {fmtYoy(yearYoyPct)}</em>
