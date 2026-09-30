@@ -544,11 +544,11 @@ export default function DashboardClient(props: Props) {
                   <div className="mini-sales-row">
                     <div className="mini-sales-today">
                       <div className="mini-sales-today-label">일매출</div>
-                      <div className="mini-sales-today-value">{fmtCompact(dashDailySales.total)}</div>
+                      <div className="mini-sales-today-value">{fmtCompact(dashDailySales.total)}원</div>
                     </div>
                     <div className="mini-sales-list">
                       <div className="mini-line">
-                        <span>월매출 (누적)</span>
+                        <span className="mini-line-label">월매출 (누적)</span>
                         <span className="mini-line-val">
                           <b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b>
                           {monthYoyPct !== null && (
@@ -559,7 +559,7 @@ export default function DashboardClient(props: Props) {
                         </span>
                       </div>
                       <div className="mini-line">
-                        <span>년매출 (누적)</span>
+                        <span className="mini-line-label">년매출 (누적)</span>
                         <span className="mini-line-val">
                           <b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b>
                           {yearYoyPct !== null && (
