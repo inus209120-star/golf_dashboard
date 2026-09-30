@@ -553,7 +553,10 @@ export default function DashboardClient(props: Props) {
                   <div className="mini-sales-row">
                     <div className="mini-sales-today">
                       <div className="mini-sales-today-label">일매출</div>
-                      <div className="mini-sales-today-value">{fmtCompact(dashDailySales.total)}원</div>
+                      <div className="mini-donut-wrap">
+                        <div className="mini-donut" style={{ background: donutGradient(salesCategories(dashDailySales), dashDailySales.total) }} />
+                        <div className="mini-donut-hole"><div className="mini-donut-total">{fmtCompact(dashDailySales.total)}원</div></div>
+                      </div>
                     </div>
                     <div className="mini-sales-list">
                       <div className="mini-line">
@@ -687,7 +690,7 @@ export default function DashboardClient(props: Props) {
               <div className="kpi-row">
                 <div className="kpi-card">
                   <div className="kpi-label">매출액</div>
-                  <div className="kpi-value">{fmtWon(periodSum.total)}</div>
+                  <div className="kpi-value">{fmtEok(periodSum.total, 2)}</div>
                   <div className="kpi-sub">{periodLabel} 합계</div>
                 </div>
                 <div className="kpi-card">
@@ -710,7 +713,7 @@ export default function DashboardClient(props: Props) {
                 <div className="donut-row">
                   <div className="donut-wrap">
                     <div className="donut" style={{ background: donutGradient(periodCats, periodSum.total) }} />
-                    <div className="donut-hole"><div className="donut-total">{fmtWon(periodSum.total)}</div><div className="donut-sub">{periodLabel} 매출</div></div>
+                    <div className="donut-hole"><div className="donut-total">{fmtEok(periodSum.total, 2)}</div><div className="donut-sub">{periodLabel} 매출</div></div>
                   </div>
                   <div className="legend-list">
                     {periodCats.map((c) => (
