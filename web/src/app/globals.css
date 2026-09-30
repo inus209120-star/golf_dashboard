@@ -127,6 +127,7 @@ a { color: var(--green); text-decoration: none; }
 .mini-line b { color: var(--text-primary); font-weight: 700; }
 .mini-line-val { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
 .mini-line-val em { font-style: normal; font-size: 10px; font-weight: 700; text-align: right; }
+.mini-line-prior { font-size: 9.5px; color: var(--text-muted); }
 
 .mini-cash-total { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .mini-cash-sub { font-size: 12px; color: var(--text-secondary); margin: 4px 0 14px; }
@@ -135,6 +136,9 @@ a { color: var(--green); text-decoration: none; }
 .mini-sales-today { flex-shrink: 0; }
 .mini-sales-today-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
 .mini-sales-today-value { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.mini-sales-today-value-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.mini-sales-dod { font-size: 12px; font-weight: 700; }
+.mini-sparkline { display: block; width: 100px; height: 24px; margin-top: 8px; overflow: visible; }
 .mini-sales-list { flex: 1; min-width: 0; }
 .mini-sales-list .mini-line { justify-content: flex-start; gap: 8px; }
 .mini-sales-list .mini-line-label { flex-shrink: 0; white-space: nowrap; }

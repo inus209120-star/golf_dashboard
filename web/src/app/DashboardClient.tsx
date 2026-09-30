@@ -61,6 +61,22 @@ function fmtEok(n: number, decimals = 1): string {
 function fmtYoy(pct: number): string {
   return (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%";
 }
+function fmtDod(pct: number): string {
+  return (pct >= 0 ? "▲" : "▼") + Math.abs(pct).toFixed(1) + "%";
+}
+// 일매출 카드의 최근 7일 미니 스파크라인용 좌표 - 차트 라이브러리 없이 손으로
+// 그리는 이 프로젝트의 기존 방식(도넛 conic-gradient 등)과 동일한 원칙.
+function sparklinePoints(values: number[], width: number, height: number): [number, number][] {
+  if (values.length === 0) return [];
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  return values.map((v, i) => {
+    const x = values.length === 1 ? width / 2 : (i / (values.length - 1)) * width;
+    const y = height - ((v - min) / range) * height;
+    return [x, y] as [number, number];
+  });
+}
 function fmtShare(value: number, total: number): string {
   if (total <= 0) return "0%";
   const pct = (value / total) * 100;
@@ -459,6 +475,14 @@ export default function DashboardClient(props: Props) {
   const yearYoyPct = dashDailySales && priorYearToDateApprox
     ? ((dashDailySales.yearToDateTotal - priorYearToDateApprox) / priorYearToDateApprox) * 100
     : null;
+  // 일매출 카드용 보조 시각 정보: 전일 대비 %, 최근 7일 스파크라인(선택된
+  // 날짜로 끝나는 7일 - 날짜 스트립과 같은 원칙, 오늘이 항상 오른쪽 끝).
+  const dashPrevDaySales = dailySales.find((d) => d.date === shiftDay(dashDate, -1)) ?? null;
+  const dodPct = dashDailySales && dashPrevDaySales && dashPrevDaySales.total > 0
+    ? ((dashDailySales.total - dashPrevDaySales.total) / dashPrevDaySales.total) * 100
+    : null;
+  const sparklineDocs = dailySales.filter((d) => d.date <= dashDate).slice(-7);
+  const sparkPts = sparklinePoints(sparklineDocs.map((d) => d.total), 100, 24);
   const dashReservation = reservationByDate.get(dashDate) ?? null;
   const dashCashFlow = cashFlows.find((c) => c.date === dashDate) ?? null;
   const dashGreenFee = greenFeeMap.get(dashDate.slice(0, 7)) ?? null;
@@ -544,7 +568,23 @@ export default function DashboardClient(props: Props) {
                   <div className="mini-sales-row">
                     <div className="mini-sales-today">
                       <div className="mini-sales-today-label">일매출</div>
-                      <div className="mini-sales-today-value">{fmtCompact(dashDailySales.total)}원</div>
+                      <div className="mini-sales-today-value-row">
+                        <div className="mini-sales-today-value">{fmtCompact(dashDailySales.total)}원</div>
+                        {dodPct !== null && (
+                          <span className={`mini-sales-dod ${dodPct >= 0 ? "delta-up" : "delta-down"}`}>{fmtDod(dodPct)}</span>
+                        )}
+                      </div>
+                      {sparkPts.length > 1 && (
+                        <svg className="mini-sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+                          <polyline
+                            points={sparkPts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")}
+                            fill="none"
+                            stroke="var(--series-1)"
+                            strokeWidth="2"
+                          />
+                          <circle cx={sparkPts[sparkPts.length - 1][0]} cy={sparkPts[sparkPts.length - 1][1]} r="2.5" fill="var(--series-1)" />
+                        </svg>
+                      )}
                     </div>
                     <div className="mini-sales-list">
                       <div className="mini-line">
@@ -552,9 +592,12 @@ export default function DashboardClient(props: Props) {
                         <span className="mini-line-val">
                           <b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b>
                           {monthYoyPct !== null && (
-                            <em className={monthYoyPct >= 0 ? "delta-up" : "delta-down"}>
-                              전년비 {fmtYoy(monthYoyPct)}{!dashIsMonthComplete ? " (진행중)" : ""}
-                            </em>
+                            <>
+                              <em className={monthYoyPct >= 0 ? "delta-up" : "delta-down"}>
+                                전년비 {fmtYoy(monthYoyPct)}{!dashIsMonthComplete ? " (진행중)" : ""}
+                              </em>
+                              <span className="mini-line-prior">작년 {fmtEok(priorMonthSales!, 2)}</span>
+                            </>
                           )}
                         </span>
                       </div>
@@ -563,7 +606,10 @@ export default function DashboardClient(props: Props) {
                         <span className="mini-line-val">
                           <b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b>
                           {yearYoyPct !== null && (
-                            <em className={yearYoyPct >= 0 ? "delta-up" : "delta-down"}>전년비 {fmtYoy(yearYoyPct)}</em>
+                            <>
+                              <em className={yearYoyPct >= 0 ? "delta-up" : "delta-down"}>전년비 {fmtYoy(yearYoyPct)}</em>
+                              <span className="mini-line-prior">작년 {fmtEok(priorYearToDateApprox, 2)}</span>
+                            </>
                           )}
                         </span>
                       </div>
