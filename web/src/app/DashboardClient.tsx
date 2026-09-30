@@ -565,7 +565,7 @@ export default function DashboardClient(props: Props) {
                               <em className={monthYoyPct >= 0 ? "delta-up" : "delta-down"}>
                                 전년비 {fmtYoy(monthYoyPct)}{!dashIsMonthComplete ? " (진행중)" : ""}
                               </em>
-                              <span className="mini-line-prior">작년 {fmtEok(priorMonthSales!, 2)}</span>
+                              <span className="mini-line-prior">작년 {fmtEok(priorMonthSales!, 1)}</span>
                             </>
                           )}
                         </span>
@@ -577,7 +577,7 @@ export default function DashboardClient(props: Props) {
                           {yearYoyPct !== null && (
                             <>
                               <em className={yearYoyPct >= 0 ? "delta-up" : "delta-down"}>전년비 {fmtYoy(yearYoyPct)}</em>
-                              <span className="mini-line-prior">작년 {fmtEok(priorYearToDateApprox, 2)}</span>
+                              <span className="mini-line-prior">작년 {fmtEok(priorYearToDateApprox, 1)}</span>
                             </>
                           )}
                         </span>
