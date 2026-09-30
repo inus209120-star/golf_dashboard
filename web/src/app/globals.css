@@ -353,13 +353,13 @@ a { color: var(--green); text-decoration: none; }
   .modal-stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
   /* donut + legend side by side even on narrow phones, instead of wrapping
-     the legend below the donut - shrink both to fit (104px matches the
-     mini-donut size elsewhere for visual consistency). */
-  .donut-row { gap: 24px; flex-wrap: nowrap; }
-  .donut-wrap { width: 104px; height: 104px; }
-  .donut { width: 104px; height: 104px; }
-  .donut-hole { inset: 16px; }
-  .donut-total { font-size: 14px; }
+     the legend below the donut - shrink the legend to fit next to a donut
+     that's still reasonably large, with a wide gap between them. */
+  .donut-row { gap: 32px; flex-wrap: nowrap; }
+  .donut-wrap { width: 120px; height: 120px; }
+  .donut { width: 120px; height: 120px; }
+  .donut-hole { inset: 18px; }
+  .donut-total { font-size: 15px; }
   .legend-list { min-width: 0; gap: 8px; }
   .legend-item { font-size: 12px; gap: 6px; }
   .legend-share { width: 30px; }
