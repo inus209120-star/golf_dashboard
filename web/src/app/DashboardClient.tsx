@@ -76,6 +76,10 @@ function sumSales(docs: DailySalesDoc[]): DailySalesDoc | null {
     proShop: acc.proShop + d.proShop,
     other: acc.other + d.other,
     total: acc.total + d.total,
+    // 월계/년계는 이미 누적값이라 더하면 안 되고, 이 합산 문서 자체는 그
+    // 값들을 쓰는 곳이 없으니 그냥 가장 최근 날짜(d) 쪽 값을 들고만 있는다.
+    monthToDateTotal: d.monthToDateTotal,
+    yearToDateTotal: d.yearToDateTotal,
     uploadedAt: acc.uploadedAt,
   }));
 }
@@ -302,6 +306,11 @@ export default function DashboardClient(props: Props) {
         proShop: monthlyFallback.proShop,
         other: monthlyFallback.other,
         total: monthlyFallback.total,
+        // MonthlySalesDoc엔 일 단위 누적 개념이 없어서(이미 그 달 통짜 합계임)
+        // 채울 의미있는 값이 없음 - 이 합성 객체는 이 두 필드를 읽는 곳이
+        // 없으니 총매출로 채워서 타입만 맞춘다.
+        monthToDateTotal: monthlyFallback.total,
+        yearToDateTotal: monthlyFallback.total,
         uploadedAt: monthlyFallback.uploadedAt,
       }
     : sumSales(periodDocs);
@@ -424,8 +433,6 @@ export default function DashboardClient(props: Props) {
   const dashReservation = reservationByDate.get(dashDate) ?? null;
   const dashCashFlow = cashFlows.find((c) => c.date === dashDate) ?? null;
   const dashGreenFee = greenFeeMap.get(dashDate.slice(0, 7)) ?? null;
-  const overviewCats = salesCategories(dashDailySales).sort((a, b) => b.value - a.value).slice(0, 3);
-  const overviewTotal = dashDailySales?.total ?? 0;
   const occPct = dashReservation ? (dashReservation.totalBookings / (dashReservation.totalSlots || 1)) * 100 : null;
   const topBanks = (dashCashFlow?.banks ?? []).slice().sort((a, b) => b.todayBalance - a.todayBalance).slice(0, 2);
   const maxBank = Math.max(1, ...(dashCashFlow?.banks.map((b) => b.todayBalance) ?? [1]));
@@ -505,21 +512,11 @@ export default function DashboardClient(props: Props) {
               <button className="mini-card" onClick={() => go("sales")}>
                 <div className="mini-card-head"><div className="mini-card-title">매출현황</div><div className="mini-chevron">›</div></div>
                 {dashDailySales ? (
-                  <div className="mini-donut-row">
-                    <div className="mini-donut-wrap">
-                      <div className="mini-donut" style={{ background: donutGradient(salesCategories(dashDailySales), overviewTotal) }} />
-                      <div className="mini-donut-hole"><div className="mini-donut-total">{fmtWon(overviewTotal)}</div></div>
-                    </div>
-                    <div className="mini-legend">
-                      {overviewCats.map((c) => (
-                        <div className="mini-legend-item" key={c.name}>
-                          <span className="mini-legend-dot" style={{ background: c.color }} />
-                          <span className="mini-legend-name">{c.name}</span>
-                          <span className="mini-legend-value">{fmtShare(c.value, overviewTotal)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <>
+                    <div className="mini-line"><span>일매출</span><b>{fmtCompact(dashDailySales.total)}</b></div>
+                    <div className="mini-line"><span>월매출 (누적)</span><b>{fmtCompact(dashDailySales.monthToDateTotal)}</b></div>
+                    <div className="mini-line"><span>년매출 (누적)</span><b>{fmtCompact(dashDailySales.yearToDateTotal)}</b></div>
+                  </>
                 ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다</div>}
               </button>
 

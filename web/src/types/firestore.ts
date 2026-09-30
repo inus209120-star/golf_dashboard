@@ -51,7 +51,9 @@ export interface DailySalesDoc {
   foodBeverage: number; // 식음료
   proShop: number; // 프로샵
   other: number; // 기타
-  total: number; // 총매출
+  total: number; // 총매출 (일계)
+  monthToDateTotal: number; // 총매출 월계 - 그 날짜가 속한 달의 1일부터 그날까지 누적(무노스가 계산한 값 그대로)
+  yearToDateTotal: number; // 총매출 년계 - 그 날짜가 속한 해의 1월1일부터 그날까지 누적(무노스가 계산한 값 그대로)
   uploadedAt: string;
 }
 

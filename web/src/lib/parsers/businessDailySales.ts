@@ -118,6 +118,18 @@ export function parseBusinessDailySalesFile(buffer: ArrayBuffer): BusinessSalesP
     return { doc: null, error: '"일계" 행을 찾을 수 없음 - 파일 형식을 확인하세요' };
   }
 
+  // "일계" 바로 아래에 "월계"(이번달 누적)·"년계"(올해 누적) 행이 같은 열
+  // 구조로 이어짐 - 무노스가 이미 계산해주는 값이라 우리가 따로 합산할
+  // 필요 없이 그대로 저장해서 대시보드 요약화면의 일/월/년 매출에 쓴다.
+  function findRow(label: string): number {
+    for (let r = dataRow + 1; r <= Math.min(dataRow + 3, range.e.r); r++) {
+      if (txt(get(r, muCol)) === label) return r;
+    }
+    return -1;
+  }
+  const monthRow = findRow("월계");
+  const yearRow = findRow("년계");
+
   return {
     doc: {
       date,
@@ -127,6 +139,8 @@ export function parseBusinessDailySalesFile(buffer: ArrayBuffer): BusinessSalesP
       foodBeverage: num(get(dataRow, cols.food)),
       other: num(get(dataRow, cols.etc)),
       total: num(get(dataRow, cols.total)),
+      monthToDateTotal: monthRow !== -1 ? num(get(monthRow, cols.total)) : num(get(dataRow, cols.total)),
+      yearToDateTotal: yearRow !== -1 ? num(get(yearRow, cols.total)) : num(get(dataRow, cols.total)),
       uploadedAt: new Date().toISOString(),
     },
     error: null,

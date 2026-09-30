@@ -119,17 +119,6 @@ a { color: var(--green); text-decoration: none; }
 .mini-chevron { color: var(--text-muted); font-size: 16px; }
 .mini-card-wide { grid-column: span 2; }
 
-.mini-donut-row { display: flex; align-items: center; gap: 40px; }
-.mini-donut-wrap { position: relative; width: 104px; height: 104px; flex-shrink: 0; }
-.mini-donut { width: 104px; height: 104px; border-radius: 50%; }
-.mini-donut-hole { position: absolute; inset: 16px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.mini-donut-total { font-size: 13px; font-weight: 800; overflow-wrap: break-word; max-width: 100%; text-align: center; }
-.mini-legend { display: flex; flex-direction: column; gap: 8px; }
-.mini-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); }
-.mini-legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
-.mini-legend-name { min-width: 52px; }
-.mini-legend-value { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
-
 .mini-resv-stat { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; min-height: 104px; }
 .mini-resv-frac { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .mini-resv-pct { font-size: 15px; font-weight: 700; color: var(--text-secondary); }
