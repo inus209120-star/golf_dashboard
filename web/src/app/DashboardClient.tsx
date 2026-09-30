@@ -32,6 +32,15 @@ type View = "dashboard" | "sales" | "reservation" | "cash" | "greenfee" | "weath
 
 const SERIES = ["var(--series-1)", "var(--series-2)", "var(--series-3)", "var(--series-4)", "var(--series-5)", "var(--series-6)"];
 
+// 2025년 실제 손익계산서(월별실적) "Ⅰ. 매출액" 행 - 작년 한 해치 정적 수치라
+// Firestore 컬렉션/업로드 기능 없이 코드에 직접 박아둔다(2025-09-30 반영).
+// 전년비 %는 여기 값과 비교해서 계산.
+const PRIOR_YEAR_MONTHLY_SALES: Record<string, number> = {
+  "01": 697982970, "02": 854936075, "03": 1364697990, "04": 1674074254,
+  "05": 1875085770, "06": 1832626691, "07": 1447426379, "08": 1286224703,
+  "09": 1683598173, "10": 1867047308, "11": 1951687455, "12": 1105259657,
+};
+
 function fmtWon(n: number): string {
   const neg = n < 0;
   return (neg ? "-" : "") + "₩" + Math.round(Math.abs(n)).toLocaleString("ko-KR");
@@ -48,6 +57,9 @@ function fmtWrnTime(tm: string): string {
 }
 function fmtEok(n: number, decimals = 1): string {
   return (n / 100000000).toFixed(decimals) + "억";
+}
+function fmtYoy(pct: number): string {
+  return (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%";
 }
 function fmtShare(value: number, total: number): string {
   if (total <= 0) return "0%";
@@ -430,6 +442,23 @@ export default function DashboardClient(props: Props) {
   }, [today]);
 
   const dashDailySales = dailySales.find((d) => d.date === dashDate) ?? null;
+  // 전년비 % - 2025년 월별 매출(PRIOR_YEAR_MONTHLY_SALES)과 비교. 작년은
+  // 월 단위 실적만 있어서(일별 아님), 월매출은 "이번 달이 아직 진행 중이면
+  // 잠정치"임을 같이 표시하고, 년매출은 "1월~이번 달까지의 작년 월별
+  // 합계"를 기준선으로 근사 비교한다(작년 그 날짜까지의 정확한 누적은 알
+  // 수 없음 - 월 단위 근사치).
+  const dashMonthNum = dashDate.slice(5, 7);
+  const dashIsMonthComplete = dashDate === lastDayOfMonth(dashDate.slice(0, 7));
+  const priorMonthSales = PRIOR_YEAR_MONTHLY_SALES[dashMonthNum] ?? null;
+  const monthYoyPct = dashDailySales && priorMonthSales
+    ? ((dashDailySales.monthToDateTotal - priorMonthSales) / priorMonthSales) * 100
+    : null;
+  const priorYearToDateApprox = Object.entries(PRIOR_YEAR_MONTHLY_SALES)
+    .filter(([m]) => m <= dashMonthNum)
+    .reduce((a, [, v]) => a + v, 0);
+  const yearYoyPct = dashDailySales && priorYearToDateApprox
+    ? ((dashDailySales.yearToDateTotal - priorYearToDateApprox) / priorYearToDateApprox) * 100
+    : null;
   const dashReservation = reservationByDate.get(dashDate) ?? null;
   const dashCashFlow = cashFlows.find((c) => c.date === dashDate) ?? null;
   const dashGreenFee = greenFeeMap.get(dashDate.slice(0, 7)) ?? null;
@@ -515,11 +544,29 @@ export default function DashboardClient(props: Props) {
                   <div className="mini-sales-row">
                     <div className="mini-sales-today">
                       <div className="mini-sales-today-label">일매출</div>
-                      <div className="mini-sales-today-value">{fmtEok(dashDailySales.total, 2)}</div>
+                      <div className="mini-sales-today-value">{fmtCompact(dashDailySales.total)}</div>
                     </div>
                     <div className="mini-sales-list">
-                      <div className="mini-line"><span>월매출 (누적)</span><b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b></div>
-                      <div className="mini-line"><span>년매출 (누적)</span><b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b></div>
+                      <div className="mini-line">
+                        <span>월매출 (누적)</span>
+                        <span className="mini-line-val">
+                          <b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b>
+                          {monthYoyPct !== null && (
+                            <em className={monthYoyPct >= 0 ? "delta-up" : "delta-down"}>
+                              전년비 {fmtYoy(monthYoyPct)}{!dashIsMonthComplete ? " (진행중)" : ""}
+                            </em>
+                          )}
+                        </span>
+                      </div>
+                      <div className="mini-line">
+                        <span>년매출 (누적)</span>
+                        <span className="mini-line-val">
+                          <b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b>
+                          {yearYoyPct !== null && (
+                            <em className={yearYoyPct >= 0 ? "delta-up" : "delta-down"}>전년비 {fmtYoy(yearYoyPct)}</em>
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다</div>}
