@@ -123,7 +123,7 @@ a { color: var(--green); text-decoration: none; }
 .mini-donut-wrap { position: relative; width: 104px; height: 104px; flex-shrink: 0; }
 .mini-donut { width: 104px; height: 104px; border-radius: 50%; }
 .mini-donut-hole { position: absolute; inset: 16px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.mini-donut-total { font-size: 13px; font-weight: 800; }
+.mini-donut-total { font-size: 13px; font-weight: 800; overflow-wrap: break-word; max-width: 100%; text-align: center; }
 .mini-legend { display: flex; flex-direction: column; gap: 8px; }
 .mini-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); }
 .mini-legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
@@ -175,7 +175,7 @@ a { color: var(--green); text-decoration: none; }
 .donut-wrap { position: relative; width: 168px; height: 168px; flex-shrink: 0; }
 .donut { width: 168px; height: 168px; border-radius: 50%; }
 .donut-hole { position: absolute; inset: 26px; background: var(--card-bg); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.donut-total { font-size: 17px; font-weight: 800; }
+.donut-total { font-size: 17px; font-weight: 800; overflow-wrap: break-word; text-align: center; max-width: 100%; }
 .donut-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 .legend-list { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 220px; }
 .legend-item { display: flex; align-items: center; gap: 9px; font-size: 13px; }
@@ -311,7 +311,7 @@ a { color: var(--green); text-decoration: none; }
 .kpi-row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-bottom: 16px; }
 .kpi-card { background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 16px; padding: 16px 18px; }
 .kpi-label { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; }
-.kpi-value { font-size: 23px; font-weight: 800; letter-spacing: -0.01em; }
+.kpi-value { font-size: 23px; font-weight: 800; letter-spacing: -0.01em; overflow-wrap: break-word; }
 .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
 
 /* year/month browser for greenfee */

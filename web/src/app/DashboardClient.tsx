@@ -508,7 +508,7 @@ export default function DashboardClient(props: Props) {
                   <div className="mini-donut-row">
                     <div className="mini-donut-wrap">
                       <div className="mini-donut" style={{ background: donutGradient(salesCategories(dashDailySales), overviewTotal) }} />
-                      <div className="mini-donut-hole"><div className="mini-donut-total">{fmtCompact(overviewTotal)}</div></div>
+                      <div className="mini-donut-hole"><div className="mini-donut-total">{fmtWon(overviewTotal)}</div></div>
                     </div>
                     <div className="mini-legend">
                       {overviewCats.map((c) => (
@@ -623,12 +623,12 @@ export default function DashboardClient(props: Props) {
               <div className="kpi-row">
                 <div className="kpi-card">
                   <div className="kpi-label">매출액</div>
-                  <div className="kpi-value">{fmtCompact(periodSum.total)}</div>
+                  <div className="kpi-value">{fmtWon(periodSum.total)}</div>
                   <div className="kpi-sub">{periodLabel} 합계</div>
                 </div>
                 <div className="kpi-card">
                   <div className="kpi-label">객단가</div>
-                  <div className="kpi-value">{revpar !== null ? fmtCompact(revpar) : "-"}</div>
+                  <div className="kpi-value">{revpar !== null ? fmtWon(revpar) : "-"}</div>
                   <div className="kpi-sub">총매출 ÷ 실제 내장 인원</div>
                 </div>
                 <div className="kpi-card">
@@ -646,7 +646,7 @@ export default function DashboardClient(props: Props) {
                 <div className="donut-row">
                   <div className="donut-wrap">
                     <div className="donut" style={{ background: donutGradient(periodCats, periodSum.total) }} />
-                    <div className="donut-hole"><div className="donut-total">{fmtCompact(periodSum.total)}</div><div className="donut-sub">{periodLabel} 매출</div></div>
+                    <div className="donut-hole"><div className="donut-total">{fmtWon(periodSum.total)}</div><div className="donut-sub">{periodLabel} 매출</div></div>
                   </div>
                   <div className="legend-list">
                     {periodCats.map((c) => (
