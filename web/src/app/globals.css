@@ -118,6 +118,8 @@ a { color: var(--green); text-decoration: none; }
 .mini-card-title { font-size: 13.5px; font-weight: 700; }
 .mini-chevron { color: var(--text-muted); font-size: 16px; }
 .mini-card-wide { grid-column: span 2; }
+.mini-card-tint-good { background: color-mix(in oklab, var(--status-good) 6%, var(--card-bg)); }
+.mini-card-tint-bad { background: color-mix(in oklab, var(--status-critical) 6%, var(--card-bg)); }
 
 .mini-resv-stat { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; min-height: 104px; }
 .mini-resv-frac { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }

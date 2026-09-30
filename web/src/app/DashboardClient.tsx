@@ -442,6 +442,12 @@ export default function DashboardClient(props: Props) {
   }, [today]);
 
   const dashDailySales = dailySales.find((d) => d.date === dashDate) ?? null;
+  // 매출현황 미니카드 배경 틴트용 - 오늘을 뺀 직전 7일 평균과 비교해서
+  // 평균보다 높으면 옅은 초록, 낮으면 옅은 빨강 (도형/숫자 추가 없이
+  // 배경색만으로 "오늘이 잘한 날인지" 은은하게 보여주자는 아이디어).
+  const priorDays = dailySales.filter((d) => d.date < dashDate).slice(-7);
+  const priorDaysAvg = priorDays.length > 0 ? priorDays.reduce((a, d) => a + d.total, 0) / priorDays.length : null;
+  const dailyVsAvgGood = dashDailySales && priorDaysAvg ? dashDailySales.total >= priorDaysAvg : null;
   // 전년비 % - 2025년 월별 매출(PRIOR_YEAR_MONTHLY_SALES)과 비교. 작년은
   // 월 단위 실적만 있어서(일별 아님), 월매출은 "이번 달이 아직 진행 중이면
   // 잠정치"임을 같이 표시하고, 년매출은 "1월~이번 달까지의 작년 월별
@@ -538,7 +544,10 @@ export default function DashboardClient(props: Props) {
               ))}
             </div>
             <div className="dash-grid">
-              <button className="mini-card" onClick={() => go("sales")}>
+              <button
+                className={`mini-card ${dailyVsAvgGood === null ? "" : dailyVsAvgGood ? "mini-card-tint-good" : "mini-card-tint-bad"}`}
+                onClick={() => go("sales")}
+              >
                 <div className="mini-card-head"><div className="mini-card-title">매출현황</div><div className="mini-chevron">›</div></div>
                 {dashDailySales ? (
                   <div className="mini-sales-row">
