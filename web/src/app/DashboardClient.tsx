@@ -386,14 +386,41 @@ export default function DashboardClient(props: Props) {
   }, [dailySales, monthlySales]);
   const maxTrend = Math.max(1, ...monthlyTrend.map(([, v]) => v));
 
-  // ---- greenfee simulation base rounds (avg of available reservation days) ----
-  const avgRounds = useMemo(() => {
+  // ---- greenfee simulation base rounds ----
+  // 예약현황(일별집계)엔 부별(1/2/3부) 예약수가 있지만 8월까지만 있고 9월부터
+  // 그 파일이 안 올라옴. dailyVisitors(종합영업일보 실제 내장 팀수)는 9월까지
+  // 최신이지만 부별 구분이 없어서 그대로는 못 쓴다 - 그래서 예약현황에서 구한
+  // "부별 비중"은 유지한 채, 전체 팀수만 dailyVisitors의 더 최신 평균으로
+  // 스케일링해서 최신성과 부별 구분을 둘 다 살린다.
+  const reservationAvgBySession = useMemo(() => {
     const n = reservationsForMonth.length || 1;
-    const s1 = reservationsForMonth.reduce((a, r) => a + r.session1Bookings, 0) / n;
-    const s2 = reservationsForMonth.reduce((a, r) => a + r.session2Bookings, 0) / n;
-    const s3 = reservationsForMonth.reduce((a, r) => a + r.session3Bookings, 0) / n;
-    return { p1: Math.round(s1), p2: Math.round(s2), p3: Math.round(s3) };
+    return {
+      p1: reservationsForMonth.reduce((a, r) => a + r.session1Bookings, 0) / n,
+      p2: reservationsForMonth.reduce((a, r) => a + r.session2Bookings, 0) / n,
+      p3: reservationsForMonth.reduce((a, r) => a + r.session3Bookings, 0) / n,
+    };
   }, [reservationsForMonth]);
+  const recentAvgTeams = useMemo(() => {
+    if (dailyVisitors.length === 0) return null;
+    return dailyVisitors.reduce((a, d) => a + d.teams, 0) / dailyVisitors.length;
+  }, [dailyVisitors]);
+  const avgRounds = useMemo(() => {
+    const { p1, p2, p3 } = reservationAvgBySession;
+    const reservationTotal = p1 + p2 + p3;
+    if (recentAvgTeams && reservationTotal > 0) {
+      const scale = recentAvgTeams / reservationTotal;
+      return { p1: Math.round(p1 * scale), p2: Math.round(p2 * scale), p3: Math.round(p3 * scale) };
+    }
+    return { p1: Math.round(p1), p2: Math.round(p2), p3: Math.round(p3) };
+  }, [reservationAvgBySession, recentAvgTeams]);
+  // ---- 그린피 현황 화면용 실제 매출 실적(이번달 누적) ----
+  const greenFeeMonthActual = useMemo(() => {
+    const ym = greenFeeCurrentYm;
+    const monthDailyDocs = dailySales.filter((d) => d.date.startsWith(ym));
+    if (monthDailyDocs.length > 0) return monthDailyDocs.reduce((a, d) => a + d.greenFee, 0);
+    const backfill = monthlySales.find((m) => m.yearMonth === ym);
+    return backfill ? backfill.greenFee : null;
+  }, [dailySales, monthlySales, greenFeeCurrentYm]);
   const rounds = {
     p1: roundsOverride.p1 ?? avgRounds.p1,
     p2: roundsOverride.p2 ?? avgRounds.p2,
@@ -975,6 +1002,13 @@ export default function DashboardClient(props: Props) {
           <>
             <button className="back-btn" onClick={() => go("dashboard")}>‹ 스톤게이트CC</button>
             <div className="subheader"><div className="subheader-title">그린피 현황</div><div className="subheader-sub">회원 기준 · 1단계 관리 범위</div></div>
+            {greenFeeMonthActual !== null && (
+              <div className="card">
+                <div className="card-title">이번달 그린피 매출</div>
+                <div className="hero">{fmtEok(greenFeeMonthActual, 2)}</div>
+                <div className="hero-delta">{greenFeeCurrentYm} 누적 · 종합영업일보 입장료 기준</div>
+              </div>
+            )}
             <div className="card">
               <div className="card-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                 단가표
@@ -1061,7 +1095,7 @@ export default function DashboardClient(props: Props) {
               <div className="sim-header-strip">
                 <div>
                   <div className="sim-title">그린피 조정 시뮬레이션</div>
-                  <div className="sim-sub">부별 그린피를 조정하면 예약현황 데이터 기준 평균 라운드 수로 예상 매출 영향을 즉시 계산합니다.</div>
+                  <div className="sim-sub">부별 그린피를 조정하면 최근 실제 내장 팀수 기준 평균 라운드 수로 예상 매출 영향을 즉시 계산합니다.</div>
                 </div>
                 <button className="sim-reset" onClick={() => { setAdj({ p1: 0, p2: 0, p3: 0 }); setRoundsOverride({ p1: null, p2: null, p3: null }); }}>전체 초기화</button>
               </div>
@@ -1082,7 +1116,7 @@ export default function DashboardClient(props: Props) {
                           </div>
                         </div>
                         <div className="sim-field">
-                          <div className="sim-field-label">예상 라운드 수 (예약 데이터 평균)</div>
+                          <div className="sim-field-label">예상 라운드 수 (부별 비중 × 최근 실제 팀수)</div>
                           <input
                             className="sim-rounds-input"
                             type="text"
@@ -1100,7 +1134,7 @@ export default function DashboardClient(props: Props) {
                   <div className="sim-total">
                     <div className="sim-total-label">전체 예상 매출 영향</div>
                     <div className={`sim-total-value ${totalImpact >= 0 ? "imp-pos" : "imp-neg"}`}>{fmtWon(totalImpact)}</div>
-                    <div className="sim-total-sub">예약현황 데이터 기준 평균 라운드 수 추정치</div>
+                    <div className="sim-total-sub">예약현황 부별 비중 × 최근 실제 내장 팀수 평균 추정치</div>
                     <div className="divbars">
                       {(["p1", "p2", "p3"] as const).map((key, i) => {
                         const impact = impacts[key];
