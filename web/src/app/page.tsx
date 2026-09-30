@@ -53,18 +53,27 @@ async function loadData() {
   const dailyVisitors = dailyVisitorsSnap.docs.map((d) => d.data() as DailyVisitorDoc).sort((a, b) => a.date.localeCompare(b.date));
   const monthlySales = monthlySalesSnap.docs.map((d) => d.data() as MonthlySalesDoc).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
 
-  // Show whichever month actually has reservation data, most recent first -
-  // real deployments won't always have "this month" uploaded yet.
-  const latestReservationMonth = reservations.length ? ymFromDate(reservations[reservations.length - 1].date) : null;
+  const todayYm = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
+  const nextYm = shiftMonth(todayYm, 1);
+
+  // Show whichever month actually has reservation data, preferring the most
+  // recent month that isn't in the future - 예약현황(일별집계) is a forward
+  // booking pipeline, so uploading e.g. next month's file (mostly unbooked
+  // since that month hasn't started) shouldn't make the calendar/그린피
+  // 시뮬레이션 jump to a sparse future month instead of the more complete
+  // current one. Only fall back to the true latest if nothing at/before
+  // today exists at all.
+  const reservationMonthsWithData = Array.from(new Set(reservations.map((r) => ymFromDate(r.date)))).sort();
+  const latestReservationMonth =
+    [...reservationMonthsWithData].reverse().find((ym) => ym <= todayYm) ??
+    reservationMonthsWithData[reservationMonthsWithData.length - 1] ??
+    null;
   const reservationsForMonth = latestReservationMonth
     ? reservations.filter((r) => ymFromDate(r.date) === latestReservationMonth)
     : [];
 
   const latestCashFlow = cashFlows.length ? cashFlows[cashFlows.length - 1] : null;
   const latestDailySales = dailySales.length ? dailySales[dailySales.length - 1] : null;
-
-  const todayYm = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
-  const nextYm = shiftMonth(todayYm, 1);
   const [greenFeeAllSnap, weatherSnap] = await Promise.all([
     adminDb.collection(COLLECTIONS.greenFeeRates).get(),
     adminDb.collection(COLLECTIONS.weatherCache).doc("current").get(),
