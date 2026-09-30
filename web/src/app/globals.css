@@ -134,7 +134,7 @@ a { color: var(--green); text-decoration: none; }
 .mini-cash-total { font-size: 26px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .mini-cash-sub { font-size: 12px; color: var(--text-secondary); margin: 4px 0 14px; }
 
-.mini-sales-row { display: flex; align-items: center; gap: 36px; }
+.mini-sales-row { display: flex; align-items: center; gap: 39.6px; }
 .mini-sales-today { flex-shrink: 0; }
 .mini-sales-today-label { font-size: 14.4px; color: var(--text-secondary); margin-bottom: 4px; }
 .mini-donut-wrap { position: relative; width: 108px; height: 108px; flex-shrink: 0; }
