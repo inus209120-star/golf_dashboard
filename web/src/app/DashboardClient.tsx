@@ -512,11 +512,16 @@ export default function DashboardClient(props: Props) {
               <button className="mini-card" onClick={() => go("sales")}>
                 <div className="mini-card-head"><div className="mini-card-title">매출현황</div><div className="mini-chevron">›</div></div>
                 {dashDailySales ? (
-                  <>
-                    <div className="mini-line"><span>일매출</span><b>{fmtEok(dashDailySales.total, 2)}</b></div>
-                    <div className="mini-line"><span>월매출 (누적)</span><b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b></div>
-                    <div className="mini-line"><span>년매출 (누적)</span><b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b></div>
-                  </>
+                  <div className="mini-sales-row">
+                    <div className="mini-sales-today">
+                      <div className="mini-sales-today-label">일매출</div>
+                      <div className="mini-sales-today-value">{fmtEok(dashDailySales.total, 2)}</div>
+                    </div>
+                    <div className="mini-sales-list">
+                      <div className="mini-line"><span>월매출 (누적)</span><b>{fmtEok(dashDailySales.monthToDateTotal, 2)}</b></div>
+                      <div className="mini-line"><span>년매출 (누적)</span><b>{fmtEok(dashDailySales.yearToDateTotal, 2)}</b></div>
+                    </div>
+                  </div>
                 ) : <div className="day-detail-empty">아직 업로드된 매출 데이터가 없습니다</div>}
               </button>
 
