@@ -136,11 +136,8 @@ a { color: var(--green); text-decoration: none; }
 .mini-sales-today { flex-shrink: 0; }
 .mini-sales-today-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
 .mini-sales-today-value { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
-.mini-sales-today-value-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.mini-sales-dod { font-size: 12px; font-weight: 700; }
-.mini-sparkline { display: block; width: 100px; height: 24px; margin-top: 8px; overflow: visible; }
 .mini-sales-list { flex: 1; min-width: 0; }
-.mini-sales-list .mini-line { justify-content: flex-start; gap: 8px; }
+.mini-sales-list .mini-line { justify-content: flex-start; gap: 8px; font-size: 14.4px; }
 .mini-sales-list .mini-line-label { flex-shrink: 0; white-space: nowrap; }
 .mini-sales-list .mini-line-val { align-items: flex-start; min-width: 0; }
 
