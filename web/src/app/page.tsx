@@ -73,7 +73,6 @@ async function loadData() {
     : [];
 
   const latestCashFlow = cashFlows.length ? cashFlows[cashFlows.length - 1] : null;
-  const latestDailySales = dailySales.length ? dailySales[dailySales.length - 1] : null;
   const [greenFeeAllSnap, weatherSnap] = await Promise.all([
     adminDb.collection(COLLECTIONS.greenFeeRates).get(),
     adminDb.collection(COLLECTIONS.weatherCache).doc("current").get(),
@@ -101,7 +100,6 @@ async function loadData() {
     reservationMonth: latestReservationMonth,
     dailyVisitors,
     dailySales,
-    latestDailySales,
     monthlySales, // 일별 데이터가 없는 과거 월(예: 2026년 1~8월) 백필용 - monthlyTrend 참고
     cashFlows, // full history - lets the Dashboard overview's date strip look up any past day
     latestCashFlow,

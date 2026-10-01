@@ -18,7 +18,6 @@ interface Props {
   reservationMonth: string | null;
   dailyVisitors: DailyVisitorDoc[];
   dailySales: DailySalesDoc[];
-  latestDailySales: DailySalesDoc | null;
   monthlySales: MonthlySalesDoc[];
   cashFlows: CashFlowDoc[];
   latestCashFlow: CashFlowDoc | null;
@@ -163,7 +162,7 @@ const SideIcon = {
 
 export default function DashboardClient(props: Props) {
   const {
-    reservations, reservationsForMonth, reservationMonth, dailyVisitors, dailySales, latestDailySales, monthlySales,
+    reservations, reservationsForMonth, reservationMonth, dailyVisitors, dailySales, monthlySales,
     cashFlows, latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather,
   } = props;
 
@@ -294,9 +293,10 @@ export default function DashboardClient(props: Props) {
   const channelTotal = channelTotals[0]?.total ?? 0;
 
   // ---- sales periods ----
-  const latestSalesDate = latestDailySales?.date ?? null;
-  const effectiveRangeEnd = rangeEnd ?? latestSalesDate;
-  const effectiveRangeStart = rangeStart ?? (effectiveRangeEnd ? shiftDay(effectiveRangeEnd, -6) : null);
+  // 요약화면과 같은 원칙(실적은 하루 늦게 올라오니 기본은 "어제") - 기본값은
+  // 7일치가 아니라 어제 하루치 단일 날짜로 맞춘다.
+  const effectiveRangeEnd = rangeEnd ?? shiftDay(today, -1);
+  const effectiveRangeStart = rangeStart ?? effectiveRangeEnd;
   const periodDocs = useMemo(() => {
     if (!effectiveRangeStart || !effectiveRangeEnd) return [];
     const [lo, hi] = effectiveRangeStart <= effectiveRangeEnd ? [effectiveRangeStart, effectiveRangeEnd] : [effectiveRangeEnd, effectiveRangeStart];
