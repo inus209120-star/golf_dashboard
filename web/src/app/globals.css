@@ -122,11 +122,13 @@ a { color: var(--green); text-decoration: none; }
 .mini-card-tint-bad { background: color-mix(in oklab, var(--status-critical) 6%, var(--card-bg)); }
 
 .mini-resv-row { display: flex; align-items: center; gap: 20px; }
+.mini-resv-donut-col { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+.mini-resv-counts { font-size: 10.5px; color: var(--text-secondary); text-align: center; white-space: nowrap; }
 .mini-resv-sessions { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
 .mini-resv-session-head { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-secondary); margin-bottom: 3px; }
 .mini-resv-session-head b { color: var(--text-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
-.mini-resv-session-track { height: 6px; border-radius: 3px; background: var(--pill-bg); overflow: hidden; }
-.mini-resv-session-fill { height: 100%; border-radius: 3px; background: var(--series-1); }
+.mini-resv-session-track { height: 4.8px; border-radius: 2.4px; background: var(--pill-bg); overflow: hidden; }
+.mini-resv-session-fill { height: 100%; border-radius: 2.4px; background: var(--series-1); }
 
 .mini-line { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; color: var(--text-secondary); }
 .mini-line b { color: var(--text-primary); font-weight: 700; }
