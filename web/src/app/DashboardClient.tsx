@@ -177,7 +177,11 @@ export default function DashboardClient(props: Props) {
   const [roundsOverride, setRoundsOverride] = useState<{ p1: number | null; p2: number | null; p3: number | null }>({ p1: null, p2: null, p3: null });
   const [approving, setApproving] = useState(false);
   const [textScale, setTextScale] = useState<"base" | "lg" | "xl">("base");
-  const [dashDate, setDashDate] = useState(() => todayStr());
+  // 실적 데이터는 항상 하루 늦게(다음날) 올라와서, 오늘 날짜를 기본으로
+  // 보여주면 늘 "데이터 없음"만 보이게 된다 - 기본 선택을 어제로 둔다
+  // (날짜 스트립 자체는 여전히 오늘까지 보여주고, 어제/오늘 중 더 최근에
+  // 데이터가 있는 쪽으로 바로가기 쉽게 그대로 둠).
+  const [dashDate, setDashDate] = useState(() => shiftDay(todayStr(), -1));
 
   // 노안 등 시력이 안 좋은 사용자를 위한 글자 크게 보기 - 기기별로 기억되도록 localStorage에 저장.
   // localStorage는 서버에 없으므로 초기 렌더는 항상 "base"로 서버/클라이언트를 일치시키고,
