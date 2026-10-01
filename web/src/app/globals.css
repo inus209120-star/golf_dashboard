@@ -121,9 +121,12 @@ a { color: var(--green); text-decoration: none; }
 .mini-card-tint-good { background: color-mix(in oklab, var(--status-good) 6%, var(--card-bg)); }
 .mini-card-tint-bad { background: color-mix(in oklab, var(--status-critical) 6%, var(--card-bg)); }
 
-.mini-resv-stat { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; min-height: 104px; }
-.mini-resv-frac { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
-.mini-resv-pct { font-size: 15px; font-weight: 700; color: var(--text-secondary); }
+.mini-resv-row { display: flex; align-items: center; gap: 20px; }
+.mini-resv-sessions { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+.mini-resv-session-head { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-secondary); margin-bottom: 3px; }
+.mini-resv-session-head b { color: var(--text-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mini-resv-session-track { height: 6px; border-radius: 3px; background: var(--pill-bg); overflow: hidden; }
+.mini-resv-session-fill { height: 100%; border-radius: 3px; background: var(--series-1); }
 
 .mini-line { display: flex; justify-content: space-between; font-size: 12px; padding: 5px 0; color: var(--text-secondary); }
 .mini-line b { color: var(--text-primary); font-weight: 700; }
@@ -139,8 +142,9 @@ a { color: var(--green); text-decoration: none; }
 .mini-sales-today-label { font-size: 14.4px; color: var(--text-secondary); margin-bottom: 4px; }
 .mini-donut-wrap { position: relative; width: 108px; height: 108px; flex-shrink: 0; }
 .mini-donut { width: 108px; height: 108px; border-radius: 50%; }
-.mini-donut-hole { position: absolute; inset: 16px; background: var(--card-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.mini-donut-hole { position: absolute; inset: 16px; background: var(--card-bg); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .mini-donut-total { font-size: 15px; font-weight: 800; overflow-wrap: break-word; max-width: 100%; text-align: center; }
+.mini-donut-sub { font-size: 9.5px; color: var(--text-muted); margin-top: 2px; }
 .mini-sales-list { flex: 1; min-width: 0; }
 .mini-sales-list .mini-line { justify-content: flex-start; gap: 8px; font-size: 14.4px; }
 .mini-sales-list .mini-line b { font-size: 17.3px; }

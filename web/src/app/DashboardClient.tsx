@@ -61,6 +61,14 @@ function fmtEok(n: number, decimals = 1): string {
 function fmtYoy(pct: number): string {
   return (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%";
 }
+// 예약현황 미니카드의 가동률 게이지 - 단일 값(채움 vs 잔여)이라 품목별
+// 도넛과 달리 "부분의 합" 문제가 없음. 80% 이상이면 "골든타임" 느낌으로
+// 포인트 색을 앰버로 바꿔 한눈에 눈에 띄게 한다.
+function gaugeGradient(pct: number): string {
+  const clamped = Math.max(0, Math.min(100, pct));
+  const color = clamped >= 80 ? "var(--series-4)" : "var(--green)";
+  return `conic-gradient(${color} 0% ${clamped}%, var(--pill-bg) ${clamped}% 100%)`;
+}
 function fmtShare(value: number, total: number): string {
   if (total <= 0) return "0%";
   const pct = (value / total) * 100;
@@ -620,9 +628,29 @@ export default function DashboardClient(props: Props) {
               <button className="mini-card" onClick={() => go("reservation")}>
                 <div className="mini-card-head"><div className="mini-card-title">예약현황</div><div className="mini-chevron">›</div></div>
                 {dashReservation ? (
-                  <div className="mini-resv-stat">
-                    <div className="mini-resv-frac">{dashReservation.totalBookings}/{dashReservation.totalSlots}</div>
-                    <div className="mini-resv-pct">{occPct!.toFixed(1)}%</div>
+                  <div className="mini-resv-row">
+                    <div className="mini-donut-wrap">
+                      <div className="mini-donut" style={{ background: gaugeGradient(occPct!) }} />
+                      <div className="mini-donut-hole">
+                        <div className="mini-donut-total">{occPct!.toFixed(1)}%</div>
+                        <div className="mini-donut-sub">총 가동률</div>
+                      </div>
+                    </div>
+                    <div className="mini-resv-sessions">
+                      {[
+                        { label: "1부", book: dashReservation.session1Bookings, total: dashReservation.session1Bookings + dashReservation.session1Remaining },
+                        { label: "2부", book: dashReservation.session2Bookings, total: dashReservation.session2Bookings + dashReservation.session2Remaining },
+                        { label: "3부", book: dashReservation.session3Bookings, total: dashReservation.session3Bookings + dashReservation.session3Remaining },
+                      ].map((s) => {
+                        const pct = s.total > 0 ? Math.round((s.book / s.total) * 100) : 0;
+                        return (
+                          <div className="mini-resv-session" key={s.label}>
+                            <div className="mini-resv-session-head"><span>{s.label}</span><b>{s.book}/{s.total} ({pct}%)</b></div>
+                            <div className="mini-resv-session-track"><div className="mini-resv-session-fill" style={{ width: `${pct}%` }} /></div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : <div className="day-detail-empty">아직 업로드된 예약 데이터가 없습니다</div>}
               </button>
