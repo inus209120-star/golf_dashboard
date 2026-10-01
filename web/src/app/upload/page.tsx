@@ -6,7 +6,7 @@ import { parseCashFlowFile } from "@/lib/parsers/cashFlow";
 import { parseBusinessDailySalesFile } from "@/lib/parsers/businessDailySales";
 import { parseDailyVisitorFile } from "@/lib/parsers/dailyVisitors";
 import { parseMonthlySalesFile } from "@/lib/parsers/monthlySales";
-import type { DailySalesDoc, DailyVisitorDoc, MonthlySalesDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
+import type { ReservationDoc, CashFlowDoc, DailySalesDoc, DailyVisitorDoc, MonthlySalesDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
 
 type Status =
   | { kind: "idle" }
@@ -39,8 +39,36 @@ function FilePickerButton({
   );
 }
 
+// 자금일보가 엉뚱한 날짜로 저장된 실제 사고(조회 기준일을 잘못 잡고 뽑은
+// 파일을 그대로 올림) 이후 추가된 안전장치 - 파일 내용에서 인식한 날짜를
+// 저장 직전에 한 번 더 보여줘서, 직원이 실제 날짜와 다르면 취소할 수 있게 함.
+function DateConfirmPanel({
+  dates,
+  skipped,
+  onConfirm,
+  onCancel,
+}: {
+  dates: string[];
+  skipped: string[];
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="upload-confirm">
+      <div className="upload-confirm-title">이 파일, 아래 날짜가 맞습니까?</div>
+      <div className="upload-confirm-dates">{dates.join(", ")}</div>
+      {skipped.length > 0 && <div className="upload-confirm-skip">인식 제외: {skipped.join(", ")}</div>}
+      <div className="upload-confirm-actions">
+        <button className="upload-confirm-cancel" onClick={onCancel}>취소</button>
+        <button className="upload-primary-btn" onClick={onConfirm}>맞습니다 - 저장</button>
+      </div>
+    </div>
+  );
+}
+
 function ReservationUploader({ pin }: { pin: string }) {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [pending, setPending] = useState<{ docs: ReservationDoc[]; skipped: string[]; total: number; fileName: string } | null>(null);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -53,18 +81,8 @@ function ReservationUploader({ pin }: { pin: string }) {
         setStatus({ kind: "error", message: `인식된 데이터가 없습니다. ${result.skipped.join(", ")}` });
         return;
       }
-      const res = await fetch("/api/upload/reservation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin, docs: result.docs, skipped: result.skipped, total: result.total, fileName: file.name }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
-        return;
-      }
-      const skipNote = result.skipped.length ? ` (인식 안 됨: ${result.skipped.join(", ")})` : "";
-      setStatus({ kind: "success", message: `${result.total}일 중 ${result.docs.length}일 저장 완료${skipNote}` });
+      setPending({ docs: result.docs, skipped: result.skipped, total: result.total, fileName: file.name });
+      setStatus({ kind: "idle" });
     } catch (err) {
       setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
     } finally {
@@ -72,10 +90,43 @@ function ReservationUploader({ pin }: { pin: string }) {
     }
   }
 
+  async function confirmUpload() {
+    if (!pending) return;
+    setStatus({ kind: "working" });
+    try {
+      const res = await fetch("/api/upload/reservation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, docs: pending.docs, skipped: pending.skipped, total: pending.total, fileName: pending.fileName }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
+        return;
+      }
+      const skipNote = pending.skipped.length ? ` (인식 안 됨: ${pending.skipped.join(", ")})` : "";
+      setStatus({ kind: "success", message: `${pending.total}일 중 ${pending.docs.length}일 저장 완료${skipNote}` });
+      setPending(null);
+    } catch (err) {
+      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
   return (
     <div className="card">
       <div className="upload-card-title">예약현황 (일별집계)</div>
       <FilePickerButton label="파일 선택" onChange={onFile} />
+      {pending && (
+        <DateConfirmPanel
+          dates={(() => {
+            const sorted = pending.docs.map((d) => d.date).sort();
+            return [`${sorted[0]} ~ ${sorted[sorted.length - 1]} (${sorted.length}일)`];
+          })()}
+          skipped={pending.skipped}
+          onConfirm={confirmUpload}
+          onCancel={() => setPending(null)}
+        />
+      )}
       <StatusLine status={status} />
     </div>
   );
@@ -83,6 +134,7 @@ function ReservationUploader({ pin }: { pin: string }) {
 
 function CashFlowUploader({ pin }: { pin: string }) {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [pending, setPending] = useState<{ docs: CashFlowDoc[]; skipped: string[]; total: number; fileName: string } | null>(null);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -95,18 +147,8 @@ function CashFlowUploader({ pin }: { pin: string }) {
         setStatus({ kind: "error", message: `인식된 데이터가 없습니다. ${result.skipped.join(", ")}` });
         return;
       }
-      const res = await fetch("/api/upload/cashflow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin, docs: result.docs, skipped: result.skipped, total: result.total, fileName: file.name }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
-        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
-        return;
-      }
-      const skipNote = result.skipped.length ? ` (인식 안 됨: ${result.skipped.join(", ")})` : "";
-      setStatus({ kind: "success", message: `${result.total}개 시트 중 ${result.docs.length}일 저장 완료${skipNote}` });
+      setPending({ docs: result.docs, skipped: result.skipped, total: result.total, fileName: file.name });
+      setStatus({ kind: "idle" });
     } catch (err) {
       setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
     } finally {
@@ -114,10 +156,40 @@ function CashFlowUploader({ pin }: { pin: string }) {
     }
   }
 
+  async function confirmUpload() {
+    if (!pending) return;
+    setStatus({ kind: "working" });
+    try {
+      const res = await fetch("/api/upload/cashflow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, docs: pending.docs, skipped: pending.skipped, total: pending.total, fileName: pending.fileName }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        setStatus({ kind: "error", message: json.error ?? "업로드 실패" });
+        return;
+      }
+      const skipNote = pending.skipped.length ? ` (인식 안 됨: ${pending.skipped.join(", ")})` : "";
+      setStatus({ kind: "success", message: `${pending.total}개 시트 중 ${pending.docs.length}일 저장 완료${skipNote}` });
+      setPending(null);
+    } catch (err) {
+      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
   return (
     <div className="card">
       <div className="upload-card-title">자금일보</div>
       <FilePickerButton label="파일 선택" onChange={onFile} />
+      {pending && (
+        <DateConfirmPanel
+          dates={pending.docs.map((d) => d.date).sort()}
+          skipped={pending.skipped}
+          onConfirm={confirmUpload}
+          onCancel={() => setPending(null)}
+        />
+      )}
       <StatusLine status={status} />
     </div>
   );
@@ -128,6 +200,13 @@ function CashFlowUploader({ pin }: { pin: string }) {
 // 파일씩 나오는 리포트라 여러 날짜 파일을 한 번에 선택해 올릴 수 있다.
 function BusinessDailyUploader({ pin }: { pin: string }) {
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [pending, setPending] = useState<{
+    salesDocs: DailySalesDoc[];
+    visitorDocs: DailyVisitorDoc[];
+    skipped: string[];
+    filesCount: number;
+    fileName: string;
+  } | null>(null);
 
   async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -151,19 +230,33 @@ function BusinessDailyUploader({ pin }: { pin: string }) {
         return;
       }
       const fileName = files.map((f) => f.name).join(", ");
+      setPending({ salesDocs, visitorDocs, skipped, filesCount: files.length, fileName });
+      setStatus({ kind: "idle" });
+    } catch (err) {
+      setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
+    } finally {
+      e.target.value = "";
+    }
+  }
+
+  async function confirmUpload() {
+    if (!pending) return;
+    setStatus({ kind: "working" });
+    try {
+      const { salesDocs, visitorDocs, skipped, filesCount, fileName } = pending;
       const [salesRes, visitorRes] = await Promise.all([
         salesDocs.length
           ? fetch("/api/upload/daily-sales", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ pin, docs: salesDocs, skipped, total: files.length, fileName }),
+              body: JSON.stringify({ pin, docs: salesDocs, skipped, total: filesCount, fileName }),
             })
           : null,
         visitorDocs.length
           ? fetch("/api/upload/daily-visitors", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ pin, docs: visitorDocs, skipped, total: files.length, fileName }),
+              body: JSON.stringify({ pin, docs: visitorDocs, skipped, total: filesCount, fileName }),
             })
           : null,
       ]);
@@ -178,12 +271,11 @@ function BusinessDailyUploader({ pin }: { pin: string }) {
       const skipNote = skipped.length ? ` (인식 안 됨: ${skipped.join(", ")})` : "";
       setStatus({
         kind: "success",
-        message: `${files.length}개 파일 중 매출 ${salesDocs.length}일 · 팀수/인원 ${visitorDocs.length}일 저장 완료${skipNote}`,
+        message: `${filesCount}개 파일 중 매출 ${salesDocs.length}일 · 팀수/인원 ${visitorDocs.length}일 저장 완료${skipNote}`,
       });
+      setPending(null);
     } catch (err) {
       setStatus({ kind: "error", message: err instanceof Error ? err.message : String(err) });
-    } finally {
-      e.target.value = "";
     }
   }
 
@@ -192,6 +284,14 @@ function BusinessDailyUploader({ pin }: { pin: string }) {
       <div className="upload-card-title">종합영업일보 (매출 · 실제 내장 팀수/인원)</div>
       <div className="upload-card-sub">하루에 한 파일씩 나오는 리포트라, 여러 날짜 파일을 한 번에 선택해 올릴 수 있습니다.</div>
       <FilePickerButton label="여러 날짜 파일 선택" multiple onChange={onFiles} />
+      {pending && (
+        <DateConfirmPanel
+          dates={Array.from(new Set([...pending.salesDocs.map((d) => d.date), ...pending.visitorDocs.map((d) => d.date)])).sort()}
+          skipped={pending.skipped}
+          onConfirm={confirmUpload}
+          onCancel={() => setPending(null)}
+        />
+      )}
       <StatusLine status={status} />
     </div>
   );
