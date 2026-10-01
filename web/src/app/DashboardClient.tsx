@@ -646,16 +646,6 @@ export default function DashboardClient(props: Props) {
                 <div className="mini-card-head"><div className="mini-card-title">예약현황</div><div className="mini-chevron">›</div></div>
                 {dashReservation ? (
                   <div className="mini-resv-row">
-                    <div className="mini-resv-donut-col">
-                      <div className="mini-donut-wrap">
-                        <div className="mini-donut" style={{ background: gaugeGradient(occPct!) }} />
-                        <div className="mini-donut-hole">
-                          <div className="mini-donut-total">{occPct!.toFixed(1)}%</div>
-                          <div className="mini-donut-sub">총 가동률</div>
-                        </div>
-                      </div>
-                      <div className="mini-resv-counts">전체 {dashReservation.totalSlots} · 예약 {dashReservation.totalBookings} · 잔여 {dashReservation.totalRemaining}</div>
-                    </div>
                     <div className="mini-resv-sessions">
                       {[
                         { label: "1부", book: dashReservation.session1Bookings, total: dashReservation.session1Bookings + dashReservation.session1Remaining },
@@ -670,6 +660,16 @@ export default function DashboardClient(props: Props) {
                           </div>
                         );
                       })}
+                    </div>
+                    <div className="mini-resv-donut-col">
+                      <div className="mini-donut-wrap">
+                        <div className="mini-donut" style={{ background: gaugeGradient(occPct!) }} />
+                        <div className="mini-donut-hole">
+                          <div className="mini-donut-total">{occPct!.toFixed(1)}%</div>
+                          <div className="mini-donut-sub">총 가동률</div>
+                        </div>
+                      </div>
+                      <div className="mini-resv-counts">전체 {dashReservation.totalSlots} · 예약 {dashReservation.totalBookings} · 잔여 {dashReservation.totalRemaining}</div>
                     </div>
                   </div>
                 ) : <div className="day-detail-empty">아직 업로드된 예약 데이터가 없습니다</div>}
