@@ -8,10 +8,6 @@ import { parseDailyVisitorFile } from "@/lib/parsers/dailyVisitors";
 import { parseMonthlySalesFile } from "@/lib/parsers/monthlySales";
 import type { DailySalesDoc, DailyVisitorDoc, MonthlySalesDoc, GreenFeeRatesDoc, GreenFeeSession1Row, GreenFeeSession3Row, GreenFeeException } from "@/types/firestore";
 
-// Functional-first UI - no styling pass yet (matches the design canvas
-// prototype's look). This page proves the parse -> PIN check -> Firestore
-// write pipeline end to end; visual polish comes later per plan.
-
 type Status =
   | { kind: "idle" }
   | { kind: "working" }
@@ -20,9 +16,27 @@ type Status =
 
 function StatusLine({ status }: { status: Status }) {
   if (status.kind === "idle") return null;
-  if (status.kind === "working") return <p>처리 중...</p>;
-  if (status.kind === "error") return <p style={{ color: "crimson" }}>{status.message}</p>;
-  return <p style={{ color: "green" }}>{status.message}</p>;
+  if (status.kind === "working") return <div className="upload-alert upload-alert-working">처리 중...</div>;
+  if (status.kind === "error") return <div className="upload-alert upload-alert-error">{status.message}</div>;
+  return <div className="upload-alert upload-alert-success">{status.message}</div>;
+}
+
+// 실제 파일 입력은 시각적으로 숨기고, 터치하기 쉬운 큰 버튼 라벨로 감싼다.
+function FilePickerButton({
+  label,
+  multiple,
+  onChange,
+}: {
+  label: string;
+  multiple?: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <label className="upload-filebtn">
+      {label}
+      <input type="file" accept=".xls,.xlsx" multiple={multiple} onChange={onChange} />
+    </label>
+  );
 }
 
 function ReservationUploader({ pin }: { pin: string }) {
@@ -59,11 +73,11 @@ function ReservationUploader({ pin }: { pin: string }) {
   }
 
   return (
-    <section style={{ marginBottom: 24 }}>
-      <h3>예약현황 (일별집계)</h3>
-      <input type="file" accept=".xls,.xlsx" onChange={onFile} />
+    <div className="card">
+      <div className="upload-card-title">예약현황 (일별집계)</div>
+      <FilePickerButton label="파일 선택" onChange={onFile} />
       <StatusLine status={status} />
-    </section>
+    </div>
   );
 }
 
@@ -101,11 +115,11 @@ function CashFlowUploader({ pin }: { pin: string }) {
   }
 
   return (
-    <section style={{ marginBottom: 24 }}>
-      <h3>자금일보</h3>
-      <input type="file" accept=".xls,.xlsx" onChange={onFile} />
+    <div className="card">
+      <div className="upload-card-title">자금일보</div>
+      <FilePickerButton label="파일 선택" onChange={onFile} />
       <StatusLine status={status} />
-    </section>
+    </div>
   );
 }
 
@@ -174,12 +188,12 @@ function BusinessDailyUploader({ pin }: { pin: string }) {
   }
 
   return (
-    <section style={{ marginBottom: 24 }}>
-      <h3>종합영업일보 (매출 · 실제 내장 팀수/인원)</h3>
-      <p style={{ fontSize: 13, color: "#666" }}>하루에 한 파일씩 나오는 리포트라, 여러 날짜 파일을 한 번에 선택해 올릴 수 있습니다.</p>
-      <input type="file" accept=".xls,.xlsx" multiple onChange={onFiles} />
+    <div className="card">
+      <div className="upload-card-title">종합영업일보 (매출 · 실제 내장 팀수/인원)</div>
+      <div className="upload-card-sub">하루에 한 파일씩 나오는 리포트라, 여러 날짜 파일을 한 번에 선택해 올릴 수 있습니다.</div>
+      <FilePickerButton label="여러 날짜 파일 선택" multiple onChange={onFiles} />
       <StatusLine status={status} />
-    </section>
+    </div>
   );
 }
 
@@ -228,14 +242,14 @@ function MonthlyBackfillUploader({ pin }: { pin: string }) {
   }
 
   return (
-    <section style={{ marginBottom: 24 }}>
-      <h3>월별 실적 백필 (일별 데이터 없는 과거 월용)</h3>
-      <p style={{ fontSize: 13, color: "#666" }}>
+    <div className="card" style={{ marginTop: 10 }}>
+      <div className="upload-card-title">월별 실적 백필 (일별 데이터 없는 과거 월용)</div>
+      <div className="upload-card-sub">
         종합영업일보를 <b>그 달의 마지막 영업일</b> 기준으로 뽑아서 올려주세요 (예: 2월이면 2월 28일치 하루 파일). 그 안의 &ldquo;월계&rdquo;/&ldquo;당 월&rdquo; 값을 그 달 전체 합계로 저장합니다. 여러 달 파일을 한 번에 선택할 수 있습니다.
-      </p>
-      <input type="file" accept=".xls,.xlsx" multiple onChange={onFiles} />
+      </div>
+      <FilePickerButton label="여러 달 파일 선택" multiple onChange={onFiles} />
       <StatusLine status={status} />
-    </section>
+    </div>
   );
 }
 
@@ -263,12 +277,12 @@ function NumberCell({ value, onChange }: { value: number; onChange: (n: number) 
   return (
     <input
       type="text"
+      className="upload-numcell"
       value={value.toLocaleString("ko-KR")}
       onChange={(e) => {
         const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
         onChange(isNaN(n) ? 0 : n);
       }}
-      style={{ width: 90, textAlign: "right", padding: 4 }}
     />
   );
 }
@@ -314,40 +328,43 @@ function GreenfeeUploader({ pin }: { pin: string }) {
   }
 
   return (
-    <section style={{ marginBottom: 24 }}>
-      <h3>그린피 단가 입력</h3>
-      <p style={{ fontSize: 13, color: "#666" }}>
+    <div className="card">
+      <div className="upload-card-title">그린피 단가 입력</div>
+      <div className="upload-card-sub" style={{ marginBottom: 10 }}>
         대상 월:{" "}
-        <input type="text" value={yearMonth} onChange={(e) => setYearMonth(e.target.value)} placeholder="YYYY-MM" style={{ padding: 4, width: 90 }} />
-      </p>
+        <input type="text" className="upload-text-input" value={yearMonth} onChange={(e) => setYearMonth(e.target.value)} placeholder="YYYY-MM" style={{ width: 90 }} />
+      </div>
 
-      <table style={{ borderCollapse: "collapse", marginBottom: 12 }}>
+      <div className="table-scroll">
+      <table className="gf-table">
         <tbody>
-          <tr><th></th><th style={{ padding: "2px 8px" }}>주중</th><th style={{ padding: "2px 8px" }}>토</th><th style={{ padding: "2px 8px" }}>일·공휴일</th></tr>
+          <tr><th></th><th>주중</th><th>토</th><th>일·공휴일</th></tr>
           {session1.map((r, i) => (
             <tr key={r.timeLabel}>
-              <td style={{ fontSize: 12, paddingRight: 8 }}>1부 · {r.timeLabel}</td>
+              <td>1부 · {r.timeLabel}</td>
               <td><NumberCell value={r.weekday} onChange={(n) => updateS1(i, "weekday", n)} /></td>
               <td><NumberCell value={r.saturday} onChange={(n) => updateS1(i, "saturday", n)} /></td>
               <td><NumberCell value={r.sundayHoliday} onChange={(n) => updateS1(i, "sundayHoliday", n)} /></td>
             </tr>
           ))}
           <tr>
-            <td style={{ fontSize: 12, paddingRight: 8 }}>2부 · 전타임</td>
+            <td>2부 · 전타임</td>
             <td><NumberCell value={session2.weekday} onChange={(n) => setSession2((s) => ({ ...s, weekday: n }))} /></td>
             <td><NumberCell value={session2.saturday} onChange={(n) => setSession2((s) => ({ ...s, saturday: n }))} /></td>
             <td><NumberCell value={session2.sundayHoliday} onChange={(n) => setSession2((s) => ({ ...s, sundayHoliday: n }))} /></td>
           </tr>
         </tbody>
       </table>
+      </div>
 
-      <p style={{ fontSize: 12, color: "#666", marginBottom: 4 }}>3부는 요일군이 다름 (월~목 / 금·토 / 일·공휴일)</p>
-      <table style={{ borderCollapse: "collapse", marginBottom: 12 }}>
+      <div className="gf-section-label">3부는 요일군이 다름 (월~목 / 금·토 / 일·공휴일)</div>
+      <div className="table-scroll">
+      <table className="gf-table">
         <tbody>
-          <tr><th></th><th style={{ padding: "2px 8px" }}>월~목</th><th style={{ padding: "2px 8px" }}>금·토</th><th style={{ padding: "2px 8px" }}>일·공휴일</th></tr>
+          <tr><th></th><th>월~목</th><th>금·토</th><th>일·공휴일</th></tr>
           {session3.map((r, i) => (
             <tr key={r.timeLabel}>
-              <td style={{ fontSize: 12, paddingRight: 8 }}>3부 · {r.timeLabel}</td>
+              <td>3부 · {r.timeLabel}</td>
               <td><NumberCell value={r.monThu} onChange={(n) => updateS3(i, "monThu", n)} /></td>
               <td><NumberCell value={r.friSat} onChange={(n) => updateS3(i, "friSat", n)} /></td>
               <td><NumberCell value={r.sundayHoliday} onChange={(n) => updateS3(i, "sundayHoliday", n)} /></td>
@@ -355,33 +372,32 @@ function GreenfeeUploader({ pin }: { pin: string }) {
           ))}
         </tbody>
       </table>
+      </div>
 
-      <p style={{ fontSize: 13 }}>
-        카트료 (팀당): <NumberCell value={cartFee} onChange={setCartFee} />원 &nbsp;&nbsp;
-        캐디피 (전 부): <NumberCell value={caddieFee} onChange={setCaddieFee} />원
-      </p>
-
-      <div style={{ marginTop: 12 }}>
-        <p style={{ fontSize: 13, fontWeight: 600 }}>날짜별 예외 (휴장 / 요금 조정)</p>
-        {exceptions.map((e, i) => (
-          <div key={i} style={{ display: "flex", gap: 6, marginBottom: 4 }}>
-            <input type="text" placeholder="YYYY-MM-DD" value={e.date} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, date: ev.target.value } : x)))} style={{ width: 110, padding: 4 }} />
-            <input type="text" placeholder="예: 추석당일 휴장" value={e.note} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, note: ev.target.value } : x)))} style={{ flex: 1, padding: 4 }} />
-            <label style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 4 }}>
-              <input type="checkbox" checked={e.closed} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, closed: ev.target.checked } : x)))} />
-              휴장
-            </label>
-            <button onClick={() => setExceptions((xs) => xs.filter((_, idx) => idx !== i))}>삭제</button>
-          </div>
-        ))}
-        <button onClick={() => setExceptions((xs) => [...xs, { date: "", note: "", closed: false }])}>+ 예외 추가</button>
+      <div className="flat-fees">
+        <div className="flat-chip">카트료 (팀당)<NumberCell value={cartFee} onChange={setCartFee} />원</div>
+        <div className="flat-chip">캐디피 (전 부)<NumberCell value={caddieFee} onChange={setCaddieFee} />원</div>
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <button style={{ padding: "8px 20px", fontWeight: 600 }} onClick={onSubmit}>제출</button>
+        <div className="gf-section-label" style={{ margin: "0 0 8px" }}>날짜별 예외 (휴장 / 요금 조정)</div>
+        {exceptions.map((e, i) => (
+          <div className="upload-exception-row" key={i}>
+            <input type="text" className="upload-text-input" placeholder="YYYY-MM-DD" value={e.date} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, date: ev.target.value } : x)))} style={{ width: 110 }} />
+            <input type="text" className="upload-text-input" placeholder="예: 추석당일 휴장" value={e.note} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, note: ev.target.value } : x)))} style={{ flex: 1, minWidth: 0 }} />
+            <label style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+              <input type="checkbox" checked={e.closed} onChange={(ev) => setExceptions((xs) => xs.map((x, idx) => (idx === i ? { ...x, closed: ev.target.checked } : x)))} />
+              휴장
+            </label>
+            <button className="upload-btn-sm" onClick={() => setExceptions((xs) => xs.filter((_, idx) => idx !== i))}>삭제</button>
+          </div>
+        ))}
+        <button className="upload-btn-sm" onClick={() => setExceptions((xs) => [...xs, { date: "", note: "", closed: false }])}>+ 예외 추가</button>
       </div>
+
+      <button className="upload-primary-btn" style={{ marginTop: 18 }} onClick={onSubmit}>제출</button>
       <StatusLine status={status} />
-    </section>
+    </div>
   );
 }
 
@@ -392,36 +408,42 @@ export default function UploadPage() {
 
   if (!unlockedPin) {
     return (
-      <main style={{ maxWidth: 360, margin: "80px auto", fontFamily: "system-ui" }}>
-        <h2>현장 업로드</h2>
-        <p>PIN을 입력하세요</p>
+      <main className="upload-pin-wrap">
+        <div className="upload-brand">SG</div>
+        <div className="upload-title">현장 업로드</div>
+        <div className="upload-sub">스톤게이트CC · PIN을 입력하세요</div>
         <input
           type="password"
+          inputMode="numeric"
+          className="upload-pin-input"
           value={pinInput}
           onChange={(e) => { setPinInput(e.target.value); setPinError(""); }}
           onKeyDown={(e) => { if (e.key === "Enter") setUnlockedPin(pinInput); }}
-          style={{ fontSize: 18, padding: 8, width: "100%" }}
         />
-        <button style={{ marginTop: 12, padding: "8px 16px" }} onClick={() => setUnlockedPin(pinInput)}>
+        <button className="upload-primary-btn" onClick={() => setUnlockedPin(pinInput)}>
           확인
         </button>
-        {pinError && <p style={{ color: "crimson" }}>{pinError}</p>}
+        {pinError && <div className="upload-error-text">{pinError}</div>}
       </main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 640, margin: "40px auto", fontFamily: "system-ui" }}>
-      <h2>현장 업로드</h2>
-      <p style={{ color: "#666", fontSize: 13 }}>
-        파일을 선택하면 자동으로 파싱되어 저장됩니다. PIN은 서버에서도 다시 검증되므로, 틀리면 저장 단계에서 오류가 표시됩니다.
-      </p>
+    <main className="upload-page">
+      <div className="upload-header">
+        <div className="upload-header-title">현장 업로드</div>
+        <div className="upload-header-sub">파일을 선택하면 자동으로 파싱되어 저장됩니다. PIN은 서버에서도 다시 검증되므로, 틀리면 저장 단계에서 오류가 표시됩니다.</div>
+      </div>
       <ReservationUploader pin={unlockedPin} />
       <CashFlowUploader pin={unlockedPin} />
       <BusinessDailyUploader pin={unlockedPin} />
-      <MonthlyBackfillUploader pin={unlockedPin} />
-      <hr style={{ margin: "24px 0" }} />
+      <hr className="upload-divider" />
       <GreenfeeUploader pin={unlockedPin} />
+
+      <details className="upload-advanced">
+        <summary>관리자용 - 월별 실적 백필</summary>
+        <MonthlyBackfillUploader pin={unlockedPin} />
+      </details>
     </main>
   );
 }
