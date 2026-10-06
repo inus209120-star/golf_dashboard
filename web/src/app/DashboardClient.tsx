@@ -649,6 +649,7 @@ export default function DashboardClient(props: Props) {
           </div>
         </div>
 
+        <div key={view} className="view-fade">
         {view === "dashboard" && (
           <>
             <div className="title-row">
@@ -1327,6 +1328,7 @@ export default function DashboardClient(props: Props) {
             </div>
           </>
         )}
+        </div>
       </div>
     </div>
   );

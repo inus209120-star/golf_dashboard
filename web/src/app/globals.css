@@ -75,7 +75,7 @@ a { color: var(--green); text-decoration: none; }
 .sidebar-brand-mark { width: 32px; height: 32px; border-radius: 9px; background: var(--navy); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .sidebar-brand-name { font-size: 13.5px; font-weight: 700; line-height: 1.25; }
 .sidebar-brand-sub { font-size: 10.5px; color: var(--text-muted); }
-.side-item { display: flex; align-items: center; gap: 11px; padding: 10px 11px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+.side-item { display: flex; align-items: center; gap: 11px; padding: 10px 11px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-family: inherit; transition: background .15s ease, color .15s ease; }
 .side-item:hover { background: var(--pill-bg); }
 .side-item.active { background: color-mix(in oklab, var(--green) 13%, var(--card-bg)); color: var(--green); }
 .side-item svg { flex-shrink: 0; }
@@ -282,6 +282,12 @@ a { color: var(--green); text-decoration: none; }
 
 .spinner { display: inline-block; width: 11px; height: 11px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; vertical-align: -1.5px; margin-right: 5px; animation: spin 0.6s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.view-fade { animation: viewFadeIn 0.28s ease; }
+@keyframes viewFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .view-fade { animation: none; }
+}
 .gf-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
 .gf-table th { text-align: right; font-weight: 600; color: var(--text-muted); font-size: 10.5px; padding: 5px 6px; border-bottom: 1px solid var(--divider); }
 .gf-table th:first-child, .gf-table td:first-child { text-align: left; }
@@ -360,7 +366,7 @@ a { color: var(--green); text-decoration: none; }
 /* bottom tab bar - mobile nav, mirrors the sidebar's 6 items. Hidden on
    desktop; the sidebar itself is hidden below the 860px breakpoint. */
 .tabbar { display: none; }
-.tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; flex: 1; padding: 8px 2px; background: none; border: none; color: var(--text-muted); font-family: inherit; cursor: pointer; }
+.tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; flex: 1; padding: 8px 2px; background: none; border: none; color: var(--text-muted); font-family: inherit; cursor: pointer; transition: color .15s ease; }
 .tab-icon-badge { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 9px; color: #fff; opacity: 0.55; transition: opacity .15s ease; }
 .tab-icon-badge svg { flex-shrink: 0; width: 17px; height: 17px; }
 .tab-item span:last-child { font-size: 11px; font-weight: 700; }
