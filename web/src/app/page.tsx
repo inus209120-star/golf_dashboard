@@ -88,11 +88,14 @@ async function loadData() {
       weather = await fetchAndCacheWeather();
     } catch (err) {
       // Keep serving whatever's cached (possibly null) rather than fail the whole
-      // dashboard load over a transient KMA API hiccup - log for now, surface a
-      // proper "연동 오류" status to the UI later if this keeps happening.
+      // dashboard load over a transient KMA API hiccup - log for now.
       console.error("weather refresh failed:", err);
     }
   }
+  // Re-check staleness against whatever we ended up with - if the refresh
+  // attempt above failed, this stays true and the UI shows a small "최신이
+  // 아닐 수 있음" hint instead of silently passing off old data as current.
+  const weatherStale = !weather || Date.now() - new Date(weather.fetchedAt).getTime() > WEATHER_STALE_MS;
 
   return {
     reservations, // full history - used for cross-collection joins (RevPAR, recent-days table)
@@ -107,6 +110,7 @@ async function loadData() {
     greenFeeCurrentYm: todayYm,
     greenFeeNextYm: nextYm,
     weather,
+    weatherStale: weather ? weatherStale : false, // "데이터 없음" 자체는 별도 빈 상태로 이미 처리되므로 중복 경고 안 함
   };
 }
 

@@ -25,6 +25,7 @@ interface Props {
   greenFeeCurrentYm: string;
   greenFeeNextYm: string;
   weather: WeatherCacheDoc | null;
+  weatherStale: boolean;
 }
 
 type View = "dashboard" | "sales" | "reservation" | "cash" | "greenfee" | "weather";
@@ -176,7 +177,7 @@ function BackBtn({ onClick }: { onClick: () => void }) {
 export default function DashboardClient(props: Props) {
   const {
     reservations, reservationsForMonth, reservationMonth, dailyVisitors, dailySales, monthlySales,
-    cashFlows, latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather,
+    cashFlows, latestCashFlow, greenFeeAll, greenFeeCurrentYm, greenFeeNextYm, weather, weatherStale,
   } = props;
 
   const [view, setView] = useState<View>("dashboard");
@@ -781,6 +782,7 @@ export default function DashboardClient(props: Props) {
                 <div className="mini-card-head"><div className="mini-card-title">날씨 현황</div><div className="mini-chevron">›</div></div>
                 {weather ? (
                   <>
+                    {weatherStale && <div className="weather-stale-hint">⚠ 갱신 실패 - 이전 데이터 표시 중</div>}
                     <div className="mini-weather-row">
                       <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="5" fill="var(--series-4)"/></svg>
                       <div><div className="mini-weather-temp">{weather.temp}°C</div><div className="weather-desc">{weather.desc}</div></div>
@@ -1289,6 +1291,7 @@ export default function DashboardClient(props: Props) {
             <div className="card">
               {weather ? (
                 <>
+                  {weatherStale && <div className="weather-stale-hint">⚠ 갱신 실패 - 이전 데이터 표시 중 (잠시 후 다시 확인해주세요)</div>}
                   {weather.warnings.length > 0 && (
                     <div className="warning-banner">
                       {weather.warnings.map((w, i) => (

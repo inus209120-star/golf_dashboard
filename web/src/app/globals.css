@@ -159,6 +159,7 @@ a { color: var(--green); text-decoration: none; }
 .mini-sales-list .mini-line-label { flex-shrink: 0; white-space: nowrap; }
 .mini-sales-list .mini-line-val { align-items: flex-start; min-width: 0; }
 
+.weather-stale-hint { font-size: 11px; font-weight: 600; color: color-mix(in oklab, var(--status-warning) 75%, var(--text-primary)); margin-bottom: 8px; }
 .mini-weather-row { display: flex; align-items: center; gap: 14px; }
 .mini-weather-temp { font-size: 24px; font-weight: 800; }
 .mini-forecast-row { display: flex; gap: 8px; margin-top: 14px; }
