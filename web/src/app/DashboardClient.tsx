@@ -886,7 +886,10 @@ export default function DashboardClient(props: Props) {
                         >
                           <div className={`cal-day ${textClass}`}>{c.label}</div>
                           <div>
-                            <div className={`cal-frac ${textClass}`}>{c.doc.totalBookings}/{c.doc.totalSlots}</div>
+                            <div className={`cal-frac ${textClass}`}>
+                              <div className="cal-frac-book">{c.doc.totalBookings}</div>
+                              <div className="cal-frac-total">/{c.doc.totalSlots}</div>
+                            </div>
                             <div className={`cal-pct ${textClass}`}>{pct}%</div>
                           </div>
                         </button>

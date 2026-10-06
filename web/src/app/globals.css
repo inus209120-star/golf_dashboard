@@ -222,15 +222,24 @@ a { color: var(--green); text-decoration: none; }
 .dow-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
 .dow-cell { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--text-muted); }
 .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-.cal-cell { position: relative; border-radius: 10px; aspect-ratio: 1 / 0.72; padding: 6px 7px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform .1s ease; border: none; font-family: inherit; }
+.cal-cell { position: relative; border-radius: 10px; aspect-ratio: 1 / 0.72; padding: 5px 3px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform .1s ease; border: none; font-family: inherit; }
 .cal-cell:hover { transform: scale(1.04); }
 .cal-cell.other-month { opacity: 0.35; cursor: default; }
 .cal-cell.other-month:hover { transform: none; }
 .cal-cell.is-today { outline: 2px dashed var(--green); outline-offset: 2px; }
 .cal-cell.is-selected { outline: 2px solid var(--navy); outline-offset: 2px; }
 .cal-day { font-size: 10.5px; font-weight: 600; }
-.cal-frac { font-size: 10.5px; font-weight: 700; line-height: 1.1; }
-.cal-pct { font-size: 12.5px; font-weight: 800; line-height: 1.1; }
+/* width:max-content + margin:auto so the number is never clipped by its own
+   box - a 3-digit/3-digit fraction (e.g. "100/126") can be wider than the
+   narrow cell at some zoom/viewport combos, and centering lets it spill
+   evenly into the grid gap instead of truncating or hiding behind the next
+   cell (the previous single-line "100/126" layout silently cut the last
+   digit off behind the next day's cell). */
+.cal-frac, .cal-pct { width: max-content; margin: 0 auto; }
+.cal-frac { font-size: 10.5px; font-weight: 700; line-height: 1.05; white-space: nowrap; }
+.cal-frac-book { letter-spacing: 0; }
+.cal-frac-total { opacity: 0.72; font-weight: 600; letter-spacing: -0.2px; }
+.cal-pct { font-size: 11.5px; font-weight: 800; line-height: 1.1; letter-spacing: -0.3px; }
 .ink-text { color: var(--text-primary); } .white-text { color: #ffffff; }
 
 .day-detail-empty { text-align: center; padding: 22px 8px; color: var(--text-muted); font-size: 12.5px; }
