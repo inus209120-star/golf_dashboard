@@ -418,11 +418,26 @@ a { color: var(--green); text-decoration: none; }
 
 /* /upload - reuses the same tokens/card language as the dashboard, just
    without the sidebar shell (this page stands alone). */
-.upload-pin-wrap { max-width: 340px; margin: 88px auto; padding: 0 20px; text-align: center; }
+/* 실제 스톤게이트CC 홈페이지(stonegatecc.co.kr) 코스 사진을 배경으로 써서
+   현장 직원이 처음 마주하는 화면에 브랜드 느낌을 주는 로그인형 레이아웃.
+   카드는 사진 위에 뜨는 "유리" 느낌이라 시스템 다크모드와 무관하게 항상
+   밝은 톤으로 고정(사진 가독성/대비를 일정하게 유지하기 위해 색상 토큰
+   대신 직접 색을 지정함). */
+.upload-pin-bg { position: relative; min-height: 100dvh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.upload-pin-bg-img { object-fit: cover; z-index: 0; }
+.upload-pin-overlay { position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(15,26,46,0.45) 0%, rgba(15,26,46,0.75) 100%); }
+.upload-pin-wrap {
+  position: relative; z-index: 2;
+  max-width: 340px; width: 100%; margin: 0 20px; padding: 40px 28px;
+  text-align: center; box-sizing: border-box;
+  background: rgba(255,255,255,0.94); border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+}
 .upload-brand { width: 56px; height: 56px; border-radius: 16px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 19px; margin: 0 auto 18px; letter-spacing: -0.02em; }
-.upload-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-.upload-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
-.upload-pin-input { width: 100%; font-size: 20px; letter-spacing: 8px; text-align: center; padding: 14px; border-radius: 12px; border: 1px solid var(--divider); background: var(--card-bg); color: var(--text-primary); font-family: inherit; box-sizing: border-box; }
+.upload-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; color: #10141c; }
+.upload-sub { font-size: 13px; color: #667085; margin-bottom: 24px; }
+.upload-pin-input { width: 100%; font-size: 20px; letter-spacing: 8px; text-align: center; padding: 14px; border-radius: 12px; border: 1px solid #e3e6eb; background: #fff; color: #10141c; font-family: inherit; box-sizing: border-box; }
 .upload-primary-btn { width: 100%; margin-top: 14px; padding: 13px; border-radius: 12px; border: none; background: var(--navy); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .upload-primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .upload-error-text { color: var(--status-critical); font-size: 12.5px; margin-top: 10px; }

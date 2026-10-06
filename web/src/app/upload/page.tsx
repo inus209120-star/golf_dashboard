@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { parseReservationFile } from "@/lib/parsers/reservation";
 import { parseCashFlowFile } from "@/lib/parsers/cashFlow";
 import { parseBusinessDailySalesFile } from "@/lib/parsers/businessDailySales";
@@ -508,22 +509,26 @@ export default function UploadPage() {
 
   if (!unlockedPin) {
     return (
-      <main className="upload-pin-wrap">
-        <div className="upload-brand">SG</div>
-        <div className="upload-title">현장 업로드</div>
-        <div className="upload-sub">스톤게이트CC · PIN을 입력하세요</div>
-        <input
-          type="password"
-          inputMode="numeric"
-          className="upload-pin-input"
-          value={pinInput}
-          onChange={(e) => { setPinInput(e.target.value); setPinError(""); }}
-          onKeyDown={(e) => { if (e.key === "Enter") setUnlockedPin(pinInput); }}
-        />
-        <button className="upload-primary-btn" onClick={() => setUnlockedPin(pinInput)}>
-          확인
-        </button>
-        {pinError && <div className="upload-error-text">{pinError}</div>}
+      <main className="upload-pin-bg">
+        <Image src="/images/upload-bg.png" alt="" fill priority sizes="100vw" className="upload-pin-bg-img" />
+        <div className="upload-pin-overlay" />
+        <div className="upload-pin-wrap">
+          <div className="upload-brand">SG</div>
+          <div className="upload-title">현장 업로드</div>
+          <div className="upload-sub">스톤게이트CC · PIN을 입력하세요</div>
+          <input
+            type="password"
+            inputMode="numeric"
+            className="upload-pin-input"
+            value={pinInput}
+            onChange={(e) => { setPinInput(e.target.value); setPinError(""); }}
+            onKeyDown={(e) => { if (e.key === "Enter") setUnlockedPin(pinInput); }}
+          />
+          <button className="upload-primary-btn" onClick={() => setUnlockedPin(pinInput)}>
+            확인
+          </button>
+          {pinError && <div className="upload-error-text">{pinError}</div>}
+        </div>
       </main>
     );
   }
