@@ -212,6 +212,70 @@ export default function DashboardClient(props: Props) {
       return next;
     });
   }
+
+  // "어제 실적 들어왔습니다" 알림(Web Push) 구독 토글 - 대표님이 한 번 눌러서
+  // 켜두면, 매일 11시 서버 크론이 전날 매출 데이터 존재를 확인하고 알림을 보냄.
+  const [pushState, setPushState] = useState<"unsupported" | "off" | "on" | "busy">("off");
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- feature-detection only possible post-mount
+      setPushState("unsupported");
+      return;
+    }
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => setPushState(sub ? "on" : "off"))
+      .catch(() => {});
+  }, []);
+
+  function urlBase64ToUint8Array(base64: string): Uint8Array {
+    const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+    const base64Safe = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const raw = atob(base64Safe);
+    return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+  }
+
+  async function togglePush() {
+    if (pushState === "unsupported" || pushState === "busy") return;
+    setPushState("busy");
+    try {
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+      const existing = await reg.pushManager.getSubscription();
+
+      if (pushState === "on" && existing) {
+        await existing.unsubscribe();
+        await fetch("/api/push/subscribe", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: existing.endpoint }),
+        });
+        setPushState("off");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        setPushState("off");
+        return;
+      }
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) throw new Error("NEXT_PUBLIC_VAPID_PUBLIC_KEY 미설정");
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+      });
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription: sub.toJSON() }),
+      });
+      setPushState("on");
+    } catch (err) {
+      console.error("push toggle failed:", err);
+      setPushState("off");
+    }
+  }
   const router = useRouter();
 
   async function approveGreenFee(ym: string) {
@@ -572,7 +636,17 @@ export default function DashboardClient(props: Props) {
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M11 8v6M8 11h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
               </button>
-              <div className="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg></div>
+              {pushState !== "unsupported" && (
+                <button
+                  className={`icon-btn push-btn ${pushState === "on" ? "active" : ""}`}
+                  onClick={togglePush}
+                  disabled={pushState === "busy"}
+                  title={pushState === "on" ? "어제 실적 알림 받는 중 (눌러서 끄기)" : "어제 실적 알림 받기"}
+                  aria-label="어제 실적 알림"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2c0 .5-.2 1-.5 1.4L4 15.5c-.6.8 0 2 1 2h14c1 0 1.6-1.2 1-2l-1.5-2c-.3-.4-.5-.9-.5-1.4V9a6 6 0 0 0-6-6Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/><path d="M9.5 19.5a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>
+                </button>
+              )}
               <div className="avatar">대표</div>
             </div>
           </div>

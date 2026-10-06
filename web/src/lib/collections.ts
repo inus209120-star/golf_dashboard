@@ -10,4 +10,5 @@ export const COLLECTIONS = {
   greenFeeApprovals: "greenFeeApprovals",
   weatherCache: "weatherCache",
   uploadLog: "uploadLog",
+  pushSubscriptions: "pushSubscriptions",
 } as const;

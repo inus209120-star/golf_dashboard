@@ -188,3 +188,12 @@ export interface UploadLogDoc {
   total: number;
   skipped: string[]; // e.g. sheet names that didn't match the expected pattern
 }
+
+/** One browser's Web Push subscription (대표님이 "알림 받기"를 누른 기기 1대당
+ * 1개) - doc id는 subscription.endpoint를 해시한 값이라 같은 기기에서 다시
+ * 구독해도 덮어쓰기만 되고 중복 생기지 않는다. */
+export interface PushSubscriptionDoc {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+  subscribedAt: string;
+}
