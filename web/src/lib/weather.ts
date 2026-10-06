@@ -1,6 +1,34 @@
+import https from "node:https";
 import { adminDb } from "@/lib/firebase-admin";
 import { COLLECTIONS } from "@/lib/collections";
 import type { WeatherCacheDoc, WeatherForecastItem, WeatherWarningItem } from "@/types/firestore";
+
+/**
+ * Next.js's `next start` runtime patches the global `fetch` for its Data
+ * Cache integration, and calls to apihub.kma.go.kr's legacy typ01 endpoints
+ * through that patched fetch intermittently hang until a 504 - reproduced
+ * repeatedly even with retries, while a plain `node -e` script hitting the
+ * exact same URL (bypassing Next's patch) and a bare `curl` both succeed
+ * instantly every time. Using Node's `https` module directly sidesteps
+ * whatever Next's wrapper is doing, for this one call site.
+ */
+function httpsGetBuffer(url: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (res) => {
+        if (res.statusCode !== 200) {
+          reject(new Error(`HTTP ${res.statusCode}`));
+          res.resume();
+          return;
+        }
+        const chunks: Buffer[] = [];
+        res.on("data", (c) => chunks.push(c));
+        res.on("end", () => resolve(Buffer.concat(chunks)));
+        res.on("error", reject);
+      })
+      .on("error", reject);
+  });
+}
 
 // 특보현황 조회(wrn_now_data.php)에서 우리가 신경 쓰는 지역 코드만 필터링.
 // L1082500 = 부산동부(기장군 포함, weather.go.kr 특보구역 안내 기준),
@@ -86,6 +114,77 @@ async function fetchActiveWarnings(authKey: string): Promise<WeatherWarningItem[
   return warnings;
 }
 
+// 중기예보(4~10일차) 전용 지역코드 - 단기예보(getVilageFcst)의 nx/ny 격자나
+// 특보의 L-코드와는 다른, 이 레거시 API 계열만의 코드 체계. 지점번호 159(부산)가
+// 찍히는 행을 기준으로 실측 확인함: 하늘상태/강수확률(fct_afs_wl)은 광역 코드
+// 11H20000, 기온(fct_afs_wc)은 도시 단위 코드 11H20201을 쓴다 - 같은 "부산"이라도
+// 두 API가 서로 다른 세분화 코드를 쓰므로 하나로 통일하면 안 됨.
+const MID_TERM_LAND_REG = "11H20000";
+const MID_TERM_TEMP_REG = "11H20201";
+
+interface MidTermDay {
+  tempLow: number;
+  tempHigh: number;
+  pop: number;
+}
+
+/**
+ * Fetches the 중기예보(day+4 ~ day+10) from KMA's legacy text API - the
+ * modern JSON MidFcstInfoService (getMidLandFcst/getMidTa) needs its own
+ * apihub 활용신청 approval that's still pending, but this older text-based
+ * pair (기상자료개방포털 since ~2013) already works with our existing
+ * authKey. Two separate calls: fct_afs_wl for sky/precip, fct_afs_wc for
+ * min/max temp - same EUC-KR CSV format as the 특보 API above.
+ */
+async function fetchMidTermForecast(authKey: string): Promise<Map<string, MidTermDay>> {
+  // apihub's legacy typ01 endpoints intermittently 504 under this server's
+  // real traffic pattern (reproducible even via node:https, not just the
+  // Next-patched fetch) - a few retries with backoff clears it in practice.
+  async function fetchRows(path: string, reg: string): Promise<string[][]> {
+    const url = `https://apihub.kma.go.kr/api/typ01/url/${path}?reg=${reg}&tmfc1=0&tmfc2=0&disp=1&help=0&authKey=${authKey}`;
+    let lastErr: unknown;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      if (attempt > 0) await new Promise((r) => setTimeout(r, 1500 * attempt));
+      try {
+        const buf = await httpsGetBuffer(url);
+        const text = new TextDecoder("euc-kr").decode(buf);
+        return text
+          .split("\n")
+          .map((l) => l.trim())
+          .filter((l) => l && !l.startsWith("#"))
+          .map((l) => l.replace(/,=$/, "").split(","));
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    throw lastErr;
+  }
+
+  // fct_afs_wl: REG_ID,TM_FC,TM_EF,MOD,STN,C,SKY,PRE,CONF,WF,RN_ST
+  // Near days are split into two 12-hour (AM/PM) rows per date - take the
+  // max rain-probability row per date, matching how the short-term forecast
+  // above already collapses multiple slots into one daily max POP.
+  const popByDate = new Map<string, number>();
+  for (const cols of await fetchRows("fct_afs_wl.php", MID_TERM_LAND_REG)) {
+    const date = cols[2]?.slice(0, 8);
+    const rnSt = Number(cols[10]);
+    if (!date || Number.isNaN(rnSt)) continue;
+    popByDate.set(date, Math.max(popByDate.get(date) ?? 0, rnSt));
+  }
+
+  // fct_afs_wc: REG_ID,TM_FC,TM_EF,MOD,STN,C,MIN,MAX,MIN_L,MIN_H,MAX_L,MAX_H
+  // One row per date already (daily resolution throughout this range).
+  const result = new Map<string, MidTermDay>();
+  for (const cols of await fetchRows("fct_afs_wc.php", MID_TERM_TEMP_REG)) {
+    const date = cols[2]?.slice(0, 8);
+    const tempLow = Number(cols[6]);
+    const tempHigh = Number(cols[7]);
+    if (!date || Number.isNaN(tempLow) || Number.isNaN(tempHigh)) continue;
+    result.set(date, { tempLow, tempHigh, pop: popByDate.get(date) ?? 0 });
+  }
+  return result;
+}
+
 function dayLabel(fcstDate: string, todayYmd: string): string {
   const toDate = (s: string) => new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)));
   const diffDays = Math.round((toDate(fcstDate).getTime() - toDate(todayYmd).getTime()) / 86400000);
@@ -161,15 +260,38 @@ export async function fetchAndCacheWeather(): Promise<WeatherCacheDoc> {
     byDate.set(date, entry);
   }
   const todayYmd = slotKeys[0].slice(0, 8);
-  const forecast: WeatherForecastItem[] = Array.from(byDate.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .slice(0, 5)
-    .map(([date, v]) => ({
+  const shortTermDates = Array.from(byDate.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+  // 단기예보(위 getVilageFcst)는 최대 "그글피"까지(오늘 포함 5일)만 주므로,
+  // 그 이후(6~10일차)는 중기예보로 이어붙인다 - 겹치는 날짜는 더 정밀한
+  // 단기예보 쪽을 그대로 쓰고, 단기예보가 못 미친 날짜만 중기예보로 채움.
+  let midTerm = new Map<string, MidTermDay>();
+  try {
+    midTerm = await fetchMidTermForecast(authKey);
+  } catch (err) {
+    // 중기예보 API 한 쪽이 삐끗해도 이미 성공한 단기예보(1~5일차)까지는
+    // 살리는 게 낫다 - 아래 warnings와 동일한 방어 패턴.
+    console.error("mid-term forecast fetch failed:", err);
+  }
+  const lastShortTermDate = shortTermDates.length ? shortTermDates[shortTermDates.length - 1][0] : todayYmd;
+  const midTermDates = Array.from(midTerm.entries())
+    .filter(([date]) => date > lastShortTermDate)
+    .sort((a, b) => a[0].localeCompare(b[0]));
+
+  const forecast: WeatherForecastItem[] = [
+    ...shortTermDates.map(([date, v]) => ({
       day: dayLabel(date, todayYmd),
       tempLow: v.tmn ?? temp,
       tempHigh: v.tmx ?? temp,
       pop: v.pops.length ? Math.max(...v.pops) : pop,
-    }));
+    })),
+    ...midTermDates.map(([date, v]) => ({
+      day: dayLabel(date, todayYmd),
+      tempLow: v.tempLow,
+      tempHigh: v.tempHigh,
+      pop: v.pop,
+    })),
+  ].slice(0, 10);
 
   let warnings: WeatherWarningItem[] = [];
   try {
