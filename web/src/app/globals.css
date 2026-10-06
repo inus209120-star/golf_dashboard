@@ -82,8 +82,7 @@ a { color: var(--green); text-decoration: none; }
 
 .main-area { flex: 1; min-width: 0; padding: 20px 32px 64px; max-width: 940px; }
 
-.utility-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
-.search-pill { display: flex; align-items: center; gap: 8px; background: var(--card-bg); box-shadow: var(--card-shadow); border-radius: 999px; padding: 10px 16px; width: 280px; color: var(--text-muted); font-size: 13px; }
+.utility-bar { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 22px; }
 .util-right { display: flex; align-items: center; gap: 16px; }
 .today-label { font-size: 12px; color: var(--text-secondary); text-align: right; line-height: 1.35; }
 .util-icons { display: flex; align-items: center; gap: 10px; }
@@ -378,7 +377,6 @@ a { color: var(--green); text-decoration: none; }
   .kpi-value { font-size: 17px; }
   .kpi-sub { font-size: 9.5px; }
   .mini-card-wide { grid-column: auto; }
-  .search-pill { display: none; }
   .card { padding: 16px; }
   .bank-row { grid-template-columns: 76px 1fr 64px; gap: 6px; }
   .modal-stat-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }

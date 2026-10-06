@@ -621,10 +621,6 @@ export default function DashboardClient(props: Props) {
 
       <div className="main-area">
         <div className="utility-bar">
-          <div className="search-pill">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-            예약자 · 거래처 검색
-          </div>
           <div className="util-right">
             <div className="today-label">{today}<br/>실시간 기준</div>
             <div className="util-icons">
