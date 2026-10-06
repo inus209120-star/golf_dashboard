@@ -1141,7 +1141,7 @@ export default function DashboardClient(props: Props) {
                   </span>
                   {gf && gf.status !== "approved" && (
                     <button className="toggle-btn active" disabled={approving} onClick={() => approveGreenFee(gfYm)}>
-                      {approving ? "처리중..." : "승인하기"}
+                      {approving ? <><span className="spinner" />처리중...</> : "승인하기"}
                     </button>
                   )}
                 </span>

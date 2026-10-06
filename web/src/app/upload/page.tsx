@@ -16,7 +16,7 @@ type Status =
 
 function StatusLine({ status }: { status: Status }) {
   if (status.kind === "idle") return null;
-  if (status.kind === "working") return <div className="upload-alert upload-alert-working">처리 중...</div>;
+  if (status.kind === "working") return <div className="upload-alert upload-alert-working"><span className="spinner" />처리 중...</div>;
   if (status.kind === "error") return <div className="upload-alert upload-alert-error">{status.message}</div>;
   return <div className="upload-alert upload-alert-success">{status.message}</div>;
 }
